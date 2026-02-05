@@ -1,0 +1,47 @@
+<template>
+  <div>
+    <!-- <QuizModal v-if="!quizStore.quizCompleted" />
+    <div v-else> -->
+      <NuxtPage />
+    <!-- </div> -->
+  </div>
+</template>
+
+<script setup lang="ts">
+import { useQuizStore } from '~/stores/quiz';
+import { useBusinessStore } from '~/stores/business';
+import { watch } from 'vue';
+
+const quizStore = useQuizStore();
+const businessStore = useBusinessStore();
+
+// When quiz is completed, save answers to business store
+watch(() => quizStore.quizCompleted, (completed) => {
+  if (completed) {
+    businessStore.updateBusinessInfo({
+      companyName: quizStore.getAnswer('companyName'),
+      email: quizStore.getAnswer('email'),
+      telephone: quizStore.getAnswer('telephone'),
+      address: quizStore.getAnswer('address'),
+      city: quizStore.getAnswer('city'),
+      postalCode: quizStore.getAnswer('postalCode'),
+      website: quizStore.getAnswer('website'),
+      businessHours: quizStore.getAnswer('businessHours'),
+      taxId: quizStore.getAnswer('taxId')
+    });
+  }
+});
+</script>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+}
+</style>

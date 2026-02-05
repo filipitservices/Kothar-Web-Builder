@@ -1,0 +1,213 @@
+/**
+ * Showcase Template Styles
+ * 
+ * Shared styles for showcase template rendering.
+ * Used by ShowcaseRenderer and all section components.
+ */
+
+/* ==========================================================================
+   DESIGN TOKENS (via CSS custom properties)
+   These are set by ShowcaseRenderer based on template.colorScheme
+   ========================================================================== */
+
+/*
+  --showcase-primary: Primary brand color
+  --showcase-secondary: Secondary brand color
+  --showcase-accent: Accent/CTA color
+  --showcase-bg: Background color
+  --showcase-text: Text color
+*/
+
+
+/* ==========================================================================
+   BASE STYLES
+   ========================================================================== */
+
+.showcase-renderer {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background: var(--showcase-bg, #fff);
+  color: var(--showcase-text, #1e293b);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.showcase-renderer.view-mobile {
+  font-size: 12px;
+}
+
+
+/* ==========================================================================
+   SECTION BASE
+   ========================================================================== */
+
+.showcase-section {
+  padding: 32px 16px;
+}
+
+.showcase-section__inner {
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.showcase-section__title {
+  font-size: 1.5em;
+  font-weight: 700;
+  color: var(--showcase-primary);
+  margin: 0 0 8px 0;
+  text-align: center;
+}
+
+.showcase-section__subtitle {
+  font-size: 0.9em;
+  color: #6b7280;
+  text-align: center;
+  margin: 0 0 20px 0;
+}
+
+
+/* ==========================================================================
+   BUTTONS (showcase-specific, uses template colors)
+   ========================================================================== */
+
+.showcase-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.85em;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s ease;
+}
+
+.showcase-btn--primary {
+  background: var(--showcase-accent, #fff);
+  color: var(--showcase-primary);
+}
+
+.showcase-btn--secondary {
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  color: #fff;
+}
+
+.showcase-btn--outline {
+  background: transparent;
+  border: 2px solid var(--showcase-primary);
+  color: var(--showcase-primary);
+}
+
+.showcase-btn--large {
+  padding: 12px 24px;
+  font-size: 1em;
+}
+
+
+/* ==========================================================================
+   CARD PATTERNS
+   ========================================================================== */
+
+.showcase-card {
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.showcase-card--featured {
+  border-color: var(--showcase-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+
+/* ==========================================================================
+   GRID PATTERNS
+   ========================================================================== */
+
+.showcase-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.showcase-grid--2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.showcase-grid--3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.showcase-grid--auto {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
+.view-mobile .showcase-grid--3 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+
+/* ==========================================================================
+   ICON STYLES
+   ========================================================================== */
+
+.showcase-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.showcase-icon--sm {
+  width: 14px;
+  height: 14px;
+}
+
+.showcase-icon--md {
+  width: 24px;
+  height: 24px;
+}
+
+.showcase-icon--lg {
+  width: 36px;
+  height: 36px;
+}
+
+.showcase-icon--primary {
+  color: var(--showcase-primary);
+}
+
+.showcase-icon--star {
+  color: #fbbf24;
+}
+
+
+/* ==========================================================================
+   PLACEHOLDER PATTERNS (for demo content)
+   ========================================================================== */
+
+.showcase-placeholder {
+  background: #e5e7eb;
+  border-radius: 8px;
+}
+
+.showcase-placeholder--circle {
+  border-radius: 50%;
+}
+
+
+/* ==========================================================================
+   FOOTER
+   ========================================================================== */
+
+.showcase-footer {
+  background: #1f2937;
+  color: #9ca3af;
+  text-align: center;
+  padding: 20px 16px;
+  font-size: 0.75em;
+}
+
+.showcase-footer p {
+  margin: 0;
+}

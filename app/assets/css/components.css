@@ -1,0 +1,462 @@
+/**
+ * Shared Component Styles
+ * 
+ * Reusable UI patterns used across the application.
+ * Import this file in components that need these styles.
+ */
+
+/* ==========================================================================
+   BUTTONS
+   ========================================================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* Primary Button */
+.btn--primary {
+  background: #1e3a8a;
+  color: #fff;
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: #1e2d7d;
+}
+
+/* Secondary Button */
+.btn--secondary {
+  background: #fff;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+}
+
+.btn--secondary:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+/* Ghost Button */
+.btn--ghost {
+  background: transparent;
+  color: #6b7280;
+  border: 1px solid transparent;
+}
+
+.btn--ghost:hover:not(:disabled) {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+/* Button Sizes */
+.btn--sm {
+  padding: 0.5rem 0.875rem;
+  font-size: 0.8125rem;
+}
+
+.btn--lg {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+}
+
+
+/* ==========================================================================
+   MODAL
+   ========================================================================== */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1.5rem;
+}
+
+.modal-container {
+  width: 100%;
+  background: #fff;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.modal-header {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+.modal-body {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+}
+
+.modal-footer {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  background: #fff;
+  gap: 1.5rem;
+}
+
+/* Close Button */
+.modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.modal-close:hover {
+  background: #f3f4f6;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+.modal-close svg {
+  width: 18px;
+  height: 18px;
+}
+
+
+/* ==========================================================================
+   DEVICE FRAMES
+   Matches ScreenCard styling from the builder
+   ========================================================================== */
+
+.device-frame {
+  flex-shrink: 0;
+  background: #fff;
+  box-shadow: 0 14px 20px rgba(0, 0, 0, 0.22);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Desktop Frame */
+.device-frame--desktop {
+  width: 700px;
+  height: 550px;
+  border: 12px solid #111;
+  border-radius: 20px;
+  position: relative;
+  margin-bottom: 40px;
+}
+
+.device-frame--desktop::after {
+  content: "";
+  position: absolute;
+  width: 400px;
+  height: 20px;
+  background: #333;
+  border-radius: 0 0 30px 30px;
+  bottom: -32px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Mobile Frame */
+.device-frame--mobile {
+  width: 330px;
+  height: 600px;
+  border: 12px solid #111;
+  border-radius: 40px;
+  position: relative;
+}
+
+.device-frame--mobile::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 180px;
+  height: 14px;
+  background: #111;
+  border-radius: 0 0 20px 20px;
+  z-index: 10;
+}
+
+.device-frame--mobile::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 130px;
+  height: 5px;
+  background: #111;
+  border-radius: 5px;
+  z-index: 10;
+}
+
+/* Screen Content (scrollable area inside frame) */
+.device-frame .screen-content {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.device-frame .screen-content::-webkit-scrollbar {
+  display: none;
+}
+
+
+/* ==========================================================================
+   TOGGLE GROUP
+   ========================================================================== */
+
+.toggle-group {
+  display: flex;
+  background: #f3f4f6;
+  border-radius: 8px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.toggle-group__btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.toggle-group__btn:hover {
+  color: #374151;
+}
+
+.toggle-group__btn--active {
+  background: #fff;
+  color: #1e3a8a;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.toggle-group__btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+
+/* ==========================================================================
+   TEXT UTILITIES
+   ========================================================================== */
+
+.text-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1e3a8a;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.text-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.text-muted {
+  font-size: 0.875rem;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.text-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+
+/* ==========================================================================
+   FORMS
+   Reusable form patterns following the design system
+   ========================================================================== */
+
+/* Form Group */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+/* Form Row - side by side fields */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 640px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Form Label */
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.form-label .required {
+  color: #dc2626;
+  margin-left: 2px;
+}
+
+/* Input, Select, Textarea - shared base */
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  color: #111827;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: #9ca3af;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: #1e3a8a;
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+}
+
+.form-input:disabled,
+.form-select:disabled,
+.form-textarea:disabled {
+  background: #f9fafb;
+  cursor: not-allowed;
+}
+
+/* Select specific */
+.form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+  background-position: right 0.625rem center;
+  background-repeat: no-repeat;
+  background-size: 1.25rem;
+  padding-right: 2.5rem;
+}
+
+/* Textarea specific */
+.form-textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.5;
+}
+
+/* Fieldset */
+.form-fieldset {
+  border: none;
+  padding: 0;
+  margin: 0 0 1.75rem 0;
+}
+
+.form-fieldset:last-of-type {
+  margin-bottom: 0;
+}
+
+.fieldset-legend {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+  padding: 0;
+  margin-bottom: 1rem;
+}
+
+/* Checkbox Group */
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  cursor: pointer;
+  font-size: 0.9375rem;
+  color: #374151;
+  line-height: 1.4;
+}
+
+.checkbox-label input[type="checkbox"] {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: #1e3a8a;
+  cursor: pointer;
+}
+
+/* Form Actions */
+.form-actions {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}

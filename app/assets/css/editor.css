@@ -1,0 +1,137 @@
+
+
+.main-container {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Sidebars */
+.sidebar {
+  flex: 0 0 280px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.sidebar-header {
+  background: #1e3a8a;
+  color: white;
+  padding: 16px;
+  text-align: center;
+  position: relative;
+  z-index: 5;
+}
+
+.sidebar-header h3 {
+  margin: 0;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.sidebar-list {
+  flex: 1;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  min-height: 0;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.sidebar-list::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Left sidebar layout with branding at bottom */
+.left-sidebar {
+  display: flex;
+  flex-direction: column;
+}
+
+.left-sidebar > .sidebar-header {
+  flex: 0 0 auto;
+}
+
+.left-sidebar > .sidebar-list {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.left-sidebar > .sidebar-branding {
+  flex: 0 0 auto;
+}
+
+/* Screens Container */
+.screens-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow: hidden;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1600px) {
+  .screens-inner {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .main-container {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    flex: 0 1 auto;
+    max-height: 200px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .main-container {
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .screens-container {
+    flex: 1;
+    min-height: 0;
+  }
+}
+
+/* Editable content styles */
+.editable {
+  position: relative;
+  padding: 2px 4px;
+  margin: -2px -4px;
+  border-radius: 3px;
+  cursor: text;
+  transition: all 0.15s ease;
+  outline: none;
+  display: block;
+}
+
+.editable:hover {
+  background: rgba(30, 58, 138, 0.03);
+}
+
+.editable:focus {
+  background: rgba(30, 58, 138, 0.08);
+  outline: 1px solid rgba(30, 58, 138, 0.2);
+}
+
+.editable.has-local-value {
+  font-weight: 700;
+}
+
