@@ -3,43 +3,12 @@
     <!-- Design Customization -->
     <fieldset class="form-fieldset">
       <legend class="fieldset-legend">Design Customization</legend>
-
-      <div class="color-palette-container">
-        <div class="color-palette-header">
-          <span class="color-palette-title">Color Scheme</span>
-          <button
-            v-if="hasColorChanges"
-            type="button"
-            class="color-palette-reset"
-            @click="resetAllColors"
-          >
-            Reset to defaults
-          </button>
-        </div>
-        <p class="color-palette-hint">Click any color to customize. Changes update the preview instantly.</p>
-
-        <div class="color-palette">
-          <div
-            v-for="colorDef in colorDefinitions"
-            :key="colorDef.key"
-            class="color-swatch-item"
-          >
-            <label class="color-swatch-control">
-              <input
-                type="color"
-                :value="localFormData.colorCustomization[colorDef.key]"
-                class="color-swatch-input"
-                @input="handleColorChange(colorDef.key, ($event.target as HTMLInputElement).value)"
-              />
-              <span
-                class="color-swatch"
-                :style="{ backgroundColor: localFormData.colorCustomization[colorDef.key] }"
-              ></span>
-            </label>
-            <span class="color-swatch-label">{{ colorDef.label }}</span>
-          </div>
-        </div>
-      </div>
+      <ColorSchemePicker
+        :colors="localFormData.colorCustomization"
+        :default-colors="defaultColors"
+        @update:colors="handleColorsUpdate"
+        @reset="resetAllColors"
+      />
     </fieldset>
 
     <!-- Business Information -->
@@ -63,22 +32,9 @@
           <label for="industry" class="form-label">Industry / Type <span class="required">*</span></label>
           <select id="industry" v-model="localFormData.industry" class="form-select" required>
             <option value="">Select your industry</option>
-            <option value="plumbing">Plumbing</option>
-            <option value="electrical">Electrical</option>
-            <option value="hvac">HVAC</option>
-            <option value="construction">Construction / Contracting</option>
-            <option value="landscaping">Landscaping</option>
-            <option value="cleaning">Cleaning Services</option>
-            <option value="legal">Legal Services</option>
-            <option value="accounting">Accounting / Tax</option>
-            <option value="consulting">Consulting</option>
-            <option value="medical">Medical / Dental</option>
-            <option value="therapy">Therapy / Wellness</option>
-            <option value="restaurant">Restaurant / Food</option>
-            <option value="retail">Retail</option>
-            <option value="photography">Photography</option>
-            <option value="agency">Marketing / Design Agency</option>
-            <option value="other">Other</option>
+            <option v-for="option in INDUSTRY_OPTIONS" :key="option.value" :value="option.value">
+              {{ option.label }}
+            </option>
           </select>
         </div>
         <div class="form-group">
@@ -176,29 +132,9 @@
       <div class="form-group">
         <label class="form-label">What are the primary goals for your website? <span class="required">*</span></label>
         <div class="checkbox-group">
-          <label class="checkbox-label">
-            <input type="checkbox" v-model="localFormData.goals" value="generate-leads" />
-            <span>Generate leads & inquiries</span>
-          </label>
-          <label class="checkbox-label">
-            <input type="checkbox" v-model="localFormData.goals" value="showcase-services" />
-            <span>Showcase services & portfolio</span>
-          </label>
-          <label class="checkbox-label">
-            <input type="checkbox" v-model="localFormData.goals" value="build-credibility" />
-            <span>Build credibility & trust</span>
-          </label>
-          <label class="checkbox-label">
-            <input type="checkbox" v-model="localFormData.goals" value="local-seo" />
-            <span>Improve local SEO / visibility</span>
-          </label>
-          <label class="checkbox-label">
-            <input type="checkbox" v-model="localFormData.goals" value="booking" />
-            <span>Allow online booking / scheduling</span>
-          </label>
-          <label class="checkbox-label">
-            <input type="checkbox" v-model="localFormData.goals" value="ecommerce" />
-            <span>Sell products online</span>
+          <label v-for="goal in WEBSITE_GOALS" :key="goal.value" class="checkbox-label">
+            <input type="checkbox" v-model="localFormData.goals" :value="goal.value" />
+            <span>{{ goal.label }}</span>
           </label>
         </div>
       </div>
@@ -222,25 +158,9 @@
       <div class="form-group">
         <label class="form-label">Do you have existing brand assets?</label>
         <div class="checkbox-group">
-          <label class="checkbox-label">
-            <input type="checkbox" v-model="localFormData.brandAssets" value="logo" />
-            <span>Logo</span>
-          </label>
-          <label class="checkbox-label">
-            <input type="checkbox" v-model="localFormData.brandAssets" value="colors" />
-            <span>Brand colors</span>
-          </label>
-          <label class="checkbox-label">
-            <input type="checkbox" v-model="localFormData.brandAssets" value="photos" />
-            <span>Professional photos</span>
-          </label>
-          <label class="checkbox-label">
-            <input type="checkbox" v-model="localFormData.brandAssets" value="copy" />
-            <span>Written content / copy</span>
-          </label>
-          <label class="checkbox-label">
-            <input type="checkbox" v-model="localFormData.brandAssets" value="none" />
-            <span>I need help with all of this</span>
+          <label v-for="asset in BRAND_ASSETS" :key="asset.value" class="checkbox-label">
+            <input type="checkbox" v-model="localFormData.brandAssets" :value="asset.value" />
+            <span>{{ asset.label }}</span>
           </label>
         </div>
       </div>
@@ -278,37 +198,56 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import type { ShowcaseTemplate } from '~/stores/showcase';
+import type { ColorCustomization, TemplateRequestFormData } from '~/types/templateRequest';
+import ColorSchemePicker from '~/components/ColorSchemePicker.vue';
+
+// Re-export types for consumers
+export type { ColorCustomization, TemplateRequestFormData } from '~/types/templateRequest';
 
 /**
- * Color Customization Schema
+ * Industry options for the dropdown
  */
-export interface ColorCustomization {
-  primary: string;
-  secondary: string;
-  accent: string;
-  background: string;
-  text: string;
-}
+const INDUSTRY_OPTIONS = [
+  { value: 'plumbing', label: 'Plumbing' },
+  { value: 'electrical', label: 'Electrical' },
+  { value: 'hvac', label: 'HVAC' },
+  { value: 'construction', label: 'Construction / Contracting' },
+  { value: 'landscaping', label: 'Landscaping' },
+  { value: 'cleaning', label: 'Cleaning Services' },
+  { value: 'legal', label: 'Legal Services' },
+  { value: 'accounting', label: 'Accounting / Tax' },
+  { value: 'consulting', label: 'Consulting' },
+  { value: 'medical', label: 'Medical / Dental' },
+  { value: 'therapy', label: 'Therapy / Wellness' },
+  { value: 'restaurant', label: 'Restaurant / Food' },
+  { value: 'retail', label: 'Retail' },
+  { value: 'photography', label: 'Photography' },
+  { value: 'agency', label: 'Marketing / Design Agency' },
+  { value: 'other', label: 'Other' }
+] as const;
 
 /**
- * Form Data Schema
+ * Website goals checkbox options
  */
-export interface TemplateRequestFormData {
-  businessName: string;
-  industry: string;
-  yearsInBusiness: string;
-  businessDescription: string;
-  contactName: string;
-  email: string;
-  phone: string;
-  website: string;
-  address: string;
-  goals: string[];
-  targetAudience: string;
-  brandAssets: string[];
-  additionalNotes: string;
-  colorCustomization: ColorCustomization;
-}
+const WEBSITE_GOALS = [
+  { value: 'generate-leads', label: 'Generate leads & inquiries' },
+  { value: 'showcase-services', label: 'Showcase services & portfolio' },
+  { value: 'build-credibility', label: 'Build credibility & trust' },
+  { value: 'local-seo', label: 'Improve local SEO / visibility' },
+  { value: 'booking', label: 'Allow online booking / scheduling' },
+  { value: 'ecommerce', label: 'Sell products online' }
+] as const;
+
+/**
+ * Brand assets checkbox options
+ */
+const BRAND_ASSETS = [
+  { value: 'logo', label: 'Logo' },
+  { value: 'colors', label: 'Brand colors' },
+  { value: 'photos', label: 'Professional photos' },
+  { value: 'copy', label: 'Written content / copy' },
+  { value: 'none', label: 'I need help with all of this' }
+] as const;
 
 interface Props {
   template: ShowcaseTemplate;
@@ -327,117 +266,72 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<Emits>();
 
 /**
- * Color definitions for the palette UI
+ * Default colors from the template (used for reset)
  */
-interface ColorDefinition {
-  key: keyof ColorCustomization;
-  label: string;
-}
-
-const colorDefinitions: ColorDefinition[] = [
-  { key: 'primary', label: 'Primary' },
-  { key: 'secondary', label: 'Secondary' },
-  { key: 'accent', label: 'Accent' },
-  { key: 'background', label: 'Background' },
-  { key: 'text', label: 'Text' }
-];
+const defaultColors = computed<ColorCustomization>(() => ({
+  primary: props.template.colorScheme.primary,
+  secondary: props.template.colorScheme.secondary,
+  accent: props.template.colorScheme.accent,
+  background: props.template.colorScheme.background,
+  text: props.template.colorScheme.text
+}));
 
 /**
  * Create initial form data with template's default colors
  */
-const createInitialFormData = (): TemplateRequestFormData => ({
-  businessName: '',
-  industry: '',
-  yearsInBusiness: '',
-  businessDescription: '',
-  contactName: '',
-  email: '',
-  phone: '',
-  website: '',
-  address: '',
-  goals: [],
-  targetAudience: '',
-  brandAssets: [],
-  additionalNotes: '',
-  colorCustomization: {
-    primary: props.template.colorScheme.primary,
-    secondary: props.template.colorScheme.secondary,
-    accent: props.template.colorScheme.accent,
-    background: props.template.colorScheme.background,
-    text: props.template.colorScheme.text
-  }
-});
+function createInitialFormData(): TemplateRequestFormData {
+  return {
+    businessName: '',
+    industry: '',
+    yearsInBusiness: '',
+    businessDescription: '',
+    contactName: '',
+    email: '',
+    phone: '',
+    website: '',
+    address: '',
+    goals: [],
+    targetAudience: '',
+    brandAssets: [],
+    additionalNotes: '',
+    colorCustomization: { ...defaultColors.value }
+  };
+}
 
 const localFormData = ref<TemplateRequestFormData>(createInitialFormData());
 
 /**
- * Check if any color has been changed from template defaults
+ * Handle color updates from the picker
  */
-const hasColorChanges = computed(() => {
-  const colors = localFormData.value.colorCustomization;
-  const defaults = props.template.colorScheme;
-  return (
-    colors.primary !== defaults.primary ||
-    colors.secondary !== defaults.secondary ||
-    colors.accent !== defaults.accent ||
-    colors.background !== defaults.background ||
-    colors.text !== defaults.text
-  );
-});
-
-/**
- * Handle color change - update local state and emit to parent
- */
-const handleColorChange = (colorKey: keyof ColorCustomization, value: string): void => {
-  // Validate hex color format
-  const hexRegex = /^#[0-9A-Fa-f]{6}$/;
-  if (!hexRegex.test(value)) {
-    return;
-  }
-
-  const newColors: ColorCustomization = {
-    ...localFormData.value.colorCustomization,
-    [colorKey]: value
-  };
-
+function handleColorsUpdate(colors: ColorCustomization): void {
   localFormData.value = {
     ...localFormData.value,
-    colorCustomization: newColors
+    colorCustomization: colors
   };
-
-  emit('colorChange', newColors);
-};
+  emit('colorChange', colors);
+}
 
 /**
- * Reset all colors to template defaults
+ * Reset colors to template defaults
  */
-const resetAllColors = (): void => {
-  const defaults = props.template.colorScheme;
-  const newColors: ColorCustomization = {
-    primary: defaults.primary,
-    secondary: defaults.secondary,
-    accent: defaults.accent,
-    background: defaults.background,
-    text: defaults.text
-  };
-
+function resetAllColors(): void {
+  const colors = { ...defaultColors.value };
   localFormData.value = {
     ...localFormData.value,
-    colorCustomization: newColors
+    colorCustomization: colors
   };
-
-  emit('colorChange', newColors);
-};
+  emit('colorChange', colors);
+}
 
 /**
  * Handle form submission
  */
-const handleSubmit = (): void => {
+function handleSubmit(): void {
   emit('submit', localFormData.value);
-};
+}
 
 /**
- * Watch for template changes
+ * Watch for template changes and reset form
  */
 watch(() => props.template.id, () => {
   localFormData.value = createInitialFormData();
@@ -445,124 +339,40 @@ watch(() => props.template.id, () => {
 });
 </script>
 
-<!-- Import shared form styles (not scoped - these are design system patterns) -->
+<!-- Import shared form styles -->
 <style src="~/assets/css/components.css"></style>
 
 <!-- Component-specific styles -->
 <style scoped>
 /**
- * TemplateRequestForm - Component-specific overrides
- *
+ * TemplateRequestForm - Minimal component-specific styles
  * Base form styles come from components.css (imported above)
- * This block only contains component-specific additions
  */
 
-/* ==========================================================================
-   COLOR PALETTE
-   A contained widget for color customization
-   ========================================================================== */
-
-.color-palette-container {
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 1rem 1.25rem;
-}
-
-.color-palette-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 0.25rem;
-}
-
-.color-palette-title {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #374151;
-}
-
-.color-palette-reset {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: #6b7280;
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  transition: color 0.15s ease;
-}
-
-.color-palette-reset:hover {
-  color: #1e3a8a;
-  text-decoration: underline;
-}
-
-.color-palette-hint {
-  font-size: 0.8125rem;
-  color: #9ca3af;
-  margin: 0 0 1rem 0;
-  line-height: 1.4;
-}
-
-.color-palette {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.color-swatch-item {
+.request-form {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.375rem;
+  gap: 0;
 }
 
-.color-swatch-control {
-  position: relative;
-  cursor: pointer;
+.form-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  margin-top: 2rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid #e5e7eb;
 }
 
-.color-swatch-input {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  cursor: pointer;
+.form-actions .btn {
+  min-width: 200px;
 }
 
-.color-swatch {
-  display: block;
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  border: 2px solid #fff;
-  box-shadow: 0 0 0 1px #e5e7eb, 0 1px 3px rgba(0, 0, 0, 0.08);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+.form-actions .btn svg {
+  width: 18px;
+  height: 18px;
 }
-
-.color-swatch-control:hover .color-swatch {
-  transform: scale(1.08);
-  box-shadow: 0 0 0 1px #d1d5db, 0 4px 8px rgba(0, 0, 0, 0.12);
-}
-
-.color-swatch-control:focus-within .color-swatch {
-  box-shadow: 0 0 0 2px #1e3a8a, 0 0 0 4px rgba(30, 58, 138, 0.2);
-}
-
-.color-swatch-label {
-  font-size: 0.6875rem;
-  font-weight: 500;
-  color: #6b7280;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-}
-
-/* ==========================================================================
-   FORM DISCLAIMER
-   ========================================================================== */
 
 .form-disclaimer {
   font-size: 0.875rem;
@@ -571,22 +381,9 @@ watch(() => props.template.id, () => {
   line-height: 1.5;
 }
 
-/* ==========================================================================
-   RESPONSIVE
-   ========================================================================== */
-
-@media (max-width: 480px) {
-  .color-palette-container {
-    padding: 0.875rem 1rem;
-  }
-
-  .color-palette {
-    justify-content: space-between;
-  }
-
-  .color-swatch {
-    width: 36px;
-    height: 36px;
+@media (max-width: 640px) {
+  .form-actions .btn {
+    width: 100%;
   }
 }
 </style>
