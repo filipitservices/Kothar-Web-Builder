@@ -220,8 +220,8 @@ SMB onboarding form for requesting a website based on a selected showcase templa
 
 The page consists of two main pieces:
 
-1. **Page (`[id].vue`)** - Handles routing, template fetching, and preview rendering
-2. **Form Component (`TemplateRequestForm.vue`)** - Contains all form logic, validation, and color customization
+1. **Page (`[id].vue`)** - Handles routing, template fetching, preview rendering, and progress display
+2. **Form Component (`TemplateRequestForm.vue`)** - Contains all form logic, validation, color customization, and file uploads
 
 This separation enables:
 - Clean separation of concerns (page layout vs. form logic)
@@ -233,14 +233,55 @@ This separation enables:
 ```
 TemplateRequestForm
     │
-    ├── @color-change ──► [id].vue updates previewTemplate ──► ShowcaseRenderer re-renders
+    ├── @color-change ──────► [id].vue updates previewTemplate ──► ShowcaseRenderer re-renders
     │
-    └── @submit ──────────► [id].vue handles API submission
+    ├── @progress-update ───► [id].vue updates progress bar in left column
+    │
+    └── @submit ────────────► [id].vue handles API submission
 ```
+
+### Left Column Layout
+
+The left column contains (in order):
+
+1. **Welcome Message** - Personalized greeting using authenticated user's name
+   - Uses first name from `displayName` or email prefix as fallback
+   - Example: "Great choice, John!"
+
+2. **Preview Card**
+   - Live preview label
+   - **Scaled Desktop Viewport** - CSS transform-scaled preview simulating a 1280x800 desktop viewport
+   - Template info (industry, name, description)
+   - **Navigation Links:**
+     - "Choose a different design →" (primary link to gallery)
+     - "Or build your own from scratch" (secondary link to builder)
+
+3. **Progress Bar** - Shows form completion status
+   - Moved from form to provide persistent visibility
+   - Animated fill with gradient
+   - Shows "X of Y fields completed"
+
+### Preview Scaling
+
+The preview uses CSS transform scaling to simulate a real desktop viewport:
+
+```typescript
+const VIEWPORT_WIDTH = 1280;  // Simulated desktop width
+const VIEWPORT_HEIGHT = 800;  // Simulated desktop height
+
+// Scale is calculated based on container width
+viewportScale.value = containerWidth / VIEWPORT_WIDTH;
+```
+
+This approach:
+- Preserves spacing, typography, and layout as if viewing a real desktop site
+- Maintains aspect ratio without distortion
+- Responds to container width changes via ResizeObserver
+- Does not clip or squeeze content like a simple aspect-ratio box
 
 ### Form Sections
 
-1. **Design Customization** (NEW - Interactive)
+1. **Design Customization** (Interactive)
    - Visual color pickers for all 5 template colors
    - Hex input fields for precise values
    - Per-color reset buttons
@@ -258,13 +299,35 @@ TemplateRequestForm
    - Email (required)
    - Phone
    - Current website URL
+   - Business address
 
 4. **Website Goals**
-   - Checkbox options: attract customers, showcase work, generate leads, etc.
+   - Goal selector (attract customers, showcase work, generate leads, etc.)
+   - Target audience description
 
 5. **Branding & Content**
-   - Brand assets checklist
-   - Additional notes
+   - **File Upload Area** - Multi-file drag-and-drop upload
+     - Click to browse or drag files
+     - Supports: Images, PDF, AI, PSD, EPS, SVG
+     - Shows uploaded file list with remove buttons
+     - Professional copy: "Drop your files here (logos, brand assets, etc.) and we'll take care of the rest."
+   - Additional notes textarea
+
+### Form Component Props & Events
+
+```typescript
+interface Props {
+  template: ShowcaseTemplate;  // Template for default colors
+  isSubmitting?: boolean;      // Disable form during submission
+  showProgress?: boolean;      // Show/hide built-in progress bar (default: true)
+}
+
+interface Emits {
+  (e: 'submit', data: TemplateRequestFormData): void;
+  (e: 'colorChange', colors: ColorCustomization): void;
+  (e: 'progressUpdate', progress: { completed: number; total: number }): void;
+}
+```
 
 ### Color Customization Types
 
@@ -278,7 +341,25 @@ interface ColorCustomization {
 }
 
 interface TemplateRequestFormData {
-  // ... business info fields
+  // Business info
+  businessName: string;
+  industry: string;
+  yearsInBusiness: string;
+  businessDescription: string;
+  // Contact info
+  contactName: string;
+  email: string;
+  phone: string;
+  website: string;
+  address: string;
+  // Goals
+  goals: string[];
+  targetAudience: string;
+  // Branding
+  brandAssets: string[];  // File names for display
+  files: File[];          // Actual File objects for upload
+  additionalNotes: string;
+  // Colors
   colorCustomization: ColorCustomization;
 }
 ```
@@ -286,8 +367,8 @@ interface TemplateRequestFormData {
 ### Layout
 
 Two-column layout on desktop:
-- Left: Live preview card (sticky) - updates in real-time with color changes
-- Right: Form sections
+- **Left (420px)**: Welcome message, live preview card (sticky), progress bar
+- **Right (flexible)**: Form sections
 
 Responsive collapse to single column on mobile.
 
@@ -297,7 +378,18 @@ Responsive collapse to single column on mobile.
 
 **File:** `app/components/TemplateRequestForm.vue`
 
-Extracted form component that handles all form state and color customization.
+A thin orchestration component that composes form sections using extracted composables and sub-components. Follows Nuxt 4 best practices for component composition.
+
+### Architecture
+
+The form logic is split into focused modules:
+
+| Module | Purpose |
+|--------|---------|
+| `useTemplateRequestForm.ts` | Form state, progress tracking, color handling |
+| `useFileUpload.ts` | File upload logic, drag-and-drop, validation |
+| `FileUploadArea.vue` | File upload UI component |
+| `TemplateRequestForm.vue` | Orchestration layer composing all pieces |
 
 ### Props
 
@@ -305,6 +397,7 @@ Extracted form component that handles all form state and color customization.
 interface Props {
   template: ShowcaseTemplate;  // Template for default colors
   isSubmitting?: boolean;      // Disable form during submission
+  showProgress?: boolean;      // Show/hide built-in progress bar (default: true)
 }
 ```
 
@@ -314,15 +407,105 @@ interface Props {
 interface Emits {
   (e: 'submit', data: TemplateRequestFormData): void;
   (e: 'colorChange', colors: ColorCustomization): void;
+  (e: 'progressUpdate', progress: { completed: number; total: number }): void;
 }
 ```
 
 ### Features
 
+- **Composable-based architecture**: Business logic extracted to reusable composables
 - **Immutable updates**: All state changes create new objects
 - **Validation**: Hex color format validation
 - **Reset functionality**: Individual and bulk color resets
 - **Template watching**: Resets form when template changes
+
+---
+
+## Form Composables
+
+### useTemplateRequestForm
+
+**File:** `app/composables/useTemplateRequestForm.ts`
+
+Encapsulates form state management, progress tracking, and color customization.
+
+```typescript
+interface UseTemplateRequestFormReturn {
+  formData: Ref<TemplateRequestFormData>;
+  progress: ComputedRef<FormProgress>;
+  defaultColors: ComputedRef<ColorCustomization>;
+  updateField: <K extends keyof TemplateRequestFormData>(field: K, value: TemplateRequestFormData[K]) => void;
+  updateColors: (colors: ColorCustomization) => void;
+  resetColors: () => ColorCustomization;
+  resetForm: () => void;
+}
+```
+
+### useFileUpload
+
+**File:** `app/composables/useFileUpload.ts`
+
+Encapsulates file upload logic including drag-and-drop handling and file validation.
+
+```typescript
+interface UseFileUploadReturn {
+  files: Readonly<Ref<readonly File[]>>;
+  isDragging: Readonly<Ref<boolean>>;
+  addFiles: (newFiles: File[]) => void;
+  removeFile: (index: number) => void;
+  clearFiles: () => void;
+  formatFileSize: (bytes: number) => string;
+  handleDragEnter: (event: DragEvent) => void;
+  handleDragLeave: () => void;
+  handleDrop: (event: DragEvent) => void;
+  resetDragState: () => void;
+}
+```
+
+---
+
+## FileUploadArea Component
+
+**File:** `app/components/form/FileUploadArea.vue`
+
+Friendly, accessible file upload component with drag-and-drop support. Designed to feel warm and inviting rather than clinical.
+
+### Features
+
+- **Visual Design**: Soft blue-purple gradient background, prominent icon, welcoming copy
+- **Accessibility**: Keyboard navigation, ARIA labels, screen reader support
+- **Interactions**: Hover states, focus rings, drag-over feedback with subtle scale animation
+- **File List**: Clean display with file icons, names, sizes, and remove buttons
+
+### Props
+
+```typescript
+interface Props {
+  accept?: string;           // HTML accept attribute (default: 'image/*,.pdf,.ai,.psd,.eps,.svg')
+  multiple?: boolean;        // Allow multiple files (default: true)
+  ariaLabel?: string;        // ARIA label for the file input
+  formatsText?: string;      // Supported formats display text (default: 'PNG, JPG, PDF, SVG, AI, PSD, EPS')
+  acceptedTypes?: string[];  // MIME types for validation
+}
+```
+
+### Events
+
+```typescript
+interface Emits {
+  (e: 'update:files', files: readonly File[]): void;
+}
+```
+
+### Usage
+
+```vue
+<FileUploadArea
+  accept="image/*,.pdf,.svg"
+  formats-text="PNG, JPG, PDF, SVG"
+  @update:files="handleFilesUpdate"
+/>
+```
 
 ---
 

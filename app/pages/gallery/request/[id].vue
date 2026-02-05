@@ -26,15 +26,24 @@
           <aside class="template-preview-section">
             <div class="preview-card">
               <div class="preview-label">Live Preview</div>
-              <div class="preview-device">
-                <div class="preview-frame">
-                  <div class="preview-screen">
-                    <ShowcaseRenderer
-                      v-if="previewTemplate"
-                      :template="previewTemplate"
-                      view-mode="desktop"
-                    />
-                  </div>
+              <!-- Welcome Message -->
+              <p class="welcome-message">
+                Great choice{{ userName ? `, ${userName}` : '' }}!
+              </p>
+              <div 
+                class="preview-device" 
+                ref="previewContainerRef"
+                :style="containerStyle"
+              >
+                <div 
+                  class="preview-viewport"
+                  :style="viewportStyle"
+                >
+                  <ShowcaseRenderer
+                    v-if="previewTemplate"
+                    :template="previewTemplate"
+                    view-mode="desktop"
+                  />
                 </div>
               </div>
               <div class="preview-info">
@@ -42,9 +51,22 @@
                 <h3 class="preview-name">{{ originalTemplate?.name }}</h3>
                 <p class="preview-description">{{ originalTemplate?.description }}</p>
               </div>
-              <NuxtLink to="/gallery" class="change-template-link">
-                Choose a different design →
-              </NuxtLink>
+              <div class="preview-links">
+                <NuxtLink to="/gallery" class="change-template-link">
+                  Choose a different design →
+                </NuxtLink>
+                <NuxtLink to="/builder" class="builder-link">
+                  Or build your own from scratch →
+                </NuxtLink>
+              </div>
+            </div>
+
+            <!-- Progress Bar (moved from form) -->
+            <div class="preview-progress">
+              <div class="progress-track">
+                <div class="progress-fill" :style="{ width: progressPercentage + '%' }"></div>
+              </div>
+              <span class="progress-label">{{ formProgress.completed }} of {{ formProgress.total }} fields completed</span>
             </div>
           </aside>
 
@@ -61,8 +83,10 @@
               v-if="originalTemplate"
               :template="originalTemplate"
               :is-submitting="isSubmitting"
+              :show-progress="false"
               @color-change="handleColorChange"
               @submit="handleSubmit"
+              @progress-update="handleProgressUpdate"
             />
           </section>
         </div>
@@ -72,9 +96,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useShowcaseStore, type ShowcaseTemplate } from '~/stores/showcase';
+import { useAuthStore } from '~/stores/auth';
 import UserMenu from '~/components/UserMenu.vue';
 import ShowcaseRenderer from '~/components/showcase/ShowcaseRenderer.vue';
 import TemplateRequestForm, {
@@ -92,6 +117,17 @@ defineOptions({ name: 'TemplateRequestPage', display: 'Template Request Form' })
 const route = useRoute();
 const router = useRouter();
 const showcaseStore = useShowcaseStore();
+const authStore = useAuthStore();
+
+// Get user's display name for welcome message
+const userName = computed(() => {
+  const user = authStore.currentUser;
+  if (!user) return '';
+  // Prefer displayName, fallback to email prefix
+  if (user.displayName) return user.displayName.split(' ')[0];
+  if (user.email) return user.email.split('@')[0];
+  return '';
+});
 
 // Get template from route param
 const templateId = computed(() => route.params.id as string);
@@ -105,7 +141,46 @@ const previewTemplate = ref<ShowcaseTemplate | undefined>(undefined);
 // Form state
 const isSubmitting = ref(false);
 
-onMounted(() => {
+// Progress tracking (received from form component)
+const formProgress = ref({ completed: 1, total: 14 });
+const progressPercentage = computed(() => {
+  if (formProgress.value.total === 0) return 0;
+  return Math.round((formProgress.value.completed / formProgress.value.total) * 100);
+});
+
+// Viewport scaling for desktop-like preview
+const previewContainerRef = ref<HTMLElement | null>(null);
+const VIEWPORT_WIDTH = 1280; // Simulated desktop viewport width
+const VIEWPORT_HEIGHT = 800; // Simulated desktop viewport height
+const viewportScale = ref(1);
+
+const viewportStyle = computed(() => ({
+  width: `${VIEWPORT_WIDTH}px`,
+  height: `${VIEWPORT_HEIGHT}px`,
+  transform: `scale(${viewportScale.value})`,
+  transformOrigin: 'top left'
+}));
+
+// Container needs explicit height since transform doesn't affect layout flow
+const containerStyle = computed(() => ({
+  height: `${VIEWPORT_HEIGHT * viewportScale.value}px`
+}));
+
+/**
+ * Calculate the scale factor to fit the viewport in the container
+ */
+function calculateViewportScale(): void {
+  const container = previewContainerRef.value;
+  if (!container) return;
+
+  const containerWidth = container.clientWidth;
+  // Scale to fit the container width, maintaining aspect ratio
+  viewportScale.value = containerWidth / VIEWPORT_WIDTH;
+}
+
+let resizeObserver: ResizeObserver | null = null;
+
+onMounted(async () => {
   const template = showcaseStore.getTemplateById(templateId.value);
   if (!template) {
     // Redirect to gallery if template not found
@@ -118,6 +193,22 @@ onMounted(() => {
 
   // Create a copy for the preview that can be modified with custom colors
   previewTemplate.value = createPreviewTemplate(template, template.colorScheme);
+
+  // Initialize viewport scaling after next tick
+  await nextTick();
+  calculateViewportScale();
+
+  // Set up resize observer for responsive scaling
+  if (previewContainerRef.value) {
+    resizeObserver = new ResizeObserver(() => {
+      calculateViewportScale();
+    });
+    resizeObserver.observe(previewContainerRef.value);
+  }
+});
+
+onUnmounted(() => {
+  resizeObserver?.disconnect();
 });
 
 /**
@@ -148,6 +239,13 @@ function handleColorChange(colors: ColorCustomization): void {
 
   // Create new preview template with updated colors
   previewTemplate.value = createPreviewTemplate(originalTemplate.value, colors);
+}
+
+/**
+ * Handle progress updates from the form
+ */
+function handleProgressUpdate(progress: { completed: number; total: number }): void {
+  formProgress.value = { ...progress };
 }
 
 /**

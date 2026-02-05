@@ -117,6 +117,17 @@
 .template-preview-section {
   position: sticky;
   top: calc(72px + 2rem); /* header height + padding */
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Welcome Message */
+.welcome-message {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #000000;
+  margin: 0 0 1rem;
 }
 
 .preview-card {
@@ -133,47 +144,43 @@
   color: #1e3a8a;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 1rem;
 }
 
-/* Device Preview - scaled-down version of device-frame pattern */
+/* Device Preview - Desktop viewport simulation with CSS transform scaling */
 .preview-device {
   margin-bottom: 1.25rem;
-}
-
-.preview-frame {
-  width: 100%;
-  aspect-ratio: 16 / 10;
-  background: #fff;
-  border: 8px solid #111;
-  border-radius: 12px;
-  overflow: hidden;
   position: relative;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-.preview-frame::after {
-  content: "";
-  position: absolute;
-  width: 60%;
-  height: 8px;
-  background: #333;
-  border-radius: 0 0 12px 12px;
-  bottom: -16px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.preview-screen {
-  width: 100%;
-  height: 100%;
+/* Viewport container - holds the scaled desktop simulation */
+.preview-viewport {
+  /* Dimensions set via inline style for dynamic scaling */
+  background: #fff;
   overflow-y: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
 }
 
-.preview-screen::-webkit-scrollbar {
-  display: none;
+.preview-viewport::-webkit-scrollbar {
+  width: 6px;
+}
+
+.preview-viewport::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.preview-viewport::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.preview-viewport::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 /* Template Info */
@@ -206,6 +213,13 @@
   margin: 0;
 }
 
+/* Preview Links */
+.preview-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
 .change-template-link {
   display: inline-block;
   font-size: 0.875rem;
@@ -218,6 +232,53 @@
 .change-template-link:hover {
   color: #1e2d7d;
   text-decoration: underline;
+}
+
+.builder-link {
+  display: inline-block;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #6b7280;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.builder-link:hover {
+  color: #374151;
+  text-decoration: underline;
+}
+
+/* Progress Bar in Left Column */
+.preview-progress {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, #f0f4ff 0%, #fff 100%);
+  border: 1px solid #e0e7ff;
+  border-radius: 12px;
+}
+
+.progress-track {
+  flex: 1;
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 100%);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.progress-label {
+  flex-shrink: 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #6b7280;
 }
 
 
@@ -305,10 +366,26 @@
 
   .template-preview-section {
     position: static;
+    gap: 1rem;
+  }
+
+  .welcome-message {
+    font-size: 1rem;
   }
 
   .preview-card {
     padding: 1.25rem;
+  }
+
+  .preview-progress {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+  }
+
+  .progress-label {
+    text-align: center;
   }
 
   .form-section {

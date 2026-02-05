@@ -52,6 +52,8 @@ export interface TemplateRequestFormData {
   goals: string[];
   targetAudience: string;
   brandAssets: string[];
+  /** Uploaded brand asset files */
+  files: File[];
   additionalNotes: string;
   colorCustomization: ColorCustomization;
 }
