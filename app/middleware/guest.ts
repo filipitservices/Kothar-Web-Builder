@@ -32,9 +32,9 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
     }
     
     if (response.user) {
-      // User is authenticated - redirect to builder or specified redirect URL
+      // User is authenticated - redirect to dashboard or specified redirect URL
       const redirect = to.query.redirect;
-      const redirectPath = typeof redirect === 'string' ? redirect : '/builder';
+      const redirectPath = typeof redirect === 'string' ? redirect : '/dashboard';
       
       return navigateTo(redirectPath);
     }

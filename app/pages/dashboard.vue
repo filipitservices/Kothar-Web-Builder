@@ -1,4 +1,3 @@
-```vue
 <template>
   <div class="dashboard-container">
     <!-- Navigation Header -->
@@ -19,84 +18,114 @@
         <!-- Welcome Section -->
         <section class="welcome-section">
           <h1 class="welcome-title">Welcome back{{ userName ? `, ${userName}` : '' }}</h1>
-          <p class="welcome-subtitle">Choose where you'd like to start today</p>
+          <p class="welcome-subtitle">What would you like to create today?</p>
         </section>
 
-        <!-- Spaces Grid -->
-        <section class="spaces-section">
-          <div class="spaces-grid">
-            <!-- Website Builder Space -->
-            <NuxtLink to="/builder" class="space-card space-card--builder">
-              <div class="space-icon">
+        <!-- Builder Hero Card -->
+        <section class="builder-hero">
+          <NuxtLink to="/builder" class="builder-card">
+            <div class="builder-card__content">
+              <div class="builder-card__icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                   <line x1="3" y1="9" x2="21" y2="9"/>
                   <line x1="9" y1="21" x2="9" y2="9"/>
                 </svg>
               </div>
-              <div class="space-content">
-                <h2 class="space-title">Website Builder</h2>
-                <p class="space-description">
-                  Build your website block-by-block. Drag, customize, and preview on desktop and mobile.
+              <div class="builder-card__text">
+                <h2 class="builder-card__title">Start Building</h2>
+                <p class="builder-card__description">
+                  Create your website from scratch. Drag blocks, customize content, and preview on desktop and mobile.
                 </p>
               </div>
-              <div class="space-action">
-                <span class="action-text">Open Builder</span>
-                <svg class="action-arrow" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
-                </svg>
-              </div>
-            </NuxtLink>
-
-            <!-- Template Gallery Space -->
-            <NuxtLink to="/gallery" class="space-card space-card--gallery">
-              <div class="space-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="3" width="7" height="7"/>
-                  <rect x="14" y="3" width="7" height="7"/>
-                  <rect x="14" y="14" width="7" height="7"/>
-                  <rect x="3" y="14" width="7" height="7"/>
-                </svg>
-              </div>
-              <div class="space-content">
-                <h2 class="space-title">Template Gallery</h2>
-                <p class="space-description">
-                  Browse professional website designs. Preview full layouts and request a custom build.
-                </p>
-              </div>
-              <div class="space-action">
-                <span class="action-text">Browse Templates</span>
-                <svg class="action-arrow" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
-                </svg>
-              </div>
-            </NuxtLink>
-          </div>
+            </div>
+            <div class="builder-card__action">
+              <span>Open Builder</span>
+              <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+            </div>
+          </NuxtLink>
         </section>
 
-        <!-- Quick Stats (Optional future enhancement) -->
-        <section class="stats-section">
-          <div class="stats-header">
-            <h3 class="stats-title">Quick Actions</h3>
+        <!-- Templates Showcase Section -->
+        <section class="templates-section">
+          <div class="templates-header">
+            <div class="templates-header__text">
+              <h2 class="templates-header__title">Professional Templates</h2>
+              <p class="templates-header__subtitle">
+                Start with a professionally designed website. Preview, customize colors, and we'll build it for you.
+              </p>
+            </div>
           </div>
-          <div class="quick-actions">
-            <button class="quick-action" @click="navigateTo('/builder')">
-              <svg viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-              </svg>
-              <span>New Project</span>
+
+          <!-- Category Filter -->
+          <div class="category-filter">
+            <button 
+              class="category-btn"
+              :class="{ 'active': selectedCategory === null }"
+              @click="selectedCategory = null"
+            >
+              All
             </button>
-            <button class="quick-action" @click="navigateTo('/gallery')">
-              <svg viewBox="0 0 20 20" fill="currentColor">
-                <path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z"/>
-                <path fill-rule="evenodd" d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clip-rule="evenodd"/>
-              </svg>
-              <span>Find Template</span>
+            <button 
+              v-for="category in categories" 
+              :key="category"
+              class="category-btn"
+              :class="{ 'active': selectedCategory === category }"
+              @click="selectedCategory = category"
+            >
+              {{ getCategoryLabel(category) }}
             </button>
+          </div>
+
+          <!-- Templates Grid -->
+          <div class="templates-grid">
+            <div 
+              v-for="template in filteredTemplates" 
+              :key="template.id" 
+              class="template-card"
+              @click="openShowcase(template)"
+            >
+              <div class="template-preview">
+                <div class="preview-placeholder" :style="getPreviewStyle(template)">
+                  <div class="preview-browser">
+                    <div class="browser-dots">
+                      <span></span><span></span><span></span>
+                    </div>
+                    <div class="preview-content">
+                      <div class="preview-hero" :style="{ background: template.colorScheme.primary }"></div>
+                      <div class="preview-sections">
+                        <div class="preview-section"></div>
+                        <div class="preview-section"></div>
+                        <div class="preview-section"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="template-info">
+                <span class="template-industry">{{ template.industry }}</span>
+                <h3 class="template-name">{{ template.name }}</h3>
+                <p class="template-description">{{ template.description }}</p>
+                <div class="template-meta">
+                  <span class="section-count">{{ template.sections.length }} sections</span>
+                  <span class="view-cta">Preview →</span>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       </div>
     </main>
+
+    <!-- Showcase Modal -->
+    <ShowcaseModal
+      v-if="showModal"
+      :template="selectedTemplate"
+      @close="closeShowcase"
+      @choose="handleChooseDesign"
+    />
 
     <!-- Footer -->
     <footer class="dashboard-footer">
@@ -108,9 +137,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 import { useAuth } from '~/composables/useAuth';
+import { useShowcaseStore, type ShowcaseTemplate, type ShowcaseCategory } from '~/stores/showcase';
 import UserMenu from '~/components/UserMenu.vue';
+import ShowcaseModal from '~/components/ShowcaseModal.vue';
 
 // Route protection: Requires authentication
 definePageMeta({
@@ -120,13 +151,60 @@ definePageMeta({
 defineOptions({ name: 'DashboardPage', display: 'Dashboard' });
 
 const { currentUser } = useAuth();
+const showcaseStore = useShowcaseStore();
+const router = useRouter();
 
+// User name for greeting
 const userName = computed(() => {
   if (!currentUser.value) return '';
   return currentUser.value.displayName || currentUser.value.email?.split('@')[0] || '';
 });
+
+// Template showcase state
+const selectedCategory = ref<ShowcaseCategory | null>(null);
+const showModal = ref(false);
+const selectedTemplate = ref<ShowcaseTemplate | null>(null);
+
+// Computed
+const categories = computed(() => showcaseStore.categories);
+
+const filteredTemplates = computed(() => {
+  if (selectedCategory.value === null) {
+    return showcaseStore.getAllTemplates;
+  }
+  return showcaseStore.getTemplatesByCategory(selectedCategory.value);
+});
+
+// Methods
+const getCategoryLabel = (category: ShowcaseCategory): string => {
+  return showcaseStore.getCategoryLabel(category);
+};
+
+const getPreviewStyle = (template: ShowcaseTemplate) => {
+  return {
+    '--primary-color': template.colorScheme.primary,
+    '--secondary-color': template.colorScheme.secondary,
+    '--bg-color': template.colorScheme.background
+  };
+};
+
+const openShowcase = (template: ShowcaseTemplate) => {
+  selectedTemplate.value = template;
+  showModal.value = true;
+  document.body.style.overflow = 'hidden';
+};
+
+const closeShowcase = () => {
+  showModal.value = false;
+  selectedTemplate.value = null;
+  document.body.style.overflow = '';
+};
+
+const handleChooseDesign = (templateId: string) => {
+  closeShowcase();
+  router.push(`/gallery/request/${templateId}`);
+};
 </script>
 
 <style src="~/assets/css/style.css"></style>
 <style scoped src="~/assets/css/dashboard.css"></style>
-```

@@ -81,7 +81,7 @@
           <p class="text-muted text-clamp-2">{{ template?.description }}</p>
           <div class="showcase-modal__footer-actions">
             <button class="btn btn--secondary" @click="handleClose">
-              Back to Gallery
+              Close Preview
             </button>
             <button class="btn btn--primary" @click="handleChoose">
               Choose This Design

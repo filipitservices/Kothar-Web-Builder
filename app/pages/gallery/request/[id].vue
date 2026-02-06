@@ -4,11 +4,11 @@
     <nav class="request-header">
       <div class="nav-inner">
         <div class="nav-left">
-          <NuxtLink to="/gallery" class="back-link">
+          <NuxtLink to="/dashboard" class="back-link">
             <svg viewBox="0 0 20 20" fill="currentColor" class="back-icon">
               <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
             </svg>
-            <span>Back to Gallery</span>
+            <span>Back to Dashboard</span>
           </NuxtLink>
         </div>
         <div class="nav-actions">
@@ -52,7 +52,7 @@
                 <p class="preview-description">{{ originalTemplate?.description }}</p>
               </div>
               <div class="preview-links">
-                <NuxtLink to="/gallery" class="change-template-link">
+                <NuxtLink to="/dashboard" class="change-template-link">
                   Choose a different design →
                 </NuxtLink>
                 <NuxtLink to="/builder" class="builder-link">
@@ -183,8 +183,8 @@ let resizeObserver: ResizeObserver | null = null;
 onMounted(async () => {
   const template = showcaseStore.getTemplateById(templateId.value);
   if (!template) {
-    // Redirect to gallery if template not found
-    router.push('/gallery');
+    // Redirect to dashboard if template not found
+    router.push('/dashboard');
     return;
   }
 

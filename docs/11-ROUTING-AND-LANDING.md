@@ -1,4 +1,3 @@
-```mdc
 # Routing & Landing Page Architecture
 
 **Complete routing structure, landing page design, and integration boundaries between pages.**
@@ -9,9 +8,11 @@
 
 SOSG follows a clear page separation pattern:
 - **Landing Page** (`/`) - Marketing experience, product introduction, entry point
+- **Dashboard** (`/dashboard`) - Central hub with builder access and templates showcase (protected)
 - **Builder Page** (`/builder`) - Full website builder interface (protected, requires authentication)
 - **Login Page** (`/login`) - Authentication page (guest-only)
 - **Reset Password** (`/reset-password`) - Password recovery (guest-only)
+- **Template Request** (`/gallery/request/[id]`) - SMB template request form (protected)
 - Explicit Nuxt 4 file-based routing for clarity and predictability
 
 ---
@@ -23,7 +24,9 @@ SOSG follows a clear page separation pattern:
 | Route | Page File | Purpose | Layout | Auth |
 |-------|-----------|---------|--------|------|
 | `/` | `pages/index.vue` | Landing page with marketing messaging | Full-height, centered | Public |
+| `/dashboard` | `pages/dashboard.vue` | Central hub with builder + templates | Full-page, sections | **Protected** |
 | `/builder` | `pages/builder.vue` | Website builder interface | 3-column layout | **Protected** |
+| `/gallery/request/[id]` | `pages/gallery/request/[id].vue` | Template request form | 2-column layout | **Protected** |
 | `/login` | `pages/login.vue` | Authentication (sign-in/sign-up) | Full-page | Guest-only |
 | `/reset-password` | `pages/reset-password.vue` | Password recovery | Full-page | Guest-only |
 
@@ -32,10 +35,12 @@ SOSG follows a clear page separation pattern:
 Routes are protected using Nuxt 4 route middleware:
 
 - **`auth` middleware**: Protects routes requiring authentication. Redirects unauthenticated users to `/login?redirect={path}`.
-- **`guest` middleware**: Protects guest-only routes. Redirects authenticated users to `/builder`.
+- **`guest` middleware**: Protects guest-only routes. Redirects authenticated users to `/dashboard`.
 
 **Protected Routes:**
-- `/builder` - Requires authentication via `auth` middleware
+- `/dashboard` - Central hub (requires authentication via `auth` middleware)
+- `/builder` - Website builder (requires authentication via `auth` middleware)
+- `/gallery/request/[id]` - Template request form (requires authentication via `auth` middleware)
 
 **Guest-Only Routes:**
 - `/login` - Redirects authenticated users away via `guest` middleware
@@ -55,10 +60,14 @@ Route middleware runs on **both server and client**:
 
 ```
 app/pages/
-├── index.vue           # / route - landing page (public)
-├── builder.vue         # /builder route - editor interface (protected)
-├── login.vue           # /login route - authentication (guest-only)
-└── reset-password.vue  # /reset-password route (guest-only)
+├── index.vue               # / route - landing page (public)
+├── dashboard.vue           # /dashboard route - central hub (protected)
+├── builder.vue             # /builder route - editor interface (protected)
+├── gallery/
+│   └── request/
+│       └── [id].vue        # /gallery/request/:id - template request form (protected)
+├── login.vue               # /login route - authentication (guest-only)
+└── reset-password.vue      # /reset-password route (guest-only)
 ```
 
 **Route Definitions**
@@ -66,14 +75,20 @@ app/pages/
 Routes are implicitly defined by file structure. No manual `vue-router` config required.
 
 - `/` → renders `pages/index.vue`
+- `/dashboard` → renders `pages/dashboard.vue` (requires auth)
 - `/builder` → renders `pages/builder.vue` (requires auth)
+- `/gallery/request/:id` → renders `pages/gallery/request/[id].vue` (requires auth)
 - `/login` → renders `pages/login.vue` (guests only)
 - `/reset-password` → renders `pages/reset-password.vue` (guests only)
 
 **Navigation**
 
-- **Landing → Builder**: Call-to-action button with `<NuxtLink to="/builder">` or `navigateTo('/builder')`
-- **Builder → Landing**: Logo/home button with `<NuxtLink to="/">` or `navigateTo('/')`
+- **Landing → Dashboard**: Call-to-action with `<NuxtLink to="/dashboard">` (redirects to login if unauthenticated)
+- **Dashboard → Builder**: Builder hero card with `<NuxtLink to="/builder">`
+- **Dashboard → Template Preview**: Click template card → ShowcaseModal opens in-page
+- **Template Preview → Request**: "Choose This Design" → navigates to `/gallery/request/:id`
+- **Request → Dashboard**: Back link or "Choose different design" link
+- **Any page → Landing**: Logo link with `<NuxtLink to="/">`
 - **Unauthenticated → Login**: Automatic redirect via `auth` middleware
 
 ---
@@ -494,22 +509,27 @@ To extend state management:
 SOSG has a proper multi-page architecture with authentication:
 
 1. **Landing Page** (`/`) - Public-facing entry point with marketing messaging
-2. **Builder Page** (`/builder`) - Protected editor interface (requires authentication)
-3. **Login Page** (`/login`) - Authentication page (guest-only, redirects auth users)
-4. **Reset Password** (`/reset-password`) - Password recovery (guest-only)
-5. **Route Protection** - SSR-safe middleware blocks unauthorized access before render
-6. **Shared State** - All stores persist and are accessible from authenticated pages
-7. **Clean Navigation** - Router-based with automatic auth redirects
-8. **Layout Separation** - No style bleeding between pages
-9. **Extensibility** - Easy to add new routes with `auth` or `guest` middleware
+2. **Dashboard** (`/dashboard`) - Central hub with builder access and integrated templates showcase
+3. **Builder Page** (`/builder`) - Protected editor interface (requires authentication)
+4. **Template Request** (`/gallery/request/[id]`) - SMB onboarding form for template requests
+5. **Login Page** (`/login`) - Authentication page (guest-only, redirects auth users)
+6. **Reset Password** (`/reset-password`) - Password recovery (guest-only)
+7. **Route Protection** - SSR-safe middleware blocks unauthorized access before render
+8. **Shared State** - All stores persist and are accessible from authenticated pages
+9. **Clean Navigation** - Router-based with automatic auth redirects
+10. **Layout Separation** - No style bleeding between pages
+11. **Extensibility** - Easy to add new routes with `auth` or `guest` middleware
 
 **Authentication Flow:**
 - Unauthenticated users clicking "Start Building" → redirected to `/login`
-- After login → redirected back to intended destination (`/builder`)
-- Authenticated users visiting `/login` → redirected to `/builder`
-- Direct URL access to `/builder` while logged out → redirected to `/login`
+- After login → redirected to `/dashboard` (or original destination if specified)
+- Authenticated users visiting `/login` → redirected to `/dashboard`
+- Direct URL access to `/dashboard` while logged out → redirected to `/login`
 - No UI flicker, no SSR leak, no race conditions
 
-**Last Updated**: February 2, 2026
+**Removed Routes:**
+- ~~`/gallery`~~ - Templates are now integrated directly into the dashboard
+
+**Last Updated**: February 6, 2026
 
 ````

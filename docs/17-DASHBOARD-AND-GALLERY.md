@@ -1,19 +1,21 @@
-# Dashboard & Template Gallery System
+# Dashboard & Template System
 
-> **Document Version:** 1.1
-> **Last Updated:** February 2025
+> **Document Version:** 2.0
+> **Last Updated:** February 2026
 > **Status:** Production
 
 ## Overview
 
-This document describes the multi-space architecture introduced to SOSG, featuring a central dashboard as the authenticated entry point and a separate template gallery system for SMB onboarding.
+The dashboard serves as the authenticated central hub for SOSG, providing users with immediate access to both the website builder and a curated showcase of professional templates—all in one cohesive experience.
 
-**Key Principle:** The Gallery system is **completely separate** from the Website Builder's block/template system. They serve different purposes:
+**Key Architecture Decision:** Templates are now integrated directly into the dashboard rather than existing as a separate page. This creates a more focused, intentional user experience where users can discover templates naturally without navigating away from their central workspace.
+
+### System Separation
 
 | System | Purpose | Data Source | User Flow |
 |--------|---------|-------------|-----------|
-| **Builder Templates** | Starting points for DIY website building | `stores/templates.ts` | Select → Edit blocks in canvas |
-| **Gallery Showcase** | Professional designs for managed services | `stores/showcase.ts` | Browse → Preview → Request consultation |
+| **Builder Templates** | Starting points for DIY website building | `stores/templates.ts` | Dashboard → Builder → Select template → Edit blocks |
+| **Showcase Templates** | Professional designs for managed services | `stores/showcase.ts` | Dashboard → Preview → Request form → Consultation |
 
 ---
 
@@ -24,13 +26,13 @@ This document describes the multi-space architecture introduced to SOSG, featuri
 ```
 Landing (/) 
     │
-    ├── Guest: "Get Started" → /login
+    ├── Guest: "Get Started" / "Sign In" → /login
     │
     └── Authenticated: "Dashboard" → /dashboard
                                         │
                                         ├── /builder (DIY website builder)
                                         │
-                                        └── /gallery (template showcase)
+                                        └── Showcase Modal (preview in-page)
                                                 │
                                                 └── /gallery/request/[id] (request form)
 ```
@@ -39,10 +41,11 @@ Landing (/)
 
 All authenticated routes use the `auth` middleware:
 
-- `/dashboard` - Central hub after login
+- `/dashboard` - Central hub with builder access and templates showcase
 - `/builder` - Website builder (existing)
-- `/gallery` - Template gallery showcase
 - `/gallery/request/[id]` - Template request form
+
+**Note:** The standalone `/gallery` route has been removed. Templates are now accessed directly from the dashboard.
 
 ---
 
@@ -51,45 +54,68 @@ All authenticated routes use the `auth` middleware:
 **File:** `app/pages/dashboard.vue`  
 **CSS:** `app/assets/css/dashboard.css`
 
-The dashboard serves as the authenticated entry point, replacing direct navigation to `/builder` after login.
+The dashboard is the authenticated entry point, combining quick access to the builder with an integrated templates showcase.
 
-### Features
+### Layout Structure
 
-- Welcome message with user's name
-- Space cards for different product areas:
-  - **Website Builder** - DIY block-based builder
-  - **Template Gallery** - Browse professional designs
-- Consistent header with UserMenu
-- Protected via `auth` middleware
-
-### Space Card Structure
-
-```vue
-<div class="space-card">
-  <div class="space-icon">{{ icon }}</div>
-  <h2 class="space-title">{{ title }}</h2>
-  <p class="space-description">{{ description }}</p>
-  <NuxtLink :to="path" class="space-cta">{{ ctaText }}</NuxtLink>
-</div>
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Navigation Header                                [UserMenu]│
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Welcome Section                                            │
+│  "Welcome back, [Name]"                                     │
+│  "What would you like to create today?"                     │
+│                                                             │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  🔧 Start Building                                   │   │
+│  │  Create your website from scratch. Drag blocks...   │   │
+│  │                                        [Open Builder]│   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Professional Templates                                     │
+│  "Start with a professionally designed website..."          │
+│                                                             │
+│  [All] [Local Services] [Professional] [Creative] ...       │
+│                                                             │
+│  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐       │
+│  │ Preview │  │ Preview │  │ Preview │  │ Preview │       │
+│  │─────────│  │─────────│  │─────────│  │─────────│       │
+│  │ Name    │  │ Name    │  │ Name    │  │ Name    │       │
+│  │ Desc... │  │ Desc... │  │ Desc... │  │ Desc... │       │
+│  └─────────┘  └─────────┘  └─────────┘  └─────────┘       │
+│                                                             │
+├─────────────────────────────────────────────────────────────┤
+│  Footer                                                     │
+└─────────────────────────────────────────────────────────────┘
 ```
 
----
+### Components
 
-## Template Gallery (`/gallery`)
+1. **Welcome Section** - Personalized greeting using authenticated user's name
+2. **Builder Hero Card** - Prominent gradient card linking to `/builder`
+3. **Templates Showcase** - Category-filtered grid of professional templates
+4. **ShowcaseModal** - In-page preview modal with desktop/mobile toggle
 
-**File:** `app/pages/gallery/index.vue`  
-**CSS:** `app/assets/css/gallery.css`
+### State Management
 
-The gallery showcases professional, fully-designed website templates for SMB customers who prefer managed services over DIY building.
+```typescript
+// Template showcase state
+const selectedCategory = ref<ShowcaseCategory | null>(null);
+const showModal = ref(false);
+const selectedTemplate = ref<ShowcaseTemplate | null>(null);
 
-### Features
+// Methods
+const openShowcase = (template) => { ... };
+const closeShowcase = () => { ... };
+const handleChooseDesign = (templateId) => { ... };
+```
 
-- Category filtering (All, Local Services, Professional, etc.)
-- Grid of template cards with preview thumbnails
-- Click to open full preview modal
-- Distinct visual treatment from builder templates
-
-### Categories
+### Category Filtering
 
 ```typescript
 type ShowcaseCategory = 
@@ -105,19 +131,16 @@ type ShowcaseCategory =
 
 ## Showcase Store (`stores/showcase.ts`)
 
-**IMPORTANT:** This is a completely separate store from `stores/templates.ts`. The showcase store contains full professional website designs, not builder blocks.
+**IMPORTANT:** This is completely separate from `stores/templates.ts`. The showcase store contains full professional website designs, not builder blocks.
 
 ### Interface
 
 ```typescript
 interface ShowcaseSection {
-  type: 'hero' | 'services' | 'about' | 'testimonials' | 
-        'gallery' | 'contact' | 'cta' | 'faq' | 'pricing' | 'team';
-  headline?: string;
-  subheadline?: string;
-  content?: string;
-  items?: Array<{ title: string; description?: string; icon?: string }>;
-  cta?: { text: string; action: string };
+  type: 'hero' | 'services' | 'about' | 'features' | 'testimonials' | 
+        'team' | 'pricing' | 'gallery' | 'contact' | 'cta' | 'faq' | 
+        'stats' | 'process' | 'trust' | 'location';
+  data: Record<string, any>;
 }
 
 interface ShowcaseTemplate {
@@ -140,16 +163,16 @@ interface ShowcaseTemplate {
 
 ### Available Templates
 
-1. **Pristine Plumbing** - Local services (plumbing)
-2. **Spark Electric** - Local services (electrical)
-3. **Summit Law Group** - Professional (legal)
-4. **Clarity Consulting** - Professional (business consulting)
-5. **Lens & Light Studio** - Creative (photography)
-6. **Design Forward** - Creative (interior design)
-7. **Wellness Center** - Healthcare (medical practice)
-8. **Mindful Therapy** - Healthcare (mental health)
-9. **Coastal Bistro** - Hospitality (restaurant)
-10. **The Rustic Table** - Hospitality (farm-to-table)
+1. **Elite Plumbing & Heating** - Local services (plumbing)
+2. **Premier Electrical Services** - Local services (electrical)
+3. **Smith & Associates Law Firm** - Professional (legal)
+4. **ClearPath Accounting** - Professional (accounting)
+5. **Apex Business Consulting** - Professional (consulting)
+6. **Lens & Light Photography** - Creative (photography)
+7. **Pixel Perfect Agency** - Creative (design/marketing)
+8. **Bright Smile Dental** - Healthcare (dental)
+9. **Harvest Table Bistro** - Hospitality (restaurant)
+10. **Artisan Home Boutique** - Retail (home goods)
 
 ---
 
@@ -157,19 +180,19 @@ interface ShowcaseTemplate {
 
 **File:** `app/components/ShowcaseModal.vue`
 
-Modal overlay for previewing complete showcase templates with device simulation.
+Modal overlay for previewing complete showcase templates with device simulation. Opens directly from the dashboard when a template card is clicked.
 
 ### Features
 
-- Desktop/Mobile toggle (reuses ScreenCard styling concepts)
+- Desktop/Mobile toggle (uses shared device frame styling)
 - Full-height scrollable preview
-- Template info sidebar
+- Template info in header
+- "Close Preview" secondary action
 - "Choose This Design" CTA → navigates to request form
-- Close on backdrop click or button
 
 ### Device Frames
 
-Desktop frame dimensions: `700px × auto` (scrollable)  
+Desktop frame dimensions: `700px × 550px`  
 Mobile frame dimensions: `330px × 600px`
 
 Frame styling matches existing ScreenCard component for visual consistency.
@@ -178,7 +201,7 @@ Frame styling matches existing ScreenCard component for visual consistency.
 
 ## ShowcaseRenderer Component
 
-**File:** `app/components/ShowcaseRenderer.vue`
+**File:** `app/components/showcase/ShowcaseRenderer.vue`
 
 Renders all sections of a showcase template. Used in both the preview modal and the request form preview.
 
@@ -196,6 +219,10 @@ Renders all sections of a showcase template. Used in both the preview modal and 
 | `faq` | FAQ accordion items |
 | `pricing` | Pricing tier cards |
 | `team` | Team member profiles |
+| `process` | Step-by-step process flow |
+| `trust` | Trust badges and certifications |
+| `stats` | Key statistics display |
+| `features` | Feature highlights |
 
 ### Props
 
@@ -214,7 +241,7 @@ interface Props {
 **Form Component:** `app/components/TemplateRequestForm.vue`
 **CSS:** `app/assets/css/request-form.css`
 
-SMB onboarding form for requesting a website based on a selected showcase template. The form logic is extracted into a reusable `TemplateRequestForm` component.
+SMB onboarding form for requesting a website based on a selected showcase template.
 
 ### Architecture
 
@@ -222,11 +249,6 @@ The page consists of two main pieces:
 
 1. **Page (`[id].vue`)** - Handles routing, template fetching, preview rendering, and progress display
 2. **Form Component (`TemplateRequestForm.vue`)** - Contains all form logic, validation, color customization, and file uploads
-
-This separation enables:
-- Clean separation of concerns (page layout vs. form logic)
-- Potential reuse of the form component
-- Easier testing and maintenance
 
 ### Data Flow
 
@@ -240,129 +262,11 @@ TemplateRequestForm
     └── @submit ────────────► [id].vue handles API submission
 ```
 
-### Left Column Layout
+### Navigation
 
-The left column contains (in order):
-
-1. **Welcome Message** - Personalized greeting using authenticated user's name
-   - Uses first name from `displayName` or email prefix as fallback
-   - Example: "Great choice, John!"
-
-2. **Preview Card**
-   - Live preview label
-   - **Scaled Desktop Viewport** - CSS transform-scaled preview simulating a 1280x800 desktop viewport
-   - Template info (industry, name, description)
-   - **Navigation Links:**
-     - "Choose a different design →" (primary link to gallery)
-     - "Or build your own from scratch" (secondary link to builder)
-
-3. **Progress Bar** - Shows form completion status
-   - Moved from form to provide persistent visibility
-   - Animated fill with gradient
-   - Shows "X of Y fields completed"
-
-### Preview Scaling
-
-The preview uses CSS transform scaling to simulate a real desktop viewport:
-
-```typescript
-const VIEWPORT_WIDTH = 1280;  // Simulated desktop width
-const VIEWPORT_HEIGHT = 800;  // Simulated desktop height
-
-// Scale is calculated based on container width
-viewportScale.value = containerWidth / VIEWPORT_WIDTH;
-```
-
-This approach:
-- Preserves spacing, typography, and layout as if viewing a real desktop site
-- Maintains aspect ratio without distortion
-- Responds to container width changes via ResizeObserver
-- Does not clip or squeeze content like a simple aspect-ratio box
-
-### Form Sections
-
-1. **Design Customization** (Interactive)
-   - Visual color pickers for all 5 template colors
-   - Hex input fields for precise values
-   - Per-color reset buttons
-   - Reset all to template defaults button
-   - Live preview updates as colors change
-
-2. **Business Information**
-   - Business name (required)
-   - Industry
-   - Years in business
-   - Business description
-
-3. **Contact Information**
-   - Contact name (required)
-   - Email (required)
-   - Phone
-   - Current website URL
-   - Business address
-
-4. **Website Goals**
-   - Goal selector (attract customers, showcase work, generate leads, etc.)
-   - Target audience description
-
-5. **Branding & Content**
-   - **File Upload Area** - Multi-file drag-and-drop upload
-     - Click to browse or drag files
-     - Supports: Images, PDF, AI, PSD, EPS, SVG
-     - Shows uploaded file list with remove buttons
-     - Professional copy: "Drop your files here (logos, brand assets, etc.) and we'll take care of the rest."
-   - Additional notes textarea
-
-### Form Component Props & Events
-
-```typescript
-interface Props {
-  template: ShowcaseTemplate;  // Template for default colors
-  isSubmitting?: boolean;      // Disable form during submission
-  showProgress?: boolean;      // Show/hide built-in progress bar (default: true)
-}
-
-interface Emits {
-  (e: 'submit', data: TemplateRequestFormData): void;
-  (e: 'colorChange', colors: ColorCustomization): void;
-  (e: 'progressUpdate', progress: { completed: number; total: number }): void;
-}
-```
-
-### Color Customization Types
-
-```typescript
-interface ColorCustomization {
-  primary: string;     // Headlines, buttons, links
-  secondary: string;   // Accents, secondary elements
-  accent: string;      // CTAs, highlights, emphasis
-  background: string;  // Page background
-  text: string;        // Body text, paragraphs
-}
-
-interface TemplateRequestFormData {
-  // Business info
-  businessName: string;
-  industry: string;
-  yearsInBusiness: string;
-  businessDescription: string;
-  // Contact info
-  contactName: string;
-  email: string;
-  phone: string;
-  website: string;
-  address: string;
-  // Goals
-  goals: string[];
-  targetAudience: string;
-  // Branding
-  brandAssets: string[];  // File names for display
-  files: File[];          // Actual File objects for upload
-  additionalNotes: string;
-  // Colors
-  colorCustomization: ColorCustomization;
-}
-```
+- Back link: Returns to `/dashboard` (templates section)
+- "Choose a different design" link: Returns to `/dashboard`
+- "Build your own" link: Goes to `/builder`
 
 ### Layout
 
@@ -374,148 +278,14 @@ Responsive collapse to single column on mobile.
 
 ---
 
-## TemplateRequestForm Component
-
-**File:** `app/components/TemplateRequestForm.vue`
-
-A thin orchestration component that composes form sections using extracted composables and sub-components. Follows Nuxt 4 best practices for component composition.
-
-### Architecture
-
-The form logic is split into focused modules:
-
-| Module | Purpose |
-|--------|---------|
-| `useTemplateRequestForm.ts` | Form state, progress tracking, color handling |
-| `useFileUpload.ts` | File upload logic, drag-and-drop, validation |
-| `FileUploadArea.vue` | File upload UI component |
-| `TemplateRequestForm.vue` | Orchestration layer composing all pieces |
-
-### Props
-
-```typescript
-interface Props {
-  template: ShowcaseTemplate;  // Template for default colors
-  isSubmitting?: boolean;      // Disable form during submission
-  showProgress?: boolean;      // Show/hide built-in progress bar (default: true)
-}
-```
-
-### Events
-
-```typescript
-interface Emits {
-  (e: 'submit', data: TemplateRequestFormData): void;
-  (e: 'colorChange', colors: ColorCustomization): void;
-  (e: 'progressUpdate', progress: { completed: number; total: number }): void;
-}
-```
-
-### Features
-
-- **Composable-based architecture**: Business logic extracted to reusable composables
-- **Immutable updates**: All state changes create new objects
-- **Validation**: Hex color format validation
-- **Reset functionality**: Individual and bulk color resets
-- **Template watching**: Resets form when template changes
-
----
-
-## Form Composables
-
-### useTemplateRequestForm
-
-**File:** `app/composables/useTemplateRequestForm.ts`
-
-Encapsulates form state management, progress tracking, and color customization.
-
-```typescript
-interface UseTemplateRequestFormReturn {
-  formData: Ref<TemplateRequestFormData>;
-  progress: ComputedRef<FormProgress>;
-  defaultColors: ComputedRef<ColorCustomization>;
-  updateField: <K extends keyof TemplateRequestFormData>(field: K, value: TemplateRequestFormData[K]) => void;
-  updateColors: (colors: ColorCustomization) => void;
-  resetColors: () => ColorCustomization;
-  resetForm: () => void;
-}
-```
-
-### useFileUpload
-
-**File:** `app/composables/useFileUpload.ts`
-
-Encapsulates file upload logic including drag-and-drop handling and file validation.
-
-```typescript
-interface UseFileUploadReturn {
-  files: Readonly<Ref<readonly File[]>>;
-  isDragging: Readonly<Ref<boolean>>;
-  addFiles: (newFiles: File[]) => void;
-  removeFile: (index: number) => void;
-  clearFiles: () => void;
-  formatFileSize: (bytes: number) => string;
-  handleDragEnter: (event: DragEvent) => void;
-  handleDragLeave: () => void;
-  handleDrop: (event: DragEvent) => void;
-  resetDragState: () => void;
-}
-```
-
----
-
-## FileUploadArea Component
-
-**File:** `app/components/form/FileUploadArea.vue`
-
-Friendly, accessible file upload component with drag-and-drop support. Designed to feel warm and inviting rather than clinical.
-
-### Features
-
-- **Visual Design**: Soft blue-purple gradient background, prominent icon, welcoming copy
-- **Accessibility**: Keyboard navigation, ARIA labels, screen reader support
-- **Interactions**: Hover states, focus rings, drag-over feedback with subtle scale animation
-- **File List**: Clean display with file icons, names, sizes, and remove buttons
-
-### Props
-
-```typescript
-interface Props {
-  accept?: string;           // HTML accept attribute (default: 'image/*,.pdf,.ai,.psd,.eps,.svg')
-  multiple?: boolean;        // Allow multiple files (default: true)
-  ariaLabel?: string;        // ARIA label for the file input
-  formatsText?: string;      // Supported formats display text (default: 'PNG, JPG, PDF, SVG, AI, PSD, EPS')
-  acceptedTypes?: string[];  // MIME types for validation
-}
-```
-
-### Events
-
-```typescript
-interface Emits {
-  (e: 'update:files', files: readonly File[]): void;
-}
-```
-
-### Usage
-
-```vue
-<FileUploadArea
-  accept="image/*,.pdf,.svg"
-  formats-text="PNG, JPG, PDF, SVG"
-  @update:files="handleFilesUpdate"
-/>
-```
-
----
-
 ## CSS Files
 
 | File | Purpose |
 |------|---------|
-| `dashboard.css` | Dashboard page styles |
-| `gallery.css` | Gallery page and template card styles |
+| `dashboard.css` | Dashboard page styles including templates section |
 | `request-form.css` | Request form page styles |
+| `components.css` | Shared UI components (buttons, forms, modals, device frames) |
+| `showcase.css` | ShowcaseRenderer section styles |
 
 All CSS files follow the existing design system:
 - Primary color: `#1e3a8a`
@@ -529,7 +299,7 @@ All CSS files follow the existing design system:
 
 ### Login Redirect
 
-After successful login, users are redirected to `/dashboard` instead of `/builder`:
+After successful login, users are redirected to `/dashboard`:
 
 ```typescript
 // app/pages/login.vue
@@ -541,13 +311,23 @@ const redirectUrl = computed(() => {
 
 ### Landing Page CTAs
 
-Landing page CTAs are now auth-aware:
+Landing page CTAs are auth-aware:
 - **Guest:** "Get Started" / "Launch Builder" → `/login`
 - **Authenticated:** "Dashboard" / "Go to Dashboard" → `/dashboard`
 
 ### UserMenu Dropdown
 
-Added "Dashboard" link to the UserMenu dropdown for quick navigation from any authenticated page.
+The UserMenu dropdown includes a "Dashboard" link for quick navigation from any authenticated page.
+
+---
+
+## Removed Routes
+
+The following route has been removed in favor of dashboard integration:
+
+- ~~`/gallery`~~ - Templates are now accessed directly from the dashboard
+
+The request form route remains at `/gallery/request/[id]` for URL stability.
 
 ---
 
@@ -555,18 +335,17 @@ Added "Dashboard" link to the UserMenu dropdown for quick navigation from any au
 
 ### Planned Enhancements
 
-1. **Template Filtering** - Search, sort, tag-based filtering
+1. **Template Search** - Search by name or description
 2. **Favorites** - Save templates to user's favorites
-3. ~~**Preview Customization**~~ ✅ Implemented - Live color scheme preview in request form
-4. **Request Status** - Track submitted requests
-5. **More Templates** - Expand template library
+3. **Request Status** - Track submitted requests
+4. **More Templates** - Expand template library
+5. **Template Thumbnails** - Visual preview images
 
 ### API Integration
 
 The request form currently logs to console. Future integration:
 
 ```typescript
-// Future: Submit to backend API
 async function handleSubmit() {
   await $fetch('/api/template-requests', {
     method: 'POST',
@@ -582,10 +361,16 @@ async function handleSubmit() {
 
 ## Summary
 
-The Dashboard and Gallery system introduces a multi-space architecture that:
+The integrated dashboard experience provides:
 
-1. **Separates concerns** - DIY builder vs. managed services
-2. **Improves UX** - Clear entry point and navigation
-3. **Enables SMB onboarding** - Professional templates with request flow
-4. **Maintains consistency** - Same design system, auth patterns
-5. **Preserves existing functionality** - Builder remains unchanged
+1. **Unified entry point** - Single destination after login
+2. **Discoverability** - Templates surface naturally alongside builder access
+3. **Visual hierarchy** - Builder is primary action, templates are secondary exploration
+4. **Maintained functionality** - Same modal preview, same request flow
+5. **Simplified navigation** - Fewer pages, clearer user journey
+6. **Design consistency** - Follows existing design system
+
+The architecture maintains separation of concerns:
+- Showcase templates remain distinct from builder templates
+- ShowcaseModal and ShowcaseRenderer components are reused
+- Request form flow is preserved with updated navigation

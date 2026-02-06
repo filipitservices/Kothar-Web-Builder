@@ -156,18 +156,22 @@ pnpm dev
 | File | Purpose |
 |------|---------|
 | `app/pages/index.vue` | Landing page (public) |
+| `app/pages/dashboard.vue` | Central hub with builder + templates (protected) |
 | `app/pages/builder.vue` | Main editor page (protected, requires auth) |
+| `app/pages/gallery/request/[id].vue` | Template request form (protected) |
 | `app/pages/login.vue` | Authentication page |
 | `app/middleware/auth.ts` | Route protection middleware |
 | `app/middleware/guest.ts` | Guest-only route middleware |
 | `app/stores/blocks.ts` | Block customization storage |
 | `app/stores/business.ts` | Global business data |
 | `app/stores/auth.ts` | Authentication state |
+| `app/stores/showcase.ts` | Professional template showcase data |
 | `app/composables/useBlockData.ts` | Block data access API |
 | `app/composables/useBusinessData.ts` | Business data access API |
 | `app/composables/useAuth.ts` | Authentication API |
 | `app/components/ItemsList.vue` | Renders draggable blocks |
 | `app/components/ScreenCard.vue` | Single screen container |
+| `app/components/ShowcaseModal.vue` | Template preview modal |
 
 ---
 
