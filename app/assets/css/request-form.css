@@ -27,56 +27,6 @@
   background: #f9fafb;
 }
 
-/* Navigation Header */
-.request-header {
-  flex: 0 0 auto;
-  background: #fff;
-  border-bottom: 1px solid #e5e7eb;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.request-header .nav-inner {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 1rem 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.request-header .nav-left {
-  flex: 1;
-}
-
-.request-header .back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: #6b7280;
-  font-size: 0.875rem;
-  font-weight: 500;
-  text-decoration: none;
-  transition: color 0.15s ease;
-}
-
-.request-header .back-link:hover {
-  color: #1e3a8a;
-  text-decoration: none;
-}
-
-.request-header .back-icon {
-  width: 16px;
-  height: 16px;
-}
-
-.request-header .nav-actions {
-  display: flex;
-  align-items: center;
-}
-
-
 /* ==========================================================================
    MAIN CONTENT
    ========================================================================== */

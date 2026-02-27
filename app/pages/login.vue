@@ -1,14 +1,5 @@
 <template>
   <div class="auth-container">
-    <!-- Navigation Header -->
-    <nav class="auth-header">
-      <div class="nav-inner">
-        <NuxtLink to="/" class="nav-brand">
-          <span class="logo">SOSG</span>
-        </NuxtLink>
-      </div>
-    </nav>
-
     <!-- Auth Content -->
     <main class="auth-main">
       <div class="auth-card">
@@ -168,7 +159,6 @@ import { ref, reactive, computed } from 'vue';
 import { useAuth } from '~/composables/useAuth';
 
 definePageMeta({
-  layout: false, // Use full-page layout
   middleware: 'guest', // Redirect authenticated users away
 });
 
@@ -262,30 +252,6 @@ async function handleGoogleSignIn(): Promise<void> {
   min-height: 100vh;
   width: 100%;
   background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
-}
-
-/* Navigation Header */
-.auth-header {
-  flex: 0 0 auto;
-  background: #fff;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.nav-inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1rem 2rem;
-}
-
-.nav-brand {
-  text-decoration: none;
-}
-
-.logo {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1e3a8a;
-  letter-spacing: -0.5px;
 }
 
 /* Main Content */

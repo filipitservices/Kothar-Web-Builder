@@ -77,8 +77,10 @@ import { AVAILABLE_BLOCKS, INFO_BAR_FIELDS, CANVAS_DIMENSIONS, INITIAL_FIELD_ERR
 // Route protection: Requires authentication
 // The middleware runs on both SSR and client-side navigation
 // Unauthenticated users are redirected to /login before any UI renders
+// Builder uses its own layout (no global navbar) to preserve fullscreen editor
 definePageMeta({
-  middleware: 'auth'
+  middleware: 'auth',
+  layout: 'builder'
 });
 
 defineOptions({ name: 'BuilderPage', display: 'Website Builder Interface' });

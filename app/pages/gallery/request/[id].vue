@@ -1,22 +1,5 @@
 <template>
   <div class="request-container">
-    <!-- Navigation Header -->
-    <nav class="request-header">
-      <div class="nav-inner">
-        <div class="nav-left">
-          <NuxtLink to="/dashboard" class="back-link">
-            <svg viewBox="0 0 20 20" fill="currentColor" class="back-icon">
-              <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
-            </svg>
-            <span>Back to Dashboard</span>
-          </NuxtLink>
-        </div>
-        <div class="nav-actions">
-          <UserMenu />
-        </div>
-      </div>
-    </nav>
-
     <!-- Main Content -->
     <main class="request-main">
       <div class="request-content">
@@ -100,7 +83,6 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useShowcaseStore, type ShowcaseTemplate } from '~/stores/showcase';
 import { useAuthStore } from '~/stores/auth';
-import UserMenu from '~/components/UserMenu.vue';
 import ShowcaseRenderer from '~/components/showcase/ShowcaseRenderer.vue';
 import TemplateRequestForm, {
   type TemplateRequestFormData,

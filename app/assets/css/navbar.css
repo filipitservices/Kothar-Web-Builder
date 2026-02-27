@@ -1,0 +1,108 @@
+/**
+ * Global App Navbar
+ * Single source of styles for the shared navigation bar.
+ * Uses design tokens: #1e3a8a primary, #e5e7eb borders, 12px/8px radii.
+ */
+
+.app-navbar {
+  flex: 0 0 auto;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.app-navbar__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.app-navbar__left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.app-navbar__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.app-navbar__back:hover {
+  color: #1e3a8a;
+  text-decoration: none;
+}
+
+.app-navbar__back-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.app-navbar__logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e3a8a;
+  letter-spacing: -0.5px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.app-navbar__logo:hover {
+  text-decoration: none;
+  opacity: 0.9;
+}
+
+.app-navbar__right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.app-navbar__cta {
+  padding: 0.625rem 1.25rem;
+  background: #1e3a8a;
+  color: #fff;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.app-navbar__cta:hover {
+  background: #1e2d7d;
+  text-decoration: none;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
+}
+
+.app-navbar__cta-placeholder {
+  display: inline-block;
+  width: 6rem;
+  height: 2.25rem;
+  border-radius: 6px;
+  background: #e5e7eb;
+}
+
+@media (max-width: 768px) {
+  .app-navbar__inner {
+    padding: 0.75rem 1rem;
+  }
+}

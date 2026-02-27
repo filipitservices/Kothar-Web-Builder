@@ -10,56 +10,6 @@
   background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
 }
 
-/* Navigation Header */
-.landing-header {
-  flex: 0 0 auto;
-  background: #fff;
-  border-bottom: 1px solid #e5e7eb;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.nav-inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1rem 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.nav-brand {
-  flex: 0 0 auto;
-}
-
-.logo {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1e3a8a;
-  letter-spacing: -0.5px;
-}
-
-.nav-cta {
-  flex: 0 0 auto;
-  padding: 0.625rem 1.25rem;
-  background: #1e3a8a;
-  color: white;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  text-decoration: none;
-  display: inline-block;
-}
-
-.nav-cta:hover {
-  background: #1e2d7d;
-  text-decoration: none;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
-}
-
 /* Hero Section */
 .hero-section {
   flex: 1;
@@ -297,10 +247,6 @@
 
   .cta-title {
     font-size: 1.75rem;
-  }
-
-  .nav-inner {
-    padding: 0.75rem 1rem;
   }
 
   .footer-inner {

@@ -203,10 +203,29 @@ export const useBlocksStore = defineStore('blocks', () => {
 
 ---
 
+## Layouts and Navigation
+
+The app uses Nuxt 4 layouts for global structure:
+
+- **app.vue**: Root entry; wraps content in `<NuxtLayout><NuxtPage /></NuxtLayout>`.
+- **layouts/default.vue**: Used by landing, dashboard, gallery request, login, and reset-password. Renders the shared **AppNavbar** and a slot for the page.
+- **layouts/builder.vue**: Used only by the builder page. Renders only the slot (no navbar), so the editor has full viewport for the 3-column layout.
+
+**AppNavbar** (`components/AppNavbar.vue`) is the single source of global navigation:
+- Logo (SOSG) links to `/`.
+- On `/gallery/request/*`, a "Back to Dashboard" link is shown.
+- **UserMenu** is always shown (Sign In when guest; avatar and dropdown when authenticated).
+- On the landing page (`/`), an auth-aware CTA is shown: "Start Building" → `/login` when guest, "Dashboard" → `/dashboard` when authenticated.
+- Navbar styles live in `assets/css/navbar.css` (design tokens: #1e3a8a, #e5e7eb, consistent spacing).
+
+No page implements its own navbar; all use the default layout and shared AppNavbar except the builder, which uses the builder layout.
+
+---
+
 ## Component Hierarchy
 
 ```
-index.vue (Main Page)
+index.vue (Main Page)  [uses default layout → AppNavbar + slot]
 ├── InfoBar
 │   └── (Business form fields)
 ├── ScreensPanel

@@ -1,17 +1,5 @@
 <template>
   <div class="dashboard-container">
-    <!-- Navigation Header -->
-    <nav class="dashboard-header">
-      <div class="nav-inner">
-        <div class="nav-brand">
-          <NuxtLink to="/" class="logo">SOSG</NuxtLink>
-        </div>
-        <div class="nav-actions">
-          <UserMenu :show-name="true" />
-        </div>
-      </div>
-    </nav>
-
     <!-- Main Content -->
     <main class="dashboard-main">
       <div class="dashboard-content">
@@ -140,7 +128,6 @@
 import { ref, computed } from 'vue';
 import { useAuth } from '~/composables/useAuth';
 import { useShowcaseStore, type ShowcaseTemplate, type ShowcaseCategory } from '~/stores/showcase';
-import UserMenu from '~/components/UserMenu.vue';
 import ShowcaseModal from '~/components/ShowcaseModal.vue';
 
 // Route protection: Requires authentication

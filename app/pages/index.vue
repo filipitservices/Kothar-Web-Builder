@@ -1,20 +1,5 @@
 <template>
   <div class="landing-container">
-    <!-- Navigation Header -->
-    <nav class="landing-header">
-      <div class="nav-inner">
-        <div class="nav-brand">
-          <span class="logo">SOSG</span>
-        </div>
-        <div class="nav-actions">
-          <UserMenu />
-          <NuxtLink :to="isAuthenticated ? '/dashboard' : '/login'" class="nav-cta">
-            {{ isAuthenticated ? 'Dashboard' : 'Start Building' }}
-          </NuxtLink>
-        </div>
-      </div>
-    </nav>
-
     <!-- Hero Section -->
     <section class="hero-section">
       <div class="hero-content">
@@ -105,7 +90,6 @@
 </template>
 
 <script setup lang="ts">
-import UserMenu from '~/components/UserMenu.vue';
 import { useAuth } from '~/composables/useAuth';
 
 const { isAuthenticated } = useAuth();
@@ -113,12 +97,3 @@ const { isAuthenticated } = useAuth();
 
 <style src="~/assets/css/style.css"></style>
 <style scoped src="~/assets/css/landing.css"></style>
-
-<style scoped>
-/* Additional styles for nav actions */
-.nav-actions {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-</style>

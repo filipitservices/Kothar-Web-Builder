@@ -58,9 +58,11 @@ The dashboard is the authenticated entry point, combining quick access to the bu
 
 ### Layout Structure
 
+The dashboard uses the **default** layout, which provides the global **AppNavbar** (logo, UserMenu with optional name, no CTA on this page).
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  Navigation Header                                [UserMenu]│
+│  AppNavbar (logo, UserMenu)                                  │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
 │  Welcome Section                                            │

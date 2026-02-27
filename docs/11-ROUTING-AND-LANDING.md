@@ -144,11 +144,12 @@ The landing page serves as the public-facing entry point to SOSG. It communicate
 
 ### Component Composition
 
-**Landing Page** (`pages/index.vue`):
-- `LandingHero` - Hero section with main CTA
-- `LandingFeatures` - Feature highlight grid
-- `LandingCTA` - Secondary call-to-action footer
-- Navigation handled via NuxtLink or navigateTo()
+**Landing Page** (`pages/index.vue`), under default layout:
+- **AppNavbar** (from layout) – logo, UserMenu, CTA (Start Building / Dashboard)
+- Hero section with main CTA
+- Features grid
+- CTA section
+- Footer
 
 ### Styling Approach
 
@@ -178,11 +179,12 @@ The builder page is the full-featured website editor interface. It includes:
 
 ### Authentication Requirement
 
-**The builder page requires authentication.** It is protected by the `auth` middleware:
+**The builder page requires authentication.** It is protected by the `auth` middleware and uses the **builder** layout (no global navbar):
 
 ```typescript
 definePageMeta({
-  middleware: 'auth'
+  middleware: 'auth',
+  layout: 'builder'
 });
 ```
 
@@ -218,10 +220,9 @@ definePageMeta({
 
 ### Component Composition
 
-**Builder Page** (`pages/builder.vue`):
-- All existing index.vue content (left sidebar, screens, right sidebar)
-- Navigation header with home button
-- Full editor interface unchanged from original implementation
+**Builder Page** (`pages/builder.vue`), under **builder** layout (no global navbar):
+- Left sidebar (blocks), center screens panel, right sidebar (templates)
+- Full editor interface; no top navbar so layout and overflow behave as designed
 
 ### Layout Constraints
 
@@ -235,29 +236,36 @@ Builder-specific CSS preserved exactly:
 
 ---
 
-## App Root Layout (`app.vue`)
+## App Root and Layouts
 
-### Structure
+### app.vue
 
 ```vue
 <template>
   <div>
-    <NuxtPage />
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
   </div>
 </template>
 ```
 
-**Purpose**: Top-level app container for page rendering. Quiz completion logic remains here and persists across route changes.
+**Purpose**: Root entry. Renders the active layout (default or builder), which wraps the current page.
 
-**Page Rendering**:
-- `app.vue` renders current page via `<NuxtPage />`
-- When user navigates, `app.vue` stays mounted
-- Only the `<NuxtPage />` content changes based on route
+### Layouts
 
-**Quiz Flow**:
-- Quiz modal in `app.vue` conditionally displays (can gate either route)
-- On quiz completion, business data is populated
-- User can then navigate to builder or view landing with pre-filled data
+- **default** (`layouts/default.vue`): Renders the global **AppNavbar** and `<slot />` for the page. Used by `/`, `/dashboard`, `/gallery/request/[id]`, `/login`, `/reset-password`.
+- **builder** (`layouts/builder.vue`): Renders only `<slot />` (no navbar). Used by `/builder` so the editor has the full viewport and no top bar.
+
+**Page assignment**:
+- Pages that need the shared navbar use the default layout (Nuxt’s default when no `layout` is set in `definePageMeta`).
+- Builder sets `definePageMeta({ layout: 'builder' })` so it does not show the global navbar.
+
+### Global Navbar (AppNavbar)
+
+- **Single component**: `components/AppNavbar.vue`; styles in `assets/css/navbar.css`.
+- **Content**: Logo (SOSG → `/`), optional "Back to Dashboard" on request page, **UserMenu**, and on landing only an auth-aware CTA (Start Building / Dashboard).
+- **Auth**: Uses `useAuth()`; CTA is wrapped in `<ClientOnly>` with a placeholder to avoid hydration mismatch.
 
 ---
 
@@ -414,27 +422,10 @@ To add new pages in the future:
 
 ### Sharing Layout Components
 
-Common components (navigation header, footer) can be:
-- Created as reusable components
-- Imported into multiple pages
-- Use slot-based composition for flexibility
-
-Example:
-```vue
-<!-- pages/index.vue (landing) -->
-<template>
-  <AppHeader />
-  <LandingHero />
-  <LandingFeatures />
-  <AppFooter />
-</template>
-
-<!-- pages/builder.vue -->
-<template>
-  <AppHeader />
-  <BuilderLayout />
-</template>
-```
+Navigation is centralized:
+- **AppNavbar** is used only inside **layouts/default.vue**. Pages that use the default layout (landing, dashboard, gallery request, login, reset-password) automatically get the same navbar.
+- The builder does not use the global navbar; it uses **layout: 'builder'**, which has no header.
+- Do not add per-page navbars; extend or configure AppNavbar if behaviour must differ by route.
 
 ### Styling New Pages
 

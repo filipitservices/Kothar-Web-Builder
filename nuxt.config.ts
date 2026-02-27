@@ -7,7 +7,8 @@ export default defineNuxtConfig({
   // Global CSS
   css: [
     '~/assets/css/style.css',
-    '~/assets/css/components.css'
+    '~/assets/css/components.css',
+    '~/assets/css/navbar.css'
   ],
   
   // Runtime configuration for Firebase

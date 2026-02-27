@@ -1,9 +1,8 @@
 <template>
   <div>
-    <!-- <QuizModal v-if="!quizStore.quizCompleted" />
-    <div v-else> -->
+    <NuxtLayout>
       <NuxtPage />
-    <!-- </div> -->
+    </NuxtLayout>
   </div>
 </template>
 
