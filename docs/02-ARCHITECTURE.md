@@ -212,7 +212,7 @@ The app uses Nuxt 4 layouts for global structure:
 - **layouts/builder.vue**: Used only by the builder page. Renders only the slot (no navbar), so the editor has full viewport for the 3-column layout.
 
 **AppNavbar** (`components/AppNavbar.vue`) is the single source of global navigation:
-- Logo (SOSG) links to `/`.
+- Logo (Kothar) links to `/`.
 - On `/gallery/request/*`, a "Back to Dashboard" link is shown.
 - **UserMenu** is always shown (Sign In when guest; avatar and dropdown when authenticated).
 - On the landing page (`/`), an auth-aware CTA is shown: "Start Building" → `/login` when guest, "Dashboard" → `/dashboard` when authenticated.

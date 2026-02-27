@@ -6,7 +6,7 @@
 
 ## Overview
 
-SOSG follows a clear page separation pattern:
+Kothar follows a clear page separation pattern:
 - **Landing Page** (`/`) - Marketing experience, product introduction, entry point
 - **Dashboard** (`/dashboard`) - Central hub with builder access and templates showcase (protected)
 - **Builder Page** (`/builder`) - Full website builder interface (protected, requires authentication)
@@ -97,7 +97,7 @@ Routes are implicitly defined by file structure. No manual `vue-router` config r
 
 ### Purpose
 
-The landing page serves as the public-facing entry point to SOSG. It communicates:
+The landing page serves as the public-facing entry point to Kothar. It communicates:
 - Application identity and brand
 - Core value proposition
 - Primary features and benefits
@@ -137,7 +137,7 @@ The landing page serves as the public-facing entry point to SOSG. It communicate
 
 ┌─────────────────────────────────────────┐
 │       Footer (with secondary CTA)       │
-│  © 2026 SOSG | [Privacy] [Terms]       │
+│  © 2026 Kothar | [Privacy] [Terms]     │
 │              [Ready to build?]          │
 └─────────────────────────────────────────┘
 ```
@@ -264,7 +264,7 @@ Builder-specific CSS preserved exactly:
 ### Global Navbar (AppNavbar)
 
 - **Single component**: `components/AppNavbar.vue`; styles in `assets/css/navbar.css`.
-- **Content**: Logo (SOSG → `/`), optional "Back to Dashboard" on request page, **UserMenu**, and on landing only an auth-aware CTA (Start Building / Dashboard).
+- **Content**: Logo (Kothar → `/`), optional "Back to Dashboard" on request page, **UserMenu**, and on landing only an auth-aware CTA (Start Building / Dashboard).
 - **Auth**: Uses `useAuth()`; CTA is wrapped in `<ClientOnly>` with a placeholder to avoid hydration mismatch.
 
 ---
@@ -375,7 +375,7 @@ const goToBuilder = () => router.push('/builder');
 ```vue
 <template>
   <div class="nav-header">
-    <NuxtLink to="/" class="logo">SOSG</NuxtLink>
+    <NuxtLink to="/" class="logo">Kothar</NuxtLink>
   </div>
 </template>
 ```
@@ -497,7 +497,7 @@ To extend state management:
 
 ## Summary
 
-SOSG has a proper multi-page architecture with authentication:
+Kothar has a proper multi-page architecture with authentication:
 
 1. **Landing Page** (`/`) - Public-facing entry point with marketing messaging
 2. **Dashboard** (`/dashboard`) - Central hub with builder access and integrated templates showcase

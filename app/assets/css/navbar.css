@@ -54,6 +54,9 @@
 }
 
 .app-navbar__logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 1.5rem;
   font-weight: 700;
   color: #1e3a8a;
@@ -65,6 +68,27 @@
 .app-navbar__logo:hover {
   text-decoration: none;
   opacity: 0.9;
+}
+
+.app-navbar__logo-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.app-navbar__logo-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.app-navbar__logo-text {
+  line-height: 1;
 }
 
 .app-navbar__right {

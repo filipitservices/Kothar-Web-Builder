@@ -7,12 +7,19 @@
 </template>
 
 <script setup lang="ts">
+import { watch } from 'vue';
 import { useQuizStore } from '~/stores/quiz';
 import { useBusinessStore } from '~/stores/business';
-import { watch } from 'vue';
 
 const quizStore = useQuizStore();
 const businessStore = useBusinessStore();
+const appConfig = useAppConfig();
+
+useHead({
+  title: appConfig.fullTitle,
+  titleTemplate: (title?: string) =>
+    title ? `${title} · ${appConfig.appName}` : appConfig.fullTitle,
+});
 
 // When quiz is completed, save answers to business store
 watch(() => quizStore.quizCompleted, (completed) => {

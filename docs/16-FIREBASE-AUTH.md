@@ -1,12 +1,12 @@
 # Firebase Authentication Integration
 
-**Secure, SSR-compatible Firebase Authentication for SOSG using server-side session cookies.**
+**Secure, SSR-compatible Firebase Authentication for Kothar using server-side session cookies.**
 
 ---
 
 ## Overview
 
-This document describes the Firebase Authentication integration for SOSG, providing:
+This document describes the Firebase Authentication integration for Kothar, providing:
 - Email/password sign-in and sign-up
 - Google OAuth sign-in
 - Server-validated HTTP-only cookie sessions for SSR

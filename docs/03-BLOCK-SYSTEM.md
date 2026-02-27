@@ -6,7 +6,7 @@
 
 ## Overview
 
-The block system is the core of SOSG, providing 13 pre-built, reusable UI components that users can drag, customize, and arrange to build websites.
+The block system is the core of Kothar, providing 13 pre-built, reusable UI components that users can drag, customize, and arrange to build websites.
 
 ### Key Concepts
 

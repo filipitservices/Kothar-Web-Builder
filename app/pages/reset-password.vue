@@ -74,7 +74,7 @@
 
     <!-- Footer -->
     <footer class="auth-footer">
-      <p>&copy; 2026 SOSG. All rights reserved.</p>
+      <p>&copy; 2026 {{ appConfig.appName }}. All rights reserved.</p>
     </footer>
   </div>
 </template>
@@ -88,6 +88,7 @@ definePageMeta({
 });
 
 const { sendPasswordReset, error, isLoading, clearError } = useAuth();
+const appConfig = useAppConfig();
 
 const email = ref('');
 const emailSent = ref(false);

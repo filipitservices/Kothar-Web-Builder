@@ -6,7 +6,7 @@
 
 ## Overview
 
-The AI Chat System provides an integrated conversational assistant within the SOSG editor. Users can interact with an AI chatbot to receive help with website design, content suggestions, and general assistance while building their sites.
+The AI Chat System provides an integrated conversational assistant within the Kothar editor. Users can interact with an AI chatbot to receive help with website design, content suggestions, and general assistance while building their sites.
 
 ### Key Features
 
@@ -23,7 +23,7 @@ The AI Chat System provides an integrated conversational assistant within the SO
 
 ## Architecture
 
-The AI Chat System follows the established three-layer architecture pattern used throughout SOSG:
+The AI Chat System follows the established three-layer architecture pattern used throughout Kothar:
 
 ```
 ┌─────────────────────────────────────────────────┐
@@ -532,7 +532,7 @@ To save messages across sessions:
 // In aiChat store
 import { useLocalStorage } from '@vueuse/core';
 
-const messages = useLocalStorage<AiMessage[]>('sosg-ai-chat-history', []);
+const messages = useLocalStorage<AiMessage[]>('kothar-ai-chat-history', []);
 
 // Messages now persist in localStorage automatically
 ```

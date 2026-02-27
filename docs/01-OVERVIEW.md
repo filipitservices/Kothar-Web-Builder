@@ -1,4 +1,4 @@
-# SOSG - Site Builder Application
+# Kothar - Site Builder Application
 
 **A Nuxt 4 + Vue 3 + Pinia website builder with drag-and-drop blocks, inline editing, and dual-screen preview.**
 
@@ -6,7 +6,7 @@
 
 ## What This Application Does
 
-SOSG is a visual website builder that allows users to:
+Kothar is a visual website builder that allows users to:
 - Drag pre-built blocks (Hero, Nav, Footer, Form, etc.) onto desktop/mobile screens
 - Edit content inline using contenteditable fields
 - Store global business information (company name, email, contact info)

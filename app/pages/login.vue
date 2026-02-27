@@ -149,7 +149,7 @@
 
     <!-- Footer -->
     <footer class="auth-footer">
-      <p>&copy; 2026 SOSG. All rights reserved.</p>
+      <p>&copy; 2026 {{ appConfig.appName }}. All rights reserved.</p>
     </footer>
   </div>
 </template>
@@ -173,6 +173,8 @@ const {
   isLoading,
   clearError 
 } = useAuth();
+
+const appConfig = useAppConfig();
 
 // Form state
 const isSignUp = ref(false);

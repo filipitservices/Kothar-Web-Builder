@@ -5,7 +5,7 @@
 
 ## Overview
 
-This document summarizes the comprehensive architectural and product-level refinement of the SOSG website builder, re-evaluated specifically for small and mid-size business use cases.
+This document summarizes the comprehensive architectural and product-level refinement of the Kothar website builder, re-evaluated specifically for small and mid-size business use cases.
 
 ---
 

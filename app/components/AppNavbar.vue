@@ -12,7 +12,18 @@
           </svg>
           <span>Back to Dashboard</span>
         </NuxtLink>
-        <NuxtLink to="/" class="app-navbar__logo">SOSG</NuxtLink>
+        <NuxtLink to="/" class="app-navbar__logo">
+          <span class="app-navbar__logo-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="4" ry="4" />
+              <line x1="7" y1="9" x2="17" y2="9" />
+              <line x1="7" y1="15" x2="15" y2="15" />
+            </svg>
+          </span>
+          <span class="app-navbar__logo-text">
+            {{ appConfig.appName }}
+          </span>
+        </NuxtLink>
       </div>
       <div class="app-navbar__right">
         <UserMenu :show-name="showUserName" />
@@ -42,6 +53,7 @@ import { useAuth } from '~/composables/useAuth';
 
 const route = useRoute();
 const { isAuthenticated, isInitialized } = useAuth();
+const appConfig = useAppConfig();
 
 const showBackToDashboard = computed(() => {
   const path = route.path;

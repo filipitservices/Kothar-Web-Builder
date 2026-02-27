@@ -6,7 +6,7 @@
 
 ## Overview
 
-The dashboard serves as the authenticated central hub for SOSG, providing users with immediate access to both the website builder and a curated showcase of professional templates—all in one cohesive experience.
+The dashboard serves as the authenticated central hub for Kothar, providing users with immediate access to both the website builder and a curated showcase of professional templates—all in one cohesive experience.
 
 **Key Architecture Decision:** Templates are now integrated directly into the dashboard rather than existing as a separate page. This creates a more focused, intentional user experience where users can discover templates naturally without navigating away from their central workspace.
 

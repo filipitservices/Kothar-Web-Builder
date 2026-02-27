@@ -1,4 +1,4 @@
-# SOSG Documentation
+# Kothar Documentation
 
 **Comprehensive project documentation organized for clarity and AI readability.**
 

@@ -118,7 +118,7 @@
     <!-- Footer -->
     <footer class="dashboard-footer">
       <div class="footer-inner">
-        <p class="footer-text">&copy; 2026 SOSG. All rights reserved.</p>
+        <p class="footer-text">&copy; 2026 {{ appConfig.appName }}. All rights reserved.</p>
       </div>
     </footer>
   </div>
@@ -140,6 +140,7 @@ defineOptions({ name: 'DashboardPage', display: 'Dashboard' });
 const { currentUser } = useAuth();
 const showcaseStore = useShowcaseStore();
 const router = useRouter();
+const appConfig = useAppConfig();
 
 // User name for greeting
 const userName = computed(() => {
