@@ -2,7 +2,29 @@
 /* Reuses base typography and spacing from style.css */
 /* Intentionally designed to match builder's design system */
 
+/* Design tokens: primary + complementary accents for sections */
 .landing-container {
+  --landing-primary: #1e3a8a;
+  --landing-primary-dark: #1e2d7d;
+  --landing-primary-tint: #f0f4ff;
+  --landing-amber: #b45309;
+  --landing-amber-bg: #fffbeb;
+  --landing-violet: #5b21b6;
+  --landing-violet-tint: #f5f3ff;
+  --landing-emerald: #059669;
+  --landing-emerald-tint: #ecfdf5;
+  --landing-border: #e5e7eb;
+  --landing-muted: #4b5563;
+  --landing-muted-dark: #374151;
+  --landing-spacing: 1rem;
+  --landing-spacing-lg: 1.5rem;
+  --landing-spacing-xl: 2rem;
+  --landing-spacing-2xl: 3rem;
+  --landing-spacing-3xl: 4rem;
+  --landing-radius: 8px;
+  --landing-radius-lg: 12px;
+  --landing-radius-xl: 16px;
+  --landing-container: 1200px;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -106,67 +128,11 @@
   box-shadow: 0 15px 40px rgba(30, 58, 138, 0.3);
 }
 
-/* Features Section */
-.features-section {
+/* Features: three stacked sections, container-constrained */
+.feat {
   flex: 0 0 auto;
-  padding: 4rem 2rem;
-  background: #fff;
-  border-top: 1px solid #e5e7eb;
-}
-
-.features-content {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.features-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1e3a8a;
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-}
-
-.feature-card {
-  padding: 2rem;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  text-align: center;
-  transition: all 0.3s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.feature-card:hover {
-  border-color: #1e3a8a;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-  transform: translateY(-4px);
-}
-
-.feature-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  display: inline-block;
-}
-
-.feature-heading {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #1e3a8a;
-  margin-bottom: 0.75rem;
-}
-
-.feature-description {
-  font-size: 0.95rem;
-  line-height: 1.6;
-  color: #4b5563;
-  margin: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 /* CTA Section */
@@ -283,15 +249,6 @@
     padding: 2rem 1rem;
   }
 
-  .features-section {
-    padding: 2rem 1rem;
-  }
-
-  .features-grid {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-
   .cta-section {
     padding: 2rem 1rem;
   }
@@ -329,14 +286,6 @@
 
   .hero-hl-text {
     font-size: 0.8125rem;
-  }
-
-  .features-title {
-    font-size: 1.5rem;
-  }
-
-  .feature-heading {
-    font-size: 1.1rem;
   }
 
   .cta-title {

@@ -52,3 +52,33 @@ a:hover {
 .text-center {
     text-align: center;
 }
+
+/* Landing: section wrappers (target child component roots; vars from .landing-container) */
+.landing-container .sect {
+  padding: var(--landing-spacing-3xl, 4rem) var(--landing-spacing-xl, 2rem);
+  border-top: 1px solid var(--landing-border, #e5e7eb);
+}
+
+.landing-container .sect-inner {
+  max-width: var(--landing-container, 1200px);
+  margin: 0 auto;
+  width: 100%;
+}
+
+.landing-container .sect--ai {
+  background: linear-gradient(180deg, var(--landing-violet-tint, #f5f3ff) 0%, #fff 100%);
+}
+
+.landing-container .sect--designers {
+  background: linear-gradient(180deg, #fff 0%, var(--landing-emerald-tint, #ecfdf5) 50%, #fff 100%);
+}
+
+.landing-container .sect--delivery {
+  background: linear-gradient(180deg, #fff 0%, var(--landing-primary-tint, #f0f4ff) 100%);
+}
+
+@media (max-width: 768px) {
+  .landing-container .sect {
+    padding: var(--landing-spacing-xl, 2rem) var(--landing-spacing, 1rem);
+  }
+}
