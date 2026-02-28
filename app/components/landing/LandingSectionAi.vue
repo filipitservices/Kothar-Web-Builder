@@ -2,49 +2,49 @@
   <section class="sect sect--ai" aria-labelledby="sect-ai-title">
     <div class="sect-inner">
       <header class="sect-ai-head">
-        <h2 id="sect-ai-title" class="sect-ai-title">AI-assisted layout and templates</h2>
-        <p class="sect-ai-lead">Choose a direction in seconds. Smart templates and guided layout help you start with a professional structure — no blank canvas.</p>
+        <h2 id="sect-ai-title" class="sect-ai-title">Build or choose — both AI-assisted.</h2>
+        <p class="sect-ai-lead">Use the visual builder to construct and configure with AI, or browse our curated gallery of professional templates. Two distinct paths; AI enhances both.</p>
       </header>
       <div class="sect-ai-flow">
-        <div class="sect-ai-card">
-          <span class="sect-ai-card-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/></svg>
-          </span>
-          <div class="sect-ai-card-body">
-            <strong class="sect-ai-card-title">Smart templates</strong>
-            <span class="sect-ai-card-desc">Industry-fit starting points</span>
-          </div>
-        </div>
         <div class="sect-ai-card">
           <span class="sect-ai-card-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
           </span>
           <div class="sect-ai-card-body">
-            <strong class="sect-ai-card-title">AI-guided layout</strong>
-            <span class="sect-ai-card-desc">Structure that converts</span>
+            <strong class="sect-ai-card-title">Visual builder</strong>
+            <span class="sect-ai-card-desc">Build and configure with AI assistance</span>
           </div>
         </div>
         <div class="sect-ai-card">
           <span class="sect-ai-card-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
           </span>
           <div class="sect-ai-card-body">
-            <strong class="sect-ai-card-title">Instant preview</strong>
-            <span class="sect-ai-card-desc">See it before you commit</span>
+            <strong class="sect-ai-card-title">Template gallery</strong>
+            <span class="sect-ai-card-desc">Curated professional showcase designs</span>
           </div>
         </div>
         <div class="sect-ai-card">
           <span class="sect-ai-card-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/></svg>
           </span>
           <div class="sect-ai-card-body">
-            <strong class="sect-ai-card-title">One-click apply</strong>
-            <span class="sect-ai-card-desc">Go live in minutes</span>
+            <strong class="sect-ai-card-title">AI-assisted guidance</strong>
+            <span class="sect-ai-card-desc">Guidance and refinement on either path</span>
+          </div>
+        </div>
+        <div class="sect-ai-card">
+          <span class="sect-ai-card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
+          </span>
+          <div class="sect-ai-card-body">
+            <strong class="sect-ai-card-title">Your choice</strong>
+            <span class="sect-ai-card-desc">Build dynamically or pick a design</span>
           </div>
         </div>
       </div>
       <div class="sect-ai-bar">
-        <span class="sect-ai-bar-label">From idea to structure</span>
+        <span class="sect-ai-bar-label">Two paths. AI enhances both.</span>
         <div class="sect-ai-bar-line" aria-hidden="true"><span class="sect-ai-bar-dot"></span><span class="sect-ai-bar-dot"></span><span class="sect-ai-bar-dot"></span></div>
       </div>
     </div>

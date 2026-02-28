@@ -2,7 +2,7 @@
   <section class="sect sect--designers" aria-labelledby="sect-designers-title">
     <div class="sect-inner">
       <header class="sect-d-head">
-        <h2 id="sect-designers-title" class="sect-d-title">Designers refine and build it</h2>
+        <h2 id="sect-designers-title" class="sect-d-title">Our professional designers refine<br />and build it.</h2>
         <p class="sect-d-lead">Real people polish your site. Structured process, quality checks, and clear handoff — no black box.</p>
       </header>
       <div class="sect-d-process">

@@ -28,8 +28,9 @@
           <p class="sect-del-card-desc">Polished, responsive, and ready for real traffic.</p>
         </div>
       </div>
-      <div class="sect-del-cta-wrap">
-        <p class="sect-del-cta-text">From request to live site — fast, clear, and under your control.</p>
+      <div class="sect-del-outcome">
+        <span class="sect-del-outcome-overline" aria-hidden="true">The outcome</span>
+        <p class="sect-del-outcome-text">From request to live site — fast, clear, and under your control.</p>
       </div>
     </div>
   </section>
@@ -121,19 +122,59 @@ defineOptions({ name: 'LandingSectionDelivery' });
   margin: 0;
 }
 
-.sect-del-cta-wrap {
+/* Outcome block: milestone statement — crafted, grounded, no left-border cliché */
+.sect-del-outcome {
+  position: relative;
+  overflow: hidden;
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: var(--landing-spacing-xl) var(--landing-spacing-lg);
   text-align: center;
-  padding: var(--landing-spacing-lg);
-  background: rgba(30, 58, 138, 0.04);
+  background: var(--landing-primary-tint);
   border-radius: var(--landing-radius-lg);
-  border: 1px solid rgba(30, 58, 138, 0.1);
+  border-top: 2px solid rgba(30, 58, 138, 0.18);
+  box-shadow:
+    0 2px 12px rgba(30, 58, 138, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
-.sect-del-cta-text {
-  font-size: 0.9375rem;
-  font-weight: 500;
+.sect-del-outcome::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: radial-gradient(
+    circle at center,
+    rgba(30, 58, 138, 0.04) 1px,
+    transparent 1px
+  );
+  background-size: 0.625rem 0.625rem;
+  pointer-events: none;
+}
+
+.sect-del-outcome-overline,
+.sect-del-outcome-text {
+  position: relative;
+  z-index: 1;
+}
+
+.sect-del-outcome-overline {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--landing-muted);
+  margin-bottom: 0.5rem;
+}
+
+.sect-del-outcome-text {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5;
   color: var(--landing-primary);
   margin: 0;
+  letter-spacing: 0.01em;
 }
 
 @media (max-width: 900px) {
@@ -149,6 +190,16 @@ defineOptions({ name: 'LandingSectionDelivery' });
 
   .sect-del-card {
     padding: var(--landing-spacing-lg);
+  }
+
+  .sect-del-outcome {
+    padding: var(--landing-spacing-lg) var(--landing-spacing);
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .sect-del-outcome-text {
+    font-size: 0.9375rem;
   }
 }
 </style>
