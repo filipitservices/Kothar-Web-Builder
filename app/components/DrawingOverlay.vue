@@ -227,16 +227,18 @@ defineExpose({
   z-index: 1000;
 }
 
-:deep(.vue-drawing-canvas) {
-  display: block !important;
-  width: 100% !important;
-  height: 100% !important;
-  border: none !important;
-  background: transparent !important;
+.canvas-container :deep(.vue-drawing-canvas) {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
   cursor: crosshair;
 }
 
-:deep(.vue-drawing-canvas:focus) {
+.canvas-container :deep(.vue-drawing-canvas:focus) {
   outline: none;
 }
 </style>

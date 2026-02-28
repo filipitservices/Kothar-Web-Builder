@@ -61,5 +61,4 @@ const { isAuthenticated } = useAuth();
 const appConfig = useAppConfig();
 </script>
 
-<style src="~/assets/css/style.css"></style>
 <style scoped src="~/assets/css/landing.css"></style>

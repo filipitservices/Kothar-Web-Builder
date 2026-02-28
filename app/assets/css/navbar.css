@@ -1,32 +1,31 @@
 /**
  * Global App Navbar
- * Single source of styles for the shared navigation bar.
- * Uses design tokens: #1e3a8a primary, #e5e7eb borders, 12px/8px radii.
+ * Uses design tokens from style.css :root.
  */
 
 .app-navbar {
   flex: 0 0 auto;
-  background: #fff;
-  border-bottom: 1px solid #e5e7eb;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
   position: sticky;
   top: 0;
   z-index: 100;
 }
 
 .app-navbar__inner {
-  max-width: 1200px;
+  max-width: var(--container-max);
   margin: 0 auto;
-  padding: 1rem 2rem;
+  padding: var(--space-md) var(--space-xl);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 1rem;
+  gap: var(--space-md);
 }
 
 .app-navbar__left {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--space-md);
   flex: 1;
   min-width: 0;
 }
@@ -34,8 +33,8 @@
 .app-navbar__back {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  color: #6b7280;
+  gap: var(--space-sm);
+  color: var(--color-text-muted);
   font-size: 0.875rem;
   font-weight: 500;
   text-decoration: none;
@@ -44,7 +43,7 @@
 }
 
 .app-navbar__back:hover {
-  color: #1e3a8a;
+  color: var(--color-primary);
   text-decoration: none;
 }
 
@@ -56,10 +55,10 @@
 .app-navbar__logo {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-sm);
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1e3a8a;
+  color: var(--color-primary);
   letter-spacing: -0.5px;
   text-decoration: none;
   flex-shrink: 0;
@@ -77,8 +76,8 @@
   width: 28px;
   height: 28px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-  color: #ffffff;
+  background: linear-gradient(135deg, var(--color-primary) 0%, #3b82f6 100%);
+  color: var(--color-white);
   flex-shrink: 0;
 }
 
@@ -94,15 +93,15 @@
 .app-navbar__right {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--space-md);
   flex-shrink: 0;
 }
 
 .app-navbar__cta {
   padding: 0.625rem 1.25rem;
-  background: #1e3a8a;
-  color: #fff;
-  border-radius: 6px;
+  background: var(--color-primary);
+  color: var(--color-white);
+  border-radius: var(--radius-sm);
   font-size: 0.875rem;
   font-weight: 500;
   transition: all 0.2s ease;
@@ -111,7 +110,7 @@
 }
 
 .app-navbar__cta:hover {
-  background: #1e2d7d;
+  background: var(--color-primary-dark);
   text-decoration: none;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
@@ -121,12 +120,12 @@
   display: inline-block;
   width: 6rem;
   height: 2.25rem;
-  border-radius: 6px;
-  background: #e5e7eb;
+  border-radius: var(--radius-sm);
+  background: var(--color-border);
 }
 
 @media (max-width: 768px) {
   .app-navbar__inner {
-    padding: 0.75rem 1rem;
+    padding: 0.75rem var(--space-md);
   }
 }

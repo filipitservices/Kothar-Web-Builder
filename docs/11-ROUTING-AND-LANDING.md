@@ -153,14 +153,15 @@ The landing page serves as the public-facing entry point to Kothar. It communica
 
 ### Styling Approach
 
-Landing page uses the same design system as the builder:
-- **Colors**: Same dark blue (#1e3a8a), shadows, white backgrounds
-- **Typography**: Inherited base styles (system fonts, 16px, 1.6 line-height)
-- **Spacing**: Consistent 20px gaps, padding scales
-- **Borders**: 12px border radius for cards
-- **Layout**: Full-height viewport with centered content sections
+Landing page uses the same design system as the rest of the app:
+- **Tokens**: Global tokens from `style.css` (`:root`); landing extends with `--landing-*` on `.landing-container` for section accents (violet, emerald, amber).
+- **Colors**: `--color-primary`, `--color-bg`, `--color-border`, etc.; section-specific tints from `--landing-*`.
+- **Typography**: Base from `style.css` (system fonts, 16px, 1.6 line-height).
+- **Spacing**: `--space-*` and `--landing-spacing-*` scales.
+- **Radius**: `--radius-md`, `--radius-lg` and `--landing-radius-*`.
+- **Layout**: Full-height viewport; content constrained by `--container-max` (1200px). Breakpoints: 768px, 480px.
 
-No builder-specific CSS (`.main-container`, `.sidebar`, `.screens-inner`) applies to landing page.
+Landing CSS is loaded as scoped page styles (`landing.css`). No builder-specific CSS (`.main-container`, `.sidebar`, `.screens-inner`) applies to the landing page.
 
 ---
 

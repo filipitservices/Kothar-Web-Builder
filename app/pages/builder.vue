@@ -126,6 +126,4 @@ const handleAccountClick = (): void => console.log('Account settings requested')
 const handleHelpClick = (): void => console.log('Help requested');
 </script>
 
-<style src="~/assets/css/style.css"></style>
 <style scoped src="~/assets/css/editor.css"></style>
-```

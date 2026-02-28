@@ -194,5 +194,4 @@ const handleChooseDesign = (templateId: string) => {
 };
 </script>
 
-<style src="~/assets/css/style.css"></style>
 <style scoped src="~/assets/css/dashboard.css"></style>

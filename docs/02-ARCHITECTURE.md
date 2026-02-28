@@ -216,9 +216,37 @@ The app uses Nuxt 4 layouts for global structure:
 - On `/gallery/request/*`, a "Back to Dashboard" link is shown.
 - **UserMenu** is always shown (Sign In when guest; avatar and dropdown when authenticated).
 - On the landing page (`/`), an auth-aware CTA is shown: "Start Building" → `/login` when guest, "Dashboard" → `/dashboard` when authenticated.
-- Navbar styles live in `assets/css/navbar.css` (design tokens: #1e3a8a, #e5e7eb, consistent spacing).
+- Navbar styles live in `assets/css/navbar.css` and use global design tokens from `style.css`.
 
 No page implements its own navbar; all use the default layout and shared AppNavbar except the builder, which uses the builder layout.
+
+---
+
+## CSS and Styling Architecture
+
+**Global CSS** (loaded via `nuxt.config.ts` `css` array, in order):
+1. `app/assets/css/style.css` – Reset, base typography, **design tokens** (`:root`), utilities, and landing section wrappers that target child component roots.
+2. `app/assets/css/components.css` – Shared UI patterns (buttons, modal, device frames, toggle group, form elements). Uses tokens from `style.css`.
+3. `app/assets/css/navbar.css` – AppNavbar only. Uses tokens from `style.css`.
+
+**Design tokens** (`:root` in `style.css`):
+- **Colors**: `--color-primary`, `--color-primary-dark`, `--color-primary-tint`, `--color-bg`, `--color-border`, `--color-text`, `--color-text-muted`, etc. No hardcoded hex in token-using files.
+- **Spacing**: `--space-xs` through `--space-3xl` (rem scale).
+- **Radius**: `--radius-sm`, `--radius-md`, `--radius-lg`, `--radius-xl`.
+- **Layout**: `--container-max: 1200px` for all main content containers (navbar, landing, dashboard, request-form footer).
+
+**Page-scoped CSS** (loaded per page via `<style scoped src="...">`; do not re-import `style.css`):
+- Landing: `landing.css` (extends with `--landing-*` on `.landing-container`).
+- Dashboard: `dashboard.css`.
+- Builder: `editor.css`.
+- Gallery request: `request-form.css`.
+- Showcase (component): `showcase.css` (uses `--showcase-*` from template).
+
+**Breakpoints** (use consistently in `@media`): `480px`, `640px`, `768px`, `900px`, `1024px`, `1200px`.
+
+**Container usage**: Sections use `max-width: var(--container-max)` (or page-local equivalent) and `margin: 0 auto`. No content exceeds container width unless explicitly full-bleed.
+
+**Scoped styles**: Component-specific styles use Vue scoped `<style scoped>` or scoped page CSS. No reliance on incidental global side effects. No `!important`; cascade is resolved via structure and specificity.
 
 ---
 

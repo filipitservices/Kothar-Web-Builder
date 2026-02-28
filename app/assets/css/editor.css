@@ -1,9 +1,9 @@
-
+/* Builder/editor layout. Uses design tokens from style.css :root. */
 
 .main-container {
   display: flex;
-  gap: 20px;
-  padding: 20px;
+  gap: 1.25rem;
+  padding: 1.25rem;
   height: 100vh;
   overflow: hidden;
 }
@@ -11,8 +11,8 @@
 /* Sidebars */
 .sidebar {
   flex: 0 0 280px;
-  background: #fff;
-  border-radius: 12px;
+  background: var(--color-bg);
+  border-radius: var(--radius-lg);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
@@ -21,9 +21,9 @@
 }
 
 .sidebar-header {
-  background: #1e3a8a;
-  color: white;
-  padding: 16px;
+  background: var(--color-primary);
+  color: var(--color-white);
+  padding: var(--space-md);
   text-align: center;
   position: relative;
   z-index: 5;
@@ -82,8 +82,8 @@
 @media (max-width: 1200px) {
   .main-container {
     flex-direction: column;
-    gap: 12px;
-    padding: 12px;
+    gap: var(--space-md);
+    padding: var(--space-md);
     height: auto;
     min-height: 100vh;
   }
