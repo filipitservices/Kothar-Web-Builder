@@ -18,6 +18,7 @@ Use this to trigger the right rule subsets and to enforce "analyze before implem
 | **Builder / blocks** (builder page, BlockElements, templates list) | Core, domain-builder, domain-templates, Pinia state, reactivity | Confirm builder vs template vs block ownership; no one-off logic; use composables and store APIs. |
 | **Showcase / live sites** (dashboard, sites, gallery request) | Core, domain-showcase-live-sites, Pinia state | Confirm: live sites are not rebuilt via builder; showcase templates ≠ builder templates. |
 | **Firebase / auth** (login, session, protected routes) | Core, firebase-boundaries, Nuxt structure | Confirm server vs client boundary; no duplicate auth state; session cookie flow only. |
+| **Firebase / Firestore or Storage** (orders, rules, new collections or paths) | Core, firebase-boundaries, firebase-rules, documentation-integrity | Confirm paths and ownership; update `firebase/firestore.rules` or `firebase/storage.rules` when usage changes; update docs. |
 | **Refactor / cleanup** | Core, refactor-standards, documentation-integrity | No quickpatch; update docs in sync with structure; no bloat. Do not minify or minimize code and call it a day. |
 | **Documentation** | documentation-integrity | Rewrite affected sections; do not append lazily. |
 

@@ -27,6 +27,7 @@ This directory contains **modular, context-aware** Cursor rules. They encode eng
 - **09-domain-templates.mdc** — Builder template system; state transformation, unique IDs. Globs: templates store, TemplatesList, useTemplateApplication.
 - **10-domain-showcase-live-sites.mdc** — Showcase vs builder; live sites not rebuilt via builder. Globs: showcase store, sites store, sites pages, gallery pages, dashboard, ShowcaseModal, showcase components.
 - **11-firebase-boundaries.mdc** — Auth and session boundaries; no duplicate auth state. Globs: Firebase plugin, useAuth, auth store, auth/guest middleware, server auth API and utils.
+- **15-firebase-rules.mdc** — Firestore and Storage rules in `firebase/`; update rules and docs when Firestore/Storage usage changes. Globs: firebase/*.rules, useOrderSubmission.
 - **12-typescript-standards.mdc** — Explicit data models; no any, casts, or ad-hoc assertions; model data/events/APIs type-safely. Globs: **/*.ts, **/*.vue.
 - **13-documentation-integrity.mdc** — Do not leave docs outdated after refactors; rewrite affected sections; do not append lazily. Applied by description (refactor/docs tasks).
 - **14-refactor-standards.mdc** — No quickpatch, no minify-as-optimization, no demo-grade code, no bloat, no rush; docs in sync; work incrementally and verify; correctness and maintainability over "working." Applied by description (refactor tasks).

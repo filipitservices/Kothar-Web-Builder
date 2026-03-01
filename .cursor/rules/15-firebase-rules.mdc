@@ -1,0 +1,40 @@
+---
+description: Firestore and Storage rules live in firebase/; update them when app usage changes. Apply when editing rules or Firestore/Storage usage.
+globs: firebase/*.rules, app/composables/useOrderSubmission.ts
+alwaysApply: false
+---
+
+# Firebase Firestore and Storage Rules
+
+Per core invariants. Firestore and Storage security rules are part of the project and must stay in sync with how the app uses Firebase.
+
+## Rules Location
+
+- **Firestore rules:** `firebase/firestore.rules` — source of truth for Firestore access control.
+- **Storage rules:** `firebase/storage.rules` — source of truth for Storage access control.
+- **Config:** Root `firebase.json` references these files for deployment (`firebase deploy --only firestore`, `firebase deploy --only storage`).
+
+Do not put rules in project root. All rule content lives under `firebase/`.
+
+## When to Update Rules
+
+Whenever you **add or change** Firestore or Storage usage in the app, update the corresponding rules and docs:
+
+- **New Firestore collection or path** (e.g. a new `users/{uid}/something` subcollection) → add or adjust a `match` in `firebase/firestore.rules` so access is allowed only for the intended callers (e.g. `request.auth.uid == userId`). Do not leave new paths covered only by a broad deny; add an explicit allow for the new path and keep an explicit deny for everything else.
+- **New Storage path or pattern** (e.g. a new folder under the bucket) → add or adjust a `match` in `firebase/storage.rules` with the correct ownership condition.
+- **Change in who may read/write** (e.g. admin access, different user scope) → update the condition in the relevant `match` in `firebase/firestore.rules` or `firebase/storage.rules`.
+
+After changing rules, **update documentation** per documentation-integrity: `docs/18-FIREBASE-FIRESTORE-STORAGE.md` (and any other doc that describes Firebase paths or security) must reflect the current structure and deployment steps.
+
+## Current App Usage
+
+- **Firestore:** Only `users/{userId}/orders/{orderId}` is used (template request orders). Owner-only read/write.
+- **Storage:** Only `orders/{userId}/{orderId}/{fileName}` is used (order attachments). Owner-only read/write.
+
+Any new collection or path must be added to the rules explicitly; the catch-all deny in Firestore must remain so that only intended paths are allowed.
+
+## Deployment
+
+Rules are deployed via Firebase CLI from project root: `firebase deploy --only firestore`, `firebase deploy --only storage`, or both. See `docs/18-FIREBASE-FIRESTORE-STORAGE.md` for deployment and Console fallback.
+
+Reference `docs/18-FIREBASE-FIRESTORE-STORAGE.md` for the full data model and security layout.

@@ -101,12 +101,31 @@ where `userId` is the authenticated user’s UID. Query this collection (e.g. wi
 
 ---
 
-## Security (Conceptual)
+## Security Rules (in Repo)
 
-- **Firestore:** Structure rules so that `users/{userId}/orders` is readable and writable only when `request.auth != null && request.auth.uid == userId`. Do not rely on client-side checks alone.
-- **Storage:** Structure rules so that `orders/{userId}/{orderId}/*` is writable/readable only by the same authenticated user (`request.auth.uid == userId`). This aligns with the Firestore path and keeps ownership consistent.
+Firestore and Storage rules are kept in the project under **`firebase/`** and are the source of truth for access control. The root **`firebase.json`** points the Firebase CLI at these files; do not put rule content in project root.
 
-Rules are not implemented in this repo; the data layout is chosen to make such rules straightforward.
+### Rules Location
+
+| File | Purpose |
+|------|---------|
+| `firebase/firestore.rules` | Firestore security rules. Only `users/{userId}/orders/{orderId}` is allowed (owner-only); all other paths explicitly denied. |
+| `firebase/storage.rules` | Storage security rules. Only `orders/{userId}/{orderId}/{fileName}` is allowed (owner-only). |
+| `firebase.json` (root) | Firebase CLI config; references `firebase/firestore.rules` and `firebase/storage.rules` for deployment. |
+
+### When Usage Changes
+
+When you **add or change** Firestore or Storage usage (new collections, paths, or access patterns), you must:
+
+1. Update the corresponding file: `firebase/firestore.rules` or `firebase/storage.rules`. Add or adjust `match` blocks so only intended callers have access; keep an explicit deny for all other paths in Firestore.
+2. Update this doc and any other docs that describe Firebase paths or security (per documentation-integrity).
+
+The Cursor rule **15-firebase-rules.mdc** enforces this: when editing rules or Firestore/Storage usage, the AI should update rules and docs accordingly.
+
+### Deploying Rules
+
+- **CLI (from project root):** `firebase deploy --only firestore`, `firebase deploy --only storage`, or both.
+- **Console:** Firebase Console → Firestore or Storage → Rules tab → paste from `firebase/firestore.rules` or `firebase/storage.rules` → Publish.
 
 ---
 
@@ -117,6 +136,9 @@ Rules are not implemented in this repo; the data layout is chosen to make such r
 | `app/types/order.ts` | `OrderRequest`, `OrderAttachment`, `OrderStatus`, `OrderBusinessInfo`, `OrderContactInfo`, `OrderProjectDetails`. |
 | `app/composables/useOrderSubmission.ts` | `submitOrder()`: upload files to Storage, then write order to Firestore. Uses modular Firebase only. |
 | `app/plugins/firebase.client.ts` | Initializes Firebase app (and Auth); composable uses `getFirebaseApp()` for Firestore and Storage. |
+| `firebase/firestore.rules` | Firestore security rules; deploy with `firebase deploy --only firestore`. |
+| `firebase/storage.rules` | Storage security rules; deploy with `firebase deploy --only storage`. |
+| `firebase.json` | CLI config; references rules in `firebase/`. |
 
 ---
 
@@ -128,3 +150,10 @@ Rules are not implemented in this repo; the data layout is chosen to make such r
 ---
 
 **Last Updated:** March 2026
+
+---
+
+## Summary
+
+- Orders: Firestore `users/{userId}/orders/{orderId}`; Storage `orders/{userId}/{orderId}/{fileName}`.
+- Rules: `firebase/firestore.rules` and `firebase/storage.rules`; update them and docs when usage changes (see Cursor rule 15-firebase-rules).

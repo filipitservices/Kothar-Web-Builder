@@ -115,6 +115,10 @@ app/
     ├── vue-drawing-canvas.ts
     └── vuedraggable.ts
 
+firebase/                        # Firebase security rules (see docs/18)
+├── firestore.rules              # Firestore rules; deploy with firebase deploy --only firestore
+└── storage.rules                # Storage rules; deploy with firebase deploy --only storage
+
 docs/
 ├── 01-OVERVIEW.md              # This file
 ├── 02-ARCHITECTURE.md          # Detailed architecture
@@ -173,6 +177,8 @@ pnpm dev
 | `app/composables/useBusinessData.ts` | Business data access API |
 | `app/composables/useAuth.ts` | Authentication API |
 | `app/composables/useOrderSubmission.ts` | Order submission (Firestore + Storage) |
+| `firebase/firestore.rules` | Firestore security rules (deploy with Firebase CLI) |
+| `firebase/storage.rules` | Storage security rules (deploy with Firebase CLI) |
 | `app/components/ItemsList.vue` | Renders draggable blocks |
 | `app/components/ScreenCard.vue` | Single screen container |
 | `app/components/ShowcaseModal.vue` | Template preview modal |

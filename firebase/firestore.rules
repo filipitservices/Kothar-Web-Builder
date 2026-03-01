@@ -1,0 +1,19 @@
+rules_version = '2';
+
+// Firestore security rules for Kothar.
+// Only paths used by the app are allowed; all others are explicitly denied.
+// See docs/18-FIREBASE-FIRESTORE-STORAGE.md for data model and deployment.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Template request orders: only the authenticated owner can read/write their orders.
+    match /users/{userId}/orders/{orderId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Explicit deny for all other paths (no other collections used by the app).
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

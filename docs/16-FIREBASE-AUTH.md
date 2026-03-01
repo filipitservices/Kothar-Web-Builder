@@ -416,29 +416,14 @@ If storing user profiles in Firestore:
 
 ## Security Rules
 
-### Recommended Firestore Rules
+### Firestore and Storage Rules (in Repo)
 
-Place in `/firebase/firestore.rules` or Firebase Console:
+Firestore and Storage security rules live in the project under **`firebase/`** and are the source of truth:
 
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Users can only read/write their own profile
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-    
-    // Projects/sites belong to users
-    match /projects/{projectId} {
-      allow read, write: if request.auth != null 
-        && resource.data.ownerId == request.auth.uid;
-      allow create: if request.auth != null 
-        && request.resource.data.ownerId == request.auth.uid;
-    }
-  }
-}
-```
+- **`firebase/firestore.rules`** — Firestore rules (currently: owner-only access to `users/{userId}/orders/{orderId}`; explicit deny for all other paths).
+- **`firebase/storage.rules`** — Storage rules (currently: owner-only access to `orders/{userId}/{orderId}/{fileName}`).
+
+Deploy via Firebase CLI (`firebase deploy --only firestore`, `firebase deploy --only storage`) or by pasting into the Firebase Console. When you add or change Firestore or Storage usage, update the corresponding rules file and docs. See **[18-FIREBASE-FIRESTORE-STORAGE.md](18-FIREBASE-FIRESTORE-STORAGE.md)** for the full rules layout, deployment, and maintenance.
 
 ### Session Cookie Security
 
