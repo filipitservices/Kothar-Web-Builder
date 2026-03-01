@@ -67,37 +67,24 @@ The dashboard is the authenticated entry point, combining quick access to the bu
 
 The dashboard uses the **default** layout, which provides the global **AppNavbar** (logo, UserMenu with optional name, no CTA on this page).
 
+The page is structured as a control surface: a compact **control strip** (greeting + primary CTA), a **templates showcase** block with distinct background contrast, and a minimal **footer**. All content is constrained by `--container-max`; spacing and typography use the global design tokens from `style.css`.
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  AppNavbar (logo, UserMenu)                                  │
 ├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  Welcome Section                                            │
-│  "Welcome back, [Name]"                                     │
-│  "What would you like to create today?"                     │
-│                                                             │
+│ ▌ Control strip (white, left accent)                         │
+│   Welcome back, [Name]          [Open Builder →]             │
+│   Choose a path below to get started.                        │
 ├─────────────────────────────────────────────────────────────┤
+│  Templates block (primary-tint background)                  │
+│  Professional Templates    [All] [Local Services] [...]     │
+│  Preview, customize, and request a design.                   │
 │                                                             │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │  🔧 Start Building                                   │   │
-│  │  Create your website from scratch. Drag blocks...   │   │
-│  │                                        [Open Builder]│   │
-│  └─────────────────────────────────────────────────────┘   │
-│                                                             │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  Professional Templates                                     │
-│  "Start with a professionally designed website..."          │
-│                                                             │
-│  [All] [Local Services] [Professional] [Creative] ...       │
-│                                                             │
-│  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐       │
-│  │ Preview │  │ Preview │  │ Preview │  │ Preview │       │
-│  │─────────│  │─────────│  │─────────│  │─────────│       │
-│  │ Name    │  │ Name    │  │ Name    │  │ Name    │       │
-│  │ Desc... │  │ Desc... │  │ Desc... │  │ Desc... │       │
-│  └─────────┘  └─────────┘  └─────────┘  └─────────┘       │
-│                                                             │
+│  ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐  (compact cards)     │
+│  │ Prev │ │ Prev │ │ Prev │ │ Prev │                        │
+│  │ Name │ │ Name │ │ Name │ │ Name │                        │
+│  └──────┘ └──────┘ └──────┘ └──────┘                        │
 ├─────────────────────────────────────────────────────────────┤
 │  Footer                                                     │
 └─────────────────────────────────────────────────────────────┘
@@ -105,10 +92,10 @@ The dashboard uses the **default** layout, which provides the global **AppNavbar
 
 ### Components
 
-1. **Welcome Section** - Personalized greeting using authenticated user's name
-2. **Builder Hero Card** - Prominent gradient card linking to `/builder`
-3. **Templates Showcase** - Category-filtered grid of professional templates
-4. **ShowcaseModal** - In-page preview modal with desktop/mobile toggle
+1. **Control strip** (`dashboard-strip`) — Header with personalized greeting and primary "Open Builder" CTA. White background, subtle left border accent. Single row on desktop; stacks on small screens.
+2. **Templates showcase** (`dashboard-showcase`) — Contrast block (primary-tint background) containing section heading, category pills (tablist), and a responsive grid of compact template cards. Cards use a small browser mockup preview, industry label, name, description clamp, and "Preview" action.
+3. **ShowcaseModal** — In-page preview modal (unchanged): desktop/mobile toggle, "Choose This Design" → `/gallery/request/[id]`.
+4. **Footer** — Minimal copyright line; same container width as content.
 
 ### State Management
 
@@ -323,7 +310,7 @@ Locked orders (`modificationLocked === true`) redirect to `/sites`; the edit pag
 
 | File | Purpose |
 |------|---------|
-| `dashboard.css` | Dashboard page styles including templates section |
+| `dashboard.css` | Dashboard page: control strip, showcase block (contrast zone), compact template cards; uses design tokens only; page-scoped vars on `.dashboard-container` for section backgrounds |
 | `request-form.css` | Request form page styles |
 | `components.css` | Shared UI components (buttons, forms, modals, device frames) |
 | `showcase.css` | ShowcaseRenderer section styles |

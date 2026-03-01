@@ -1,113 +1,103 @@
 <template>
   <div class="dashboard-container">
-    <!-- Main Content -->
-    <main class="dashboard-main">
-      <div class="dashboard-content">
-        <!-- Welcome Section -->
-        <section class="welcome-section">
-          <h1 class="welcome-title">Welcome back{{ userName ? `, ${userName}` : '' }}</h1>
-          <p class="welcome-subtitle">What would you like to create today?</p>
-        </section>
+    <!-- Control strip: greeting + primary action -->
+    <header class="dashboard-strip">
+      <div class="dashboard-strip__inner">
+        <div class="dashboard-strip__greeting">
+          <h1 class="dashboard-strip__title">Welcome back{{ userName ? `, ${userName}` : '' }}</h1>
+          <p class="dashboard-strip__subtitle">Choose a path below to get started.</p>
+        </div>
+        <NuxtLink to="/builder" class="dashboard-strip__cta">
+          <span class="dashboard-strip__cta-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <line x1="3" y1="9" x2="21" y2="9"/>
+              <line x1="9" y1="21" x2="9" y2="9"/>
+            </svg>
+          </span>
+          <span>Open Builder</span>
+          <svg class="dashboard-strip__cta-arrow" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+          </svg>
+        </NuxtLink>
+      </div>
+    </header>
 
-        <!-- Builder Hero Card -->
-        <section class="builder-hero">
-          <NuxtLink to="/builder" class="builder-card">
-            <div class="builder-card__content">
-              <div class="builder-card__icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                  <line x1="3" y1="9" x2="21" y2="9"/>
-                  <line x1="9" y1="21" x2="9" y2="9"/>
-                </svg>
-              </div>
-              <div class="builder-card__text">
-                <h2 class="builder-card__title">Start Building</h2>
-                <p class="builder-card__description">
-                  Create your website from scratch. Drag blocks, customize content, and preview on desktop and mobile.
-                </p>
-              </div>
-            </div>
-            <div class="builder-card__action">
-              <span>Open Builder</span>
-              <svg viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
-              </svg>
-            </div>
-          </NuxtLink>
-        </section>
-
-        <!-- Templates Showcase Section -->
-        <section class="templates-section">
-          <div class="templates-header">
-            <div class="templates-header__text">
-              <h2 class="templates-header__title">Professional Templates</h2>
-              <p class="templates-header__subtitle">
-                Start with a professionally designed website. Preview, customize colors, and we'll build it for you.
-              </p>
-            </div>
+    <!-- Templates: contrast block -->
+    <section class="dashboard-showcase" aria-labelledby="showcase-heading">
+      <div class="dashboard-showcase__inner">
+        <div class="dashboard-showcase__head">
+          <div class="dashboard-showcase__head-text">
+            <h2 id="showcase-heading" class="dashboard-showcase__title">Professional Templates</h2>
+            <p class="dashboard-showcase__subtitle">Preview, customize, and request a design. We build it for you.</p>
           </div>
-
-          <!-- Category Filter -->
-          <div class="category-filter">
-            <button 
-              class="category-btn"
-              :class="{ 'active': selectedCategory === null }"
+          <div class="dashboard-showcase__filter" role="tablist" aria-label="Template category">
+            <button
+              type="button"
+              role="tab"
+              class="dashboard-pill"
+              :class="{ 'dashboard-pill--active': selectedCategory === null }"
+              :aria-selected="selectedCategory === null"
               @click="selectedCategory = null"
             >
               All
             </button>
-            <button 
-              v-for="category in categories" 
+            <button
+              v-for="category in categories"
               :key="category"
-              class="category-btn"
-              :class="{ 'active': selectedCategory === category }"
+              type="button"
+              role="tab"
+              class="dashboard-pill"
+              :class="{ 'dashboard-pill--active': selectedCategory === category }"
+              :aria-selected="selectedCategory === category"
               @click="selectedCategory = category"
             >
               {{ getCategoryLabel(category) }}
             </button>
           </div>
+        </div>
 
-          <!-- Templates Grid -->
-          <div class="templates-grid">
-            <div 
-              v-for="template in filteredTemplates" 
-              :key="template.id" 
-              class="template-card"
-              @click="openShowcase(template)"
-            >
-              <div class="template-preview">
-                <div class="preview-placeholder" :style="getPreviewStyle(template)">
-                  <div class="preview-browser">
-                    <div class="browser-dots">
-                      <span></span><span></span><span></span>
-                    </div>
-                    <div class="preview-content">
-                      <div class="preview-hero" :style="{ background: template.colorScheme.primary }"></div>
-                      <div class="preview-sections">
-                        <div class="preview-section"></div>
-                        <div class="preview-section"></div>
-                        <div class="preview-section"></div>
-                      </div>
-                    </div>
+        <div class="dashboard-showcase__grid">
+          <article
+            v-for="template in filteredTemplates"
+            :key="template.id"
+            class="dashboard-card"
+            tabindex="0"
+            role="button"
+            :aria-label="`Preview ${template.name}, ${template.industry}`"
+            @click="openShowcase(template)"
+            @keydown.enter.prevent="openShowcase(template)"
+            @keydown.space.prevent="openShowcase(template)"
+          >
+            <div class="dashboard-card__preview" :style="getPreviewStyle(template)">
+              <div class="dashboard-card__browser">
+                <div class="dashboard-card__browser-bar">
+                  <span></span><span></span><span></span>
+                </div>
+                <div class="dashboard-card__mock">
+                  <div class="dashboard-card__mock-hero"></div>
+                  <div class="dashboard-card__mock-body">
+                    <div class="dashboard-card__mock-line"></div>
+                    <div class="dashboard-card__mock-line dashboard-card__mock-line--short"></div>
+                    <div class="dashboard-card__mock-line dashboard-card__mock-line--shorter"></div>
                   </div>
                 </div>
               </div>
-              <div class="template-info">
-                <span class="template-industry">{{ template.industry }}</span>
-                <h3 class="template-name">{{ template.name }}</h3>
-                <p class="template-description">{{ template.description }}</p>
-                <div class="template-meta">
-                  <span class="section-count">{{ template.sections.length }} sections</span>
-                  <span class="view-cta">Preview →</span>
-                </div>
+            </div>
+            <div class="dashboard-card__info">
+              <span class="dashboard-card__industry">{{ template.industry }}</span>
+              <h3 class="dashboard-card__name">{{ template.name }}</h3>
+              <p class="dashboard-card__desc">{{ template.description }}</p>
+              <div class="dashboard-card__meta">
+                <span class="dashboard-card__sections">{{ template.sections.length }} sections</span>
+                <span class="dashboard-card__action">Preview</span>
               </div>
             </div>
-          </div>
-        </section>
+          </article>
+        </div>
       </div>
-    </main>
+    </section>
 
-    <!-- Showcase Modal -->
     <ShowcaseModal
       v-if="showModal"
       :template="selectedTemplate"
@@ -115,10 +105,9 @@
       @choose="handleChooseDesign"
     />
 
-    <!-- Footer -->
     <footer class="dashboard-footer">
-      <div class="footer-inner">
-        <p class="footer-text">&copy; 2026 {{ appConfig.appName }}. All rights reserved.</p>
+      <div class="dashboard-footer__inner">
+        <p class="dashboard-footer__text">&copy; 2026 {{ appConfig.appName }}. All rights reserved.</p>
       </div>
     </footer>
   </div>
@@ -130,7 +119,6 @@ import { useAuth } from '~/composables/useAuth';
 import { useShowcaseStore, type ShowcaseTemplate, type ShowcaseCategory } from '~/stores/showcase';
 import ShowcaseModal from '~/components/ShowcaseModal.vue';
 
-// Route protection: Requires authentication
 definePageMeta({
   middleware: 'auth'
 });
@@ -142,18 +130,15 @@ const showcaseStore = useShowcaseStore();
 const router = useRouter();
 const appConfig = useAppConfig();
 
-// User name for greeting
 const userName = computed(() => {
   if (!currentUser.value) return '';
   return currentUser.value.displayName || currentUser.value.email?.split('@')[0] || '';
 });
 
-// Template showcase state
 const selectedCategory = ref<ShowcaseCategory | null>(null);
 const showModal = ref(false);
 const selectedTemplate = ref<ShowcaseTemplate | null>(null);
 
-// Computed
 const categories = computed(() => showcaseStore.categories);
 
 const filteredTemplates = computed(() => {
@@ -163,18 +148,14 @@ const filteredTemplates = computed(() => {
   return showcaseStore.getTemplatesByCategory(selectedCategory.value);
 });
 
-// Methods
 const getCategoryLabel = (category: ShowcaseCategory): string => {
   return showcaseStore.getCategoryLabel(category);
 };
 
-const getPreviewStyle = (template: ShowcaseTemplate) => {
-  return {
-    '--primary-color': template.colorScheme.primary,
-    '--secondary-color': template.colorScheme.secondary,
-    '--bg-color': template.colorScheme.background
-  };
-};
+const getPreviewStyle = (template: ShowcaseTemplate) => ({
+  '--preview-primary': template.colorScheme.primary,
+  '--preview-bg': template.colorScheme.background
+});
 
 const openShowcase = (template: ShowcaseTemplate) => {
   selectedTemplate.value = template;
