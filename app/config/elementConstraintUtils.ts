@@ -1,23 +1,27 @@
 /**
  * Element Constraint Debugging & Validation Utilities
- * 
+ *
  * Helpful functions for testing, validating, and understanding element constraints
  */
 
 import { ELEMENT_CONSTRAINTS, getMaxInstances, getElementPosition } from './elementConstraints';
 
+/** Minimal shape for constraint validation (elements need at least a type). */
+export interface ConstraintElement {
+  type: string;
+}
+
 /**
  * Validate a list of elements against all constraints
  * Returns validation report with any violations
  */
-export function validateElementList(elements: any[]) {
+export function validateElementList(elements: ConstraintElement[]) {
   const report = {
     valid: true,
     violations: [] as string[],
     warnings: [] as string[]
   };
 
-  // Check instance limits
   const typeCounts = new Map<string, number>();
   elements.forEach((el) => {
     typeCounts.set(el.type, (typeCounts.get(el.type) || 0) + 1);
@@ -33,14 +37,13 @@ export function validateElementList(elements: any[]) {
     }
   });
 
-  // Warn about positioning issues
   const positionedElements = ELEMENT_CONSTRAINTS.filter((c) => c.position);
-  const elementsByPosition = new Map<string, any[]>();
+  const elementsByPosition = new Map<string, ConstraintElement[]>();
 
   positionedElements.forEach((config) => {
     const matching = elements.filter((el) => el.type === config.type);
     if (matching.length > 0) {
-      elementsByPosition.set(config.position || 'middle', matching);
+      elementsByPosition.set(config.position ?? 'middle', matching);
     }
   });
 
@@ -92,7 +95,7 @@ export function getConstraintSummary(): string {
  * Check if an element list respects all constraints
  * Useful for form validation
  */
-export function isValidElementList(elements: any[]): boolean {
+export function isValidElementList(elements: ConstraintElement[]): boolean {
   const report = validateElementList(elements);
   return report.valid && report.violations.length === 0;
 }
@@ -100,8 +103,8 @@ export function isValidElementList(elements: any[]): boolean {
 /**
  * Get list of elements that would be removed if constraints were applied
  */
-export function getExcessElements(elements: any[]): any[] {
-  const excess: any[] = [];
+export function getExcessElements(elements: ConstraintElement[]): ConstraintElement[] {
+  const excess: ConstraintElement[] = [];
   const instanceCount = new Map<string, number>();
 
   elements.forEach((item) => {
@@ -121,7 +124,7 @@ export function getExcessElements(elements: any[]): any[] {
 /**
  * Get element types that currently violate constraints
  */
-export function getViolatingTypes(elements: any[]): string[] {
+export function getViolatingTypes(elements: ConstraintElement[]): string[] {
   const typeCounts = new Map<string, number>();
   elements.forEach((el) => {
     typeCounts.set(el.type, (typeCounts.get(el.type) || 0) + 1);

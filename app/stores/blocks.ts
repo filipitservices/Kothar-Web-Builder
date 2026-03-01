@@ -21,7 +21,7 @@ export interface BlockData {
   title?: string;
   subtitle?: string;
   // Type-specific editable fields
-  customData?: Record<string, any>;
+  customData?: Record<string, unknown>;
 }
 
 export interface ScreenBlocks {
@@ -50,7 +50,7 @@ export const useBlocksStore = defineStore('blocks', () => {
   };
 
   /**
-   * Create or update a block's local data
+   * Create or update a block's local data (immutable update).
    */
   const setBlockData = (
     screenId: 'desktop' | 'mobile',
@@ -58,12 +58,9 @@ export const useBlocksStore = defineStore('blocks', () => {
     blockType: string,
     data: Partial<BlockData>
   ) => {
-    if (!screens.value[screenId]) {
-      screens.value[screenId] = {};
-    }
-    
-    const existing = screens.value[screenId][blockId];
-    screens.value[screenId][blockId] = {
+    const screenBlocks = screens.value[screenId] ?? {};
+    const existing = screenBlocks[blockId];
+    const nextBlock: BlockData = {
       blockId,
       blockType,
       position: data.position ?? existing?.position,
@@ -74,60 +71,88 @@ export const useBlocksStore = defineStore('blocks', () => {
         ...data.customData
       }
     };
+    screens.value = {
+      ...screens.value,
+      [screenId]: {
+        ...screenBlocks,
+        [blockId]: nextBlock
+      }
+    };
   };
 
   /**
-   * Update a specific field in a block's customData
+   * Update a specific field in a block's customData (immutable update).
    */
   const updateBlockCustomField = (
     screenId: 'desktop' | 'mobile',
     blockId: string,
     fieldName: string,
-    value: any
+    value: unknown
   ) => {
-    if (screens.value[screenId]?.[blockId]) {
-      if (!screens.value[screenId][blockId].customData) {
-        screens.value[screenId][blockId].customData = {};
+    const screenBlocks = screens.value[screenId];
+    const existing = screenBlocks?.[blockId];
+    if (!existing) return;
+
+    const nextCustomData = {
+      ...(existing.customData ?? {}),
+      [fieldName]: value
+    };
+    const nextBlock: BlockData = {
+      ...existing,
+      customData: nextCustomData
+    };
+    screens.value = {
+      ...screens.value,
+      [screenId]: {
+        ...screenBlocks,
+        [blockId]: nextBlock
       }
-      screens.value[screenId][blockId].customData[fieldName] = value;
-    }
+    };
   };
 
   /**
-   * Remove a block instance
+   * Remove a block instance (immutable update).
    */
   const removeBlock = (screenId: 'desktop' | 'mobile', blockId: string) => {
-    if (screens.value[screenId]) {
-      delete screens.value[screenId][blockId];
-    }
+    const screenBlocks = screens.value[screenId];
+    if (!screenBlocks?.[blockId]) return;
+    const { [blockId]: _, ...rest } = screenBlocks;
+    screens.value = {
+      ...screens.value,
+      [screenId]: rest
+    };
   };
 
   /**
-   * Clear all blocks for a screen
+   * Clear all blocks for a screen (immutable update).
    */
   const clearScreen = (screenId: 'desktop' | 'mobile') => {
-    screens.value[screenId] = {};
+    screens.value = {
+      ...screens.value,
+      [screenId]: {}
+    };
   };
 
   /**
-   * Copy block customizations from one screen to another
-   * Useful for sync functionality
+   * Copy block customizations from one screen to another (immutable update).
    */
   const syncBlockToScreen = (sourceScreenId: 'desktop' | 'mobile', targetScreenId: 'desktop' | 'mobile', blockId: string) => {
     const sourceBlock = screens.value[sourceScreenId]?.[blockId];
-    if (sourceBlock) {
-      if (!screens.value[targetScreenId]) {
-        screens.value[targetScreenId] = {};
+    const targetBlocks = screens.value[targetScreenId] ?? {};
+    const targetBlock = targetBlocks[blockId];
+    if (!sourceBlock || !targetBlock) return;
+
+    const nextBlock: BlockData = {
+      ...sourceBlock,
+      customData: { ...(sourceBlock.customData ?? {}) }
+    };
+    screens.value = {
+      ...screens.value,
+      [targetScreenId]: {
+        ...targetBlocks,
+        [blockId]: nextBlock
       }
-      const targetBlock = screens.value[targetScreenId][blockId];
-      if (targetBlock) {
-        // Copy customizations but keep block-type specific local overrides
-        screens.value[targetScreenId][blockId] = {
-          ...sourceBlock,
-          customData: { ...sourceBlock.customData }
-        };
-      }
-    }
+    };
   };
 
   /**

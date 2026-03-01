@@ -31,6 +31,7 @@ import type {
   OrderRequest
 } from '~/types/order';
 import { ORDER_STATUS_DEFAULT } from '~/types/order';
+import { sanitizeStorageFileName } from '~/utils/storage';
 
 /** Result of a successful order submission. */
 export interface OrderSubmissionResult {
@@ -46,18 +47,6 @@ export class OrderSubmissionError extends Error {
     super(message);
     this.name = 'OrderSubmissionError';
   }
-}
-
-/**
- * Sanitize a filename for use in Storage path: remove path separators and dangerous chars.
- * Collisions for same name are avoided by prefixing with index.
- */
-function sanitizeStorageFileName(originalName: string, index: number): string {
-  const base = originalName.replace(/[/\\?*:|\x00-\x1f]/g, '').trim() || 'file';
-  const ext = base.includes('.') ? base.slice(base.lastIndexOf('.')) : '';
-  const nameWithoutExt = base.includes('.') ? base.slice(0, base.lastIndexOf('.')) : base;
-  const safe = nameWithoutExt.replace(/\s+/g, '_').slice(0, 100);
-  return `${index}_${safe}${ext}`;
 }
 
 /**

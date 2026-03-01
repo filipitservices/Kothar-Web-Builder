@@ -9,7 +9,7 @@
       :categories="categories"
       :selected-category="selectedCategory"
       :get-category-label="getCategoryLabel"
-      @select="selectedCategory = $event"
+      @select="selectedCategory = ($event as Template['category'] | null)"
     />
 
     <div class="templates-container">
@@ -45,7 +45,7 @@ interface TemplatesListEmits {
 const emit = defineEmits<TemplatesListEmits>();
 const templatesStore = useTemplatesStore();
 
-const selectedCategory = ref<string | null>(null);
+const selectedCategory = ref<Template['category'] | null>(null);
 const showScreenSelector = ref(false);
 const selectedTemplate = ref<Template | null>(null);
 
@@ -55,7 +55,7 @@ const filteredTemplates = computed(() => {
   if (selectedCategory.value === null) {
     return templatesStore.getAllTemplates;
   }
-  return templatesStore.getTemplatesByCategory(selectedCategory.value as any);
+  return templatesStore.getTemplatesByCategory(selectedCategory.value);
 });
 
 const getCategoryLabel = (category: string): string => {

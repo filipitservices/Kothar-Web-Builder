@@ -37,7 +37,7 @@ const props = defineProps({
   }
 });
 
-const { getField, setField, isLocalValue } = useBlockData(props.blockId);
+const { getField, setField, isLocalValue } = useBlockData(props.blockId, props.screenType);
 
 const title = computed(() => getField('title') ?? 'Section headline');
 const subtitle = computed(() => getField('subtitle') ?? 'Concise lead-in text for this section.');

@@ -37,7 +37,7 @@ const props = defineProps({
   }
 });
 
-const { getField, setField, isLocalValue } = useBlockData(props.blockId);
+const { getField, setField, isLocalValue } = useBlockData(props.blockId, props.screenType);
 
 const title = computed(() => getField('title') ?? 'Text Section Heading');
 const content = computed(() => getField('content') ?? 'Add any paragraph or formatted text content here. This is useful for longer explanations, stories, or details.');

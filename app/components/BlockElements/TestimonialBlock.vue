@@ -35,7 +35,7 @@ const props = defineProps({
   }
 });
 
-const { getField, setField, isLocalValue, mergedData } = useBlockData(props.blockId);
+const { getField, setField, isLocalValue, mergedData } = useBlockData(props.blockId, props.screenType);
 
 const testimonial = computed(() => getField('testimonial') ?? '"Customer quote goes here. Share a specific benefit or result."');
 const clientName = computed(() => mergedData.value.companyName || 'Client Name, Company');

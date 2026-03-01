@@ -30,7 +30,7 @@ const props = defineProps({
   }
 });
 
-const { getField, setField, isLocalValue, mergedData } = useBlockData(props.blockId);
+const { getField, setField, isLocalValue, mergedData } = useBlockData(props.blockId, props.screenType);
 
 const brandText = computed(() => mergedData.value.companyName || 'Your Brand');
 

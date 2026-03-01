@@ -3,22 +3,23 @@
  * Handles synchronization and constraint enforcement between desktop/mobile element lists
  */
 
-import { ref, watch } from 'vue';
+import { watch } from 'vue';
 import type { Ref } from 'vue';
 import { useElementConstraints } from './useElementConstraints';
+import type { ConstraintElement } from '~/config/elementConstraintUtils';
 
 interface ListSyncOptions {
-  desktopList: Ref<any[]>;
-  mobileList: Ref<any[]>;
+  desktopList: Ref<ConstraintElement[]>;
+  mobileList: Ref<ConstraintElement[]>;
   syncEnabled: Ref<boolean>;
-  onDesktopListUpdate: (list: any[]) => void;
-  onMobileListUpdate: (list: any[]) => void;
+  onDesktopListUpdate: (list: ConstraintElement[]) => void;
+  onMobileListUpdate: (list: ConstraintElement[]) => void;
 }
 
 export function useListSyncing(options: ListSyncOptions) {
   const { removeDuplicates, enforceElementPositions } = useElementConstraints();
 
-  const applyConstraints = (list: any[]) => {
+  const applyConstraints = (list: ConstraintElement[]) => {
     const unique = removeDuplicates(list);
     return enforceElementPositions(unique);
   };

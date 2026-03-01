@@ -253,50 +253,7 @@ export const useBlocksStore = defineStore('blocks', () => {
 }
 ```
 
-**Implementation**:
-```javascript
-import { computed } from 'vue';
-import { useBusinessStore } from '~/stores/business';
-
-export function useBusinessData() {
-  const businessStore = useBusinessStore();
-  
-  return {
-    companyName: computed(() => businessStore.companyName),
-    email: computed(() => businessStore.email),
-    telephone: computed(() => businessStore.telephone),
-    address: computed(() => businessStore.address),
-    city: computed(() => businessStore.city),
-    postalCode: computed(() => businessStore.postalCode),
-    website: computed(() => businessStore.website),
-    businessHours: computed(() => businessStore.businessHours),
-    taxId: computed(() => businessStore.taxId),
-    
-    fullAddress: computed(() => {
-      const parts = [
-        businessStore.address,
-        businessStore.city,
-        businessStore.postalCode
-      ].filter(Boolean);
-      return parts.join(', ');
-    }),
-    
-    hasContact: computed(() => {
-      return !!(businessStore.email || businessStore.telephone);
-    }),
-    
-    isComplete: computed(() => {
-      return !!(
-        businessStore.companyName &&
-        businessStore.email &&
-        businessStore.telephone &&
-        businessStore.address &&
-        businessStore.city
-      );
-    })
-  };
-}
-```
+**Implementation**: Uses `storeToRefs(businessStore)` for reactive field refs (companyName, email, etc.) and `computed()` for fullAddress, hasContact, and isComplete. Exposes getField and updateBusinessInfo from the store. Components use the returned refs and helpers; they do not access the store directly.
 
 ### useBlockData(blockId)
 
@@ -306,22 +263,18 @@ export function useBusinessData() {
 
 **Signature**:
 ```typescript
-function useBlockData(blockId: string): {
-  getField: (name: string) => any,
-  setField: (name: string, value: any) => void,
+function useBlockData(blockId: string, screenIdOrRef?: 'desktop' | 'mobile' | string | { value: string }): {
+  getField: (name: string) => unknown,
+  setField: (name: string, value: unknown) => void,
   isLocalValue: (name: string) => boolean,
-  mergedData: ComputedRef<BusinessData & CustomData>,
-  blockData: ComputedRef<BlockData>,
+  mergedData: ComputedRef<...>,
+  blockData: ComputedRef<BlockData | undefined>,
   deleteBlock: () => void,
-  screenId: 'desktop' | 'mobile'
+  screenId: ComputedRef<'desktop' | 'mobile'>
 }
 ```
 
-**Important**: Screen Detection Limitation
-- Current implementation **defaults to 'desktop'** screen
-- TODO: Future enhancement to use `provide/inject` or route context for auto-detection
-- **Current Workaround**: Blocks receive `screenType` prop from parent ItemsList component
-- Function internally always uses 'desktop' (limitation to be addressed)
+**Screen context**: Block components receive `screenType` from parent (ItemsList). Pass it as the second argument: `useBlockData(blockId, screenType)` so desktop and mobile data stay separate. Defaults to `'desktop'` if omitted.
 
 **Implementation**:
 ```javascript
@@ -392,20 +345,6 @@ export function useBlockData(blockId) {
     blocksStore.removeBlock(screenId.value, blockId);
   };
 
-  return {
-    getField,
-    setField,
-    isLocalValue,
-    mergedData,
-    blockData,
-    deleteBlock,
-    screenId: screenId.value
-  };
-}
-```
-    blocksStore.deleteBlock(blockId, screenId);
-  }
-  
   return {
     getField,
     setField,

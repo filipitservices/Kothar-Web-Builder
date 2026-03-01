@@ -1,41 +1,38 @@
 import { computed } from 'vue';
 import { useBlocksStore } from '~/stores/blocks';
 import { useBusinessData } from '~/composables/useBusinessData';
-import { useNuxtApp } from '#app';
+
+export type BlockDataScreenId = 'desktop' | 'mobile';
+
+function toScreenId(v: unknown): BlockDataScreenId {
+  return v === 'mobile' ? 'mobile' : 'desktop';
+}
 
 /**
- * Composable for accessing and updating block-specific data
- * New simplified API - automatically detects screen type from route/context
- * 
- * Usage in a block:
- * const { getField, setField, isLocalValue, mergedData } = useBlockData(props.blockId);
- * 
- * Benefits:
- * - Single parameter API (just blockId)
- * - Automatic screen detection
- * - Merged business data access
- * - Visual indicators for customized fields
- * - Type-safe field access
+ * Composable for accessing and updating block-specific data.
+ * Block components must pass screenType from parent (ItemsList) so desktop and mobile data stay separate.
+ *
+ * @param blockId - Unique block instance id
+ * @param screenIdOrRef - Optional screen context. Defaults to 'desktop'.
  */
-
-export function useBlockData(blockId: string) {
+export function useBlockData(
+  blockId: string,
+  screenIdOrRef?: BlockDataScreenId | string | { value: BlockDataScreenId | string }
+) {
   const blocksStore = useBlocksStore();
   const businessData = useBusinessData();
-  const nuxtApp = useNuxtApp();
 
-  // Auto-detect screen type from blockId prefix or default to desktop
-  // blockId format: "type-timestamp-random" or can include screen info
-  const screenId = computed<'desktop' | 'mobile'>(() => {
-    // For now, we'll need to pass screen context differently
-    // This is a simplified version - in production you'd use provide/inject or route
-    return 'desktop'; // Default fallback
+  const screenId = computed<BlockDataScreenId>(() => {
+    if (screenIdOrRef === undefined) return 'desktop';
+    if (typeof screenIdOrRef === 'string') return toScreenId(screenIdOrRef);
+    return toScreenId(screenIdOrRef.value);
   });
 
   /**
    * Get a field value from block's customData
    * Returns the stored value or undefined if not set
    */
-  const getField = (fieldName: string): any => {
+  const getField = (fieldName: string): unknown => {
     const blockData = blocksStore.getBlockData(screenId.value, blockId);
     return blockData?.customData?.[fieldName];
   };
@@ -44,7 +41,7 @@ export function useBlockData(blockId: string) {
    * Set a field value in block's customData
    * Initializes block if it doesn't exist
    */
-  const setField = (fieldName: string, value: any): void => {
+  const setField = (fieldName: string, value: unknown): void => {
     // Ensure block exists
     let blockData = blocksStore.getBlockData(screenId.value, blockId);
     if (!blockData) {
@@ -109,15 +106,12 @@ export function useBlockData(blockId: string) {
   };
 
   return {
-    // Core API
     getField,
     setField,
     isLocalValue,
     mergedData,
-    
-    // Additional utilities
     blockData,
     deleteBlock,
-    screenId: screenId.value
+    screenId,
   };
 }

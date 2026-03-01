@@ -45,10 +45,10 @@ export function useTextBoxManager(options: UseTextBoxManagerOptions) {
     return newTextBox;
   };
 
-  const updateTextBox = (id: string, property: keyof TextBox, value: any) => {
-    const textBox = textBoxes.value.find(tb => tb.id === id);
+  const updateTextBox = <K extends keyof TextBox>(id: string, property: K, value: TextBox[K]) => {
+    const textBox = textBoxes.value.find((tb) => tb.id === id);
     if (textBox) {
-      (textBox as any)[property] = value;
+      textBox[property] = value;
     }
   };
 

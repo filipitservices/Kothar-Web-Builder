@@ -33,8 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { defineAsyncComponent } from 'vue';
+import { defineAsyncComponent, type Component } from 'vue';
 import type { BlockItem, BlockType } from '~/types/builder';
 
 type ScreenType = 'desktop' | 'mobile';
@@ -86,15 +85,15 @@ const BLOCK_COMPONENTS = {
   stats: () => import('./BlockElements/StatsBlock.vue'),
   gallery: () => import('./BlockElements/GalleryBlock.vue'),
   text: () => import('./BlockElements/TextBlock.vue')
-} as const satisfies Record<BlockType, () => Promise<any>>;
+} as const satisfies Record<BlockType, () => Promise<{ default: Component }>>;
 
-const getComponent = (type: BlockType) => {
+const getComponent = (type: BlockType): Component | null => {
   const loader = BLOCK_COMPONENTS[type];
   if (!loader) {
     console.warn(`Unknown block type: ${type}`);
     return null;
   }
-  return defineAsyncComponent(() => loader() as any);
+  return defineAsyncComponent(loader);
 };
 
 /**

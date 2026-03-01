@@ -34,12 +34,12 @@ const defaultState: DrawingState = {
 export const useDrawing = () => {
   const desktopDrawingState = reactive<DrawingState>({ ...defaultState });
   const mobileDrawingState = reactive<DrawingState>({ ...defaultState });
-  const desktopStrokes = ref<any[]>([]);
-  const mobileStrokes = ref<any[]>([]);
+  const desktopStrokes = ref<unknown[]>([]);
+  const mobileStrokes = ref<unknown[]>([]);
   const desktopDrawingImage = ref<string>('');
   const mobileDrawingImage = ref<string>('');
-  const desktopCanvasRef = ref<any>(null);
-  const mobileCanvasRef = ref<any>(null);
+  const desktopCanvasRef = ref<{ getAllStrokes?: () => unknown[]; image?: string; isEmpty?: () => boolean; reset?: () => void; undo?: () => void; redo?: () => void } | null>(null);
+  const mobileCanvasRef = ref<{ getAllStrokes?: () => unknown[]; image?: string; isEmpty?: () => boolean; reset?: () => void; undo?: () => void; redo?: () => void } | null>(null);
 
   // Helper to get state by screen type
   const getState = (screen: ScreenType): DrawingState => 
@@ -55,9 +55,9 @@ export const useDrawing = () => {
     screen === 'desktop' ? desktopDrawingImage : mobileDrawingImage;
 
   // Canvas refs
-  const setCanvasRef = (screen: ScreenType, ref: any) => {
-    if (screen === 'desktop') desktopCanvasRef.value = ref;
-    else mobileCanvasRef.value = ref;
+  const setCanvasRef = (screen: ScreenType, canvasRef: typeof desktopCanvasRef.value) => {
+    if (screen === 'desktop') desktopCanvasRef.value = canvasRef;
+    else mobileCanvasRef.value = canvasRef;
   };
 
   // Drawing state control
@@ -105,6 +105,16 @@ export const useDrawing = () => {
 
   const setTextFontFamily = (screen: ScreenType, family: string) => {
     getState(screen).textFontFamily = family;
+  };
+
+  /** Update desktop drawing state with a partial; use from parent instead of mutating state. */
+  const updateDesktopDrawingState = (partial: Partial<DrawingState>) => {
+    Object.assign(desktopDrawingState, partial);
+  };
+
+  /** Update mobile drawing state with a partial; use from parent instead of mutating state. */
+  const updateMobileDrawingState = (partial: Partial<DrawingState>) => {
+    Object.assign(mobileDrawingState, partial);
   };
 
   // Canvas operations
@@ -163,6 +173,8 @@ export const useDrawing = () => {
     setTextFontSize,
     setTextColor,
     setTextFontFamily,
+    updateDesktopDrawingState,
+    updateMobileDrawingState,
     resetState,
     clearCanvas,
     undo,

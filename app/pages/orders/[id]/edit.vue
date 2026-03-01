@@ -71,7 +71,6 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 import { useShowcaseStore, type ShowcaseTemplate } from '~/stores/showcase';
 import { useAuthStore } from '~/stores/auth';
 import { useOrdersStore } from '~/stores/orders';

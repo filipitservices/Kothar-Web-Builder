@@ -109,7 +109,7 @@ export const useQuizStore = defineStore('quiz', () => {
   ];
 
   const setAnswer = (fieldName: string, value: string) => {
-    answers.value[fieldName] = value;
+    answers.value = { ...answers.value, [fieldName]: value };
   };
 
   const getAnswer = (fieldName: string): string => {

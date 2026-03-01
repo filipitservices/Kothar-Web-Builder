@@ -1,23 +1,15 @@
 /**
  * useElementConstraints
  * Provides utility functions for enforcing element constraints
- * 
+ *
  * Constraints are defined in config/elementConstraints.ts
- * This composable reads from that config for maximum flexibility and scalability
  */
 
 import { ELEMENT_CONSTRAINTS, getMaxInstances, getElementPosition } from '../config/elementConstraints';
+import type { ConstraintElement } from '../config/elementConstraintUtils';
 
 export function useElementConstraints() {
-  /**
-   * Remove elements that exceed their instance limits
-   * 
-   * Generic logic:
-   * - Track count of each element type
-   * - Compare against maxInstances from config
-   * - Remove excess instances
-   */
-  const removeDuplicates = (list: any[]) => {
+  const removeDuplicates = (list: ConstraintElement[]) => {
     const instanceCount = new Map<string, number>();
 
     return list.filter((item) => {
@@ -47,10 +39,10 @@ export function useElementConstraints() {
    * Elements with position: 'bottom' go to the end
    * Everything else stays in the middle in their original order
    */
-  const enforceElementPositions = (list: any[]) => {
-    const topElements: any[] = [];
-    const bottomElements: any[] = [];
-    const middleElements: any[] = [];
+  const enforceElementPositions = (list: ConstraintElement[]) => {
+    const topElements: ConstraintElement[] = [];
+    const bottomElements: ConstraintElement[] = [];
+    const middleElements: ConstraintElement[] = [];
 
     // Partition elements by their position constraint
     list.forEach((item) => {
@@ -75,16 +67,12 @@ export function useElementConstraints() {
    * 2. Enforce positioning rules
    * 3. Return validated list
    */
-  const applyConstraints = (list: any[]) => {
+  const applyConstraints = (list: ConstraintElement[]) => {
     const unique = removeDuplicates(list);
     return enforceElementPositions(unique);
   };
 
-  /**
-   * Check if adding an element would violate constraints
-   * Useful for preventing invalid additions before they happen
-   */
-  const canAddElement = (type: string, currentList: any[]): boolean => {
+  const canAddElement = (type: string, currentList: ConstraintElement[]): boolean => {
     const maxAllowed = getMaxInstances(type);
     const currentCount = currentList.filter((item) => item.type === type).length;
     return currentCount < maxAllowed;

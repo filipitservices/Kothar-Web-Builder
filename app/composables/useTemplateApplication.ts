@@ -1,26 +1,13 @@
 import { useTemplatesStore } from '~/stores/templates';
 import type { Ref } from 'vue';
+import type { BlockItem } from '~/types/builder';
 
 /**
  * Template Application Composable
- * 
+ *
  * Handles applying templates to desktop/mobile screens.
- * Follows state transformation pattern - no direct DOM manipulation.
- * 
- * Flow:
- * 1. Get template definition from store
- * 2. Generate unique block IDs for each block in template
- * 3. Create list items with proper structure
- * 4. Update the target screen list (triggers vue-draggable reactivity)
- * 
- * This is a pure state transformation - ItemsList handles the rendering.
+ * Pure state transformation: replaces list refs; no direct DOM manipulation.
  */
-
-interface BlockItem {
-  id: string;
-  type: string;
-  label: string;
-}
 
 interface UseTemplateApplicationParams {
   desktopList: Ref<BlockItem[]>;

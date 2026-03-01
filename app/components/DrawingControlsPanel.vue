@@ -205,7 +205,7 @@ const toggleGlobalDrawing = () => {
 
 const toggleTextMode = () => updateState('isTextMode', !currentIsTextMode.value);
 
-const updateState = (key: keyof DrawingState, value: any) => {
+const updateState = (key: keyof DrawingState, value: DrawingState[keyof DrawingState]) => {
   if (activeMode.value === 'mobile') {
     emit('update:mobile-drawing-state', { ...props.mobileDrawingState, [key]: value });
   } else {

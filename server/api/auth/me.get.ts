@@ -9,7 +9,7 @@
  */
 
 import { getAdminAuth, getSessionConfig } from '../../utils/firebase-admin';
-import type { AuthUser, MeResponse } from '~/types/auth';
+import type { AuthUser, MeResponse, SessionClaims } from '~/types/auth';
 
 export default defineEventHandler(async (event): Promise<MeResponse> => {
   const sessionConfig = getSessionConfig();
@@ -36,10 +36,9 @@ export default defineEventHandler(async (event): Promise<MeResponse> => {
       emailVerified: decodedClaims.email_verified || false,
     };
     
-    // Attach auth to event context for downstream handlers
     event.context.auth = {
       user,
-      claims: decodedClaims as any, // Cast to our SessionClaims type
+      claims: decodedClaims as SessionClaims,
     };
     
     return { user };

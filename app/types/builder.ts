@@ -20,10 +20,17 @@ export interface InfoField {
   placeholder: string;
 }
 
+/** Drawing tool state; used by builder and DrawingOverlay. */
 export interface DrawingState {
   desktopEnabled?: boolean;
   mobileEnabled?: boolean;
-  [key: string]: any;
+  strokeType?: 'dash' | 'line' | 'circle' | 'square' | 'triangle' | 'half_triangle';
+  color?: string;
+  lineWidth?: number;
+  isTextMode?: boolean;
+  textFontSize?: number;
+  textColor?: string;
+  textFontFamily?: string;
 }
 
 export type ScreenId = 'desktop' | 'mobile' | 'both';

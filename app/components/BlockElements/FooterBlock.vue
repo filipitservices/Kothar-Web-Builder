@@ -43,7 +43,7 @@ const props = defineProps<{
   screenType?: string;
 }>();
 
-const { getField, setField, isLocalValue, mergedData } = useBlockData(props.blockId);
+const { getField, setField, isLocalValue, mergedData } = useBlockData(props.blockId, props.screenType);
 
 const currentYear = new Date().getFullYear();
 

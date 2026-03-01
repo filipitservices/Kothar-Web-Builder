@@ -71,7 +71,7 @@ const props = defineProps<{
   screenType?: string;
 }>();
 
-const { getField, setField, isLocalValue } = useBlockData(props.blockId);
+const { getField, setField, isLocalValue } = useBlockData(props.blockId, props.screenType);
 
 const title = computed(() => getField('title') ?? DEFAULT_TITLE);
 

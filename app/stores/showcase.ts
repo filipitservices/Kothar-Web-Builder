@@ -30,7 +30,7 @@ export type ShowcaseCategory =
 
 export interface ShowcaseSection {
   type: 'hero' | 'services' | 'about' | 'features' | 'testimonials' | 'team' | 'pricing' | 'gallery' | 'contact' | 'cta' | 'faq' | 'stats' | 'process' | 'trust' | 'location';
-  data: Record<string, any>;
+  data: Record<string, unknown>;
 }
 
 export interface ShowcaseTemplate {

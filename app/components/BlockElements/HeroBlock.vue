@@ -73,7 +73,7 @@ const props = defineProps({
   }
 });
 
-const { getField, setField, isLocalValue } = useBlockData(props.blockId);
+const { getField, setField, isLocalValue } = useBlockData(props.blockId, props.screenType);
 
 const eyebrow = computed(() => getField('eyebrow') ?? 'FEATURED');
 const headline = computed(() => getField('headline') ?? 'Bold, clear value prop');

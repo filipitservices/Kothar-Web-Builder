@@ -65,7 +65,7 @@ const props = defineProps<{
   screenType?: string;
 }>();
 
-const { getField, setField, isLocalValue, mergedData } = useBlockData(props.blockId);
+const { getField, setField, isLocalValue, mergedData } = useBlockData(props.blockId, props.screenType);
 
 const title = computed(() => getField('title') ?? 'Visit Us');
 const note = computed(() => getField('note') ?? 'We look forward to serving you. Call ahead for appointments.');

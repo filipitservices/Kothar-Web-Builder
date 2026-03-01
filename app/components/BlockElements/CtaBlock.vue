@@ -50,7 +50,7 @@ const props = defineProps({
   }
 });
 
-const { getField, setField, isLocalValue } = useBlockData(props.blockId);
+const { getField, setField, isLocalValue } = useBlockData(props.blockId, props.screenType);
 
 const title = computed(() => getField('title') ?? 'Ready to start?');
 const subtitle = computed(() => getField('subtitle') ?? 'A single call to action with a short reassurance line.');

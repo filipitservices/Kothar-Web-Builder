@@ -37,7 +37,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
-import { useBusinessStore, type BusinessFieldKey } from '~/stores/business';
+import { useBusinessData } from '~/composables/useBusinessData';
+import type { BusinessFieldKey } from '~/stores/business';
 
 interface Field {
   name: BusinessFieldKey;
@@ -60,29 +61,18 @@ const emit = defineEmits<{
   validate: [fieldName: BusinessFieldKey];
 }>();
 
-// Access store directly with type safety
-const businessStore = useBusinessStore();
-
-// Template ref for the wrapper element
+const { getField, updateBusinessInfo } = useBusinessData();
 const infoBarWrapperRef = ref<HTMLDivElement | null>(null);
 
-// Create a computed for each field value
-const getFieldValue = (fieldName: BusinessFieldKey): string => {
-  return businessStore.getField(fieldName);
-};
+const getFieldValue = (fieldName: BusinessFieldKey): string => getField(fieldName);
 
 const handleInput = (fieldName: BusinessFieldKey, event: Event) => {
   const target = event.target;
   if (!target) return;
-  
-  const newValue = target instanceof HTMLInputElement || target instanceof HTMLSelectElement 
-    ? target.value 
+  const newValue = target instanceof HTMLInputElement || target instanceof HTMLSelectElement
+    ? target.value
     : '';
-  
-  // Update store directly using store's method
-  businessStore.updateBusinessInfo({
-    [fieldName]: newValue
-  });
+  updateBusinessInfo({ [fieldName]: newValue });
 };
 
 const handleBlur = (fieldName: BusinessFieldKey) => {

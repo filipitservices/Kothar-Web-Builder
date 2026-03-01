@@ -1,59 +1,52 @@
 import { computed } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useBusinessStore } from '~/stores/business';
+import type { BusinessFieldKey } from '~/stores/business';
 
 /**
- * Composable for accessing global business data
- * Provides reactive access to company information
- * 
- * Usage:
- * const { companyName, email, fullAddress, hasContact } = useBusinessData();
- * 
- * Benefits:
- * - Decouples components from store structure
- * - Provides computed helpers (fullAddress, hasContact, isComplete)
- * - Easy to mock for testing
- * - Type-safe access
+ * Composable for accessing and updating global business data.
+ * Prefer this over direct store access in components.
  */
 export function useBusinessData() {
   const businessStore = useBusinessStore();
+  const {
+    companyName,
+    email,
+    telephone,
+    address,
+    city,
+    postalCode,
+    website,
+    businessHours,
+    taxId
+  } = storeToRefs(businessStore);
 
-  // Direct access to all business fields
-  const companyName = computed(() => businessStore.companyName);
-  const email = computed(() => businessStore.email);
-  const telephone = computed(() => businessStore.telephone);
-  const address = computed(() => businessStore.address);
-  const city = computed(() => businessStore.city);
-  const postalCode = computed(() => businessStore.postalCode);
-  const website = computed(() => businessStore.website);
-  const businessHours = computed(() => businessStore.businessHours);
-  const taxId = computed(() => businessStore.taxId);
-
-  // Computed helpers
   const fullAddress = computed(() => {
-    const parts = [
-      businessStore.address,
-      businessStore.city,
-      businessStore.postalCode
-    ].filter(Boolean);
+    const parts = [address.value, city.value, postalCode.value].filter(Boolean);
     return parts.join(', ');
   });
 
   const hasContact = computed(() => {
-    return !!(businessStore.email || businessStore.telephone);
+    return !!(email.value || telephone.value);
   });
 
   const isComplete = computed(() => {
     return !!(
-      businessStore.companyName &&
-      businessStore.email &&
-      businessStore.telephone &&
-      businessStore.address &&
-      businessStore.city
+      companyName.value &&
+      email.value &&
+      telephone.value &&
+      address.value &&
+      city.value
     );
   });
 
+  const getField = (fieldName: BusinessFieldKey): string => businessStore.getField(fieldName);
+
+  const updateBusinessInfo = (data: Partial<Record<BusinessFieldKey, string>>) => {
+    businessStore.updateBusinessInfo(data);
+  };
+
   return {
-    // Individual fields
     companyName,
     email,
     telephone,
@@ -63,9 +56,10 @@ export function useBusinessData() {
     website,
     businessHours,
     taxId,
-    // Computed helpers
     fullAddress,
     hasContact,
-    isComplete
+    isComplete,
+    getField,
+    updateBusinessInfo,
   };
 }

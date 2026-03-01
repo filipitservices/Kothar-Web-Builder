@@ -23,14 +23,7 @@ import type {
   OrderProjectDetails
 } from '~/types/order';
 import type { TemplateRequestFormData } from '~/types/templateRequest';
-
-function sanitizeStorageFileName(originalName: string, index: number): string {
-  const base = originalName.replace(/[/\\?*:|\x00-\x1f]/g, '').trim() || 'file';
-  const ext = base.includes('.') ? base.slice(base.lastIndexOf('.')) : '';
-  const nameWithoutExt = base.includes('.') ? base.slice(0, base.lastIndexOf('.')) : base;
-  const safe = nameWithoutExt.replace(/\s+/g, '_').slice(0, 100);
-  return `${index}_${safe}${ext}`;
-}
+import { sanitizeStorageFileName } from '~/utils/storage';
 
 /**
  * Map an order document to form data for prefilling the edit form.

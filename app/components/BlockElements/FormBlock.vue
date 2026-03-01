@@ -84,7 +84,7 @@ const props = defineProps<{
   screenType?: string;
 }>();
 
-const { getField, setField, isLocalValue } = useBlockData(props.blockId);
+const { getField, setField, isLocalValue } = useBlockData(props.blockId, props.screenType);
 
 const defaults: Record<string, string> = {
   title: 'Get in touch',

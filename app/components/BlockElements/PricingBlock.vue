@@ -123,7 +123,7 @@ const props = defineProps({
   }
 });
 
-const { getField, setField, isLocalValue } = useBlockData(props.blockId);
+const { getField, setField, isLocalValue } = useBlockData(props.blockId, props.screenType);
 
 const title = computed<string>(() => getField('title') ?? 'Pricing Plans');
 const subtitle = computed<string>(() => getField('subtitle') ?? 'Choose the plan that fits your needs.');

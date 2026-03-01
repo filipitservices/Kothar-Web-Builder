@@ -44,8 +44,8 @@
         @toggle-mobile-drawing="toggleDrawing('mobile')"
         @toggle-desktop-text-mode="toggleTextMode('desktop')"
         @toggle-mobile-text-mode="toggleTextMode('mobile')"
-        @update:desktop-list="(val) => desktopList = val"
-        @update:mobile-list="(val) => mobileList = val"
+        @update:desktop-list="(val) => { desktopList.value = val; }"
+        @update:mobile-list="(val) => { mobileList.value = val; }"
         @update:desktop-drawing-state="handleDesktopDrawingStateUpdate"
         @update:mobile-drawing-state="handleMobileDrawingStateUpdate"
         @set-desktop-canvas-ref="setCanvasRef('desktop', $event)"
@@ -62,7 +62,7 @@
 
 <script setup lang="ts">
 import { ref, type Ref } from 'vue';
-import { useBusinessStore } from '~/stores/business';
+import { useBusinessData } from '~/composables/useBusinessData';
 import { useValidation } from '~/composables/useValidation';
 import { useDrawing } from '~/composables/useDrawing';
 import { useTemplateApplication } from '~/composables/useTemplateApplication';
@@ -89,10 +89,9 @@ defineOptions({ name: 'BuilderPage', display: 'Website Builder Interface' });
 const desktopList: Ref<BlockItem[]> = ref([]);
 const mobileList: Ref<BlockItem[]> = ref([]);
 
-// Stores & Composables
-const businessStore = useBusinessStore();
+const { getField: getBusinessField } = useBusinessData();
 const { validate, businessHoursOptions } = useValidation();
-const { desktopDrawingState, desktopStrokes, mobileDrawingState, mobileStrokes, toggleDrawing, toggleTextMode, setCanvasRef } = useDrawing();
+const { desktopDrawingState, desktopStrokes, mobileDrawingState, mobileStrokes, toggleDrawing, toggleTextMode, setCanvasRef, updateDesktopDrawingState, updateMobileDrawingState } = useDrawing();
 const { applyTemplate } = useTemplateApplication({ desktopList, mobileList });
 
 // State continued
@@ -105,17 +104,17 @@ const fieldErrors: Ref<Record<FieldErrorKey, string | null>> = ref(INITIAL_FIELD
 
 // Handlers
 const handleDesktopDrawingStateUpdate = (newState: Partial<DrawingState>): void => {
-  Object.assign(desktopDrawingState, newState);
+  updateDesktopDrawingState(newState);
 };
 
 const handleMobileDrawingStateUpdate = (newState: Partial<DrawingState>): void => {
-  Object.assign(mobileDrawingState, newState);
+  updateMobileDrawingState(newState);
 };
 
 const validateField = (fieldName: FieldErrorKey): void => {
-  const value = businessStore[fieldName];
+  const value = getBusinessField(fieldName);
   const error = validate(fieldName, value);
-  fieldErrors.value[fieldName] = error;
+  fieldErrors.value = { ...fieldErrors.value, [fieldName]: error };
 };
 
 const handleTemplateApply = (templateId: string, screen: ScreenId): void => {

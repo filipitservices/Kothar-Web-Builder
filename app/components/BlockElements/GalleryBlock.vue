@@ -71,7 +71,7 @@ const props = defineProps({
   }
 });
 
-const { getField, setField, isLocalValue } = useBlockData(props.blockId);
+const { getField, setField, isLocalValue } = useBlockData(props.blockId, props.screenType);
 
 const title = computed(() => getField('title') ?? 'Gallery');
 const subtitle = computed(() => getField('subtitle') ?? 'View our recent work and projects.');

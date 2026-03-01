@@ -44,7 +44,7 @@ const props = defineProps({
   }
 });
 
-const { getField, setField, isLocalValue } = useBlockData(props.blockId);
+const { getField, setField, isLocalValue } = useBlockData(props.blockId, props.screenType);
 
 const stats = computed<Stat[]>(() => [
   { number: getField('stat1Number') ?? '500+', label: getField('stat1Label') ?? 'Happy Customers' },
