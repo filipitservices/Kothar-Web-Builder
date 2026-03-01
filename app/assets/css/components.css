@@ -420,6 +420,31 @@
   line-height: 1.5;
 }
 
+/* Form validation: error message and invalid state */
+.form-error {
+  display: block;
+  min-height: 1.25rem;
+  margin-top: var(--space-xs);
+  font-size: 0.8125rem;
+  line-height: 1.25;
+  color: var(--color-error);
+  word-wrap: break-word;
+}
+
+.form-input--invalid,
+.form-select--invalid,
+.form-textarea--invalid {
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 1px var(--color-error);
+}
+
+.form-input--invalid:focus,
+.form-select--invalid:focus,
+.form-textarea--invalid:focus {
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+}
+
 /* Fieldset - Visual grouping with subtle background */
 .form-fieldset {
   border: none;

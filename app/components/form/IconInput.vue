@@ -11,6 +11,7 @@
       :required="required"
       class="icon-input__field"
       @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
+      @blur="$emit('blur')"
     />
   </div>
 </template>
@@ -32,6 +33,7 @@ withDefaults(defineProps<Props>(), {
 
 defineEmits<{
   (e: 'update:modelValue', value: string): void;
+  (e: 'blur'): void;
 }>();
 </script>
 

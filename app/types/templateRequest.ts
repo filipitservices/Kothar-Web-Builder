@@ -70,3 +70,29 @@ export interface IndustryOption {
  * Color mode for the picker: presets or custom editing.
  */
 export type ColorMode = 'presets' | 'custom';
+
+/**
+ * Form field keys that are validated by the template request validation layer.
+ * Excludes colorCustomization, files, and brandAssets (derived from files).
+ */
+export type TemplateRequestValidatableField =
+  | 'businessName'
+  | 'industry'
+  | 'yearsInBusiness'
+  | 'businessDescription'
+  | 'contactName'
+  | 'email'
+  | 'phone'
+  | 'website'
+  | 'address'
+  | 'goals'
+  | 'targetAudience'
+  | 'additionalNotes';
+
+/**
+ * Validation errors keyed by validatable field.
+ * One error message per field; undefined means no error.
+ */
+export type TemplateRequestValidationErrors = Partial<
+  Record<TemplateRequestValidatableField, string>
+>;

@@ -281,6 +281,28 @@ Two-column layout on desktop:
 
 Responsive collapse to single column on mobile.
 
+### Form validation
+
+Validation is centralized in `useTemplateRequestValidation` (see `app/composables/useTemplateRequestValidation.ts`). The form does not submit until all validations pass.
+
+**When validation runs:**
+- **On blur:** Text, email, phone, website, and textarea fields validate when the user leaves the field. The error for that field is updated (or cleared if valid).
+- **On input:** Typing in a field clears that field’s error so the user gets immediate feedback while correcting.
+- **On submit:** All fields are validated. If any fail, errors are shown and submission is blocked. String fields are trimmed before the payload is emitted.
+
+**Rules (summary):**
+- **Business name / Contact name:** Required; 2–200 characters after trim; not purely numeric; at least two letters; only letters, numbers, spaces, hyphens, apostrophes, periods.
+- **Industry:** Required; must be one of the predefined options.
+- **Years in business:** Optional; if provided, must be a whole number between 0 and 200.
+- **Email:** Required; valid email format; max 254 characters.
+- **Phone:** Optional; if provided, 10–15 digits (spaces, dashes, parentheses allowed).
+- **Website:** Optional; if provided, must be a valid URL (protocol or domain with TLD).
+- **Address:** Optional; if provided, max 500 characters.
+- **Goals:** At least one goal required; values must be from the predefined list.
+- **Long text (description, target audience, additional notes):** Optional; if provided, max 2000 characters.
+
+**UI:** Error messages use the design token `--color-error`. Invalid inputs use the `.form-input--invalid` / `.form-select--invalid` / `.form-textarea--invalid` classes (and IconInput receives invalid styling via `.form-group--error`). Error text appears below the field; layout uses the shared `.form-error` class from `components.css`.
+
 ---
 
 ## CSS Files
