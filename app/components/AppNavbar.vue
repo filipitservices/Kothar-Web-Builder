@@ -2,7 +2,13 @@
   <nav class="app-navbar" aria-label="Main navigation">
     <div class="app-navbar__inner">
       <div class="app-navbar__left">
-        <NuxtLink to="/" class="app-navbar__logo">
+        <!-- Plain <a> for logo: ensures identical SSR/client markup and avoids NuxtLink hydration mismatch -->
+        <a
+          href="/"
+          class="app-navbar__logo"
+          @click.prevent="goHome"
+          @keydown.enter.prevent="goHome"
+        >
           <span class="app-navbar__logo-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="3" width="18" height="18" rx="4" ry="4" />
@@ -13,7 +19,7 @@
           <span class="app-navbar__logo-text">
             {{ appConfig.appName }}
           </span>
-        </NuxtLink>
+        </a>
       </div>
       <div class="app-navbar__right">
         <UserMenu :show-name="showUserName" />
@@ -59,4 +65,12 @@ const ctaTo = computed(() =>
 const ctaLabel = computed(() =>
   isAuthenticated.value ? 'Dashboard' : 'Start Building'
 );
+
+/** SPA navigation for logo link; preserves SSR/client markup consistency (avoids NuxtLink hydration mismatch). */
+function goHome(e?: Event) {
+  const ev = e as (MouseEvent | KeyboardEvent) | undefined;
+  if (ev && (ev.ctrlKey || ev.metaKey || ev.shiftKey)) return; // allow open in new tab
+  e?.preventDefault();
+  navigateTo('/');
+}
 </script>
