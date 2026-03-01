@@ -2,16 +2,6 @@
   <nav class="app-navbar" aria-label="Main navigation">
     <div class="app-navbar__inner">
       <div class="app-navbar__left">
-        <NuxtLink
-          v-if="showBackToDashboard"
-          to="/dashboard"
-          class="app-navbar__back"
-        >
-          <svg viewBox="0 0 20 20" fill="currentColor" class="app-navbar__back-icon" aria-hidden="true">
-            <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
-          </svg>
-          <span>Back to Dashboard</span>
-        </NuxtLink>
         <NuxtLink to="/" class="app-navbar__logo">
           <span class="app-navbar__logo-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -54,11 +44,6 @@ import { useAuth } from '~/composables/useAuth';
 const route = useRoute();
 const { isAuthenticated, isInitialized } = useAuth();
 const appConfig = useAppConfig();
-
-const showBackToDashboard = computed(() => {
-  const path = route.path;
-  return path.startsWith('/gallery/request');
-});
 
 const showUserName = computed(() => {
   const path = route.path;
