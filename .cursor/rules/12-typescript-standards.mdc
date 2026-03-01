@@ -16,8 +16,8 @@ Per core invariants: no silencing TypeScript with `any`, `as unknown as`, or ad-
 ## Forbidden
 
 - **No `any`** for domain data or public APIs. Use `unknown` and narrow, or define a proper type.
-- **No `as unknown as T`** (or similar double assertion) to silence errors. Fix the type or the implementation.
-- **No ad-hoc assertions** (e.g. `as SomeType` on values that do not match) to "make it compile." Ensure runtime shape matches the type or adjust the type.
+- **No silencing TypeScript** with casts, `any`, or ad-hoc assertions. No `as unknown as T` or similar double assertions to silence errors. Fix the type or the implementation.
+- **No ad-hoc assertions** (e.g. `as SomeType` on values that do not match) to "make it compile." Ensure runtime shape matches the type or adjust the type. Do not introduce quickpatch or lazy workarounds for TypeScript; resolve type issues properly. Model data, events, and APIs explicitly and type-safely.
 
 ## Allowed
 

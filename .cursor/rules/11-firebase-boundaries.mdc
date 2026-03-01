@@ -21,7 +21,7 @@ Per core invariants. Auth state has a single source of truth: server-validated s
 
 ## Rules
 
-- **No syncing** Firebase auth state with a second client store or local state via watchers. Auth store (and composable) are the single consumer of "current user" on the client; they get it from the session API.
+- **No syncing** Firebase auth state with a second client store or local state via watchers. No artificial state syncing between Firebase and composables/components. Auth store (and composable) are the single consumer of "current user" on the client; they get it from the session API.
 - **Protected routes:** Use `auth` middleware in `definePageMeta`. Do not protect by only checking in component (would leak on SSR). Do not add alternative auth checks that bypass middleware.
 
 Reference `docs/16-FIREBASE-AUTH.md` for flow and API.

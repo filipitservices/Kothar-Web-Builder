@@ -5,30 +5,54 @@ alwaysApply: true
 
 # Core Invariants
 
-These constraints apply to all code and architectural decisions. Do not weaken or bypass them.
+These constraints apply to all code and architectural decisions. Do not weaken or bypass them. This is architectural and product-level engineering—not patch work. Treat every task as system-wide; fix root causes, not symptoms.
+
+## Before Writing or Changing Code
+
+- **Do not write code before understanding the full architecture and state flow.** Do not treat any task as a local patch or isolated change.
+- **Analyze the project thoroughly first.** Read all existing documentation (e.g. `/docs`). Build a complete mental model: architecture, routing, layout, state ownership, reactivity model, component boundaries, CSS structure, and styling conventions. Do not assume current implementations are correct or final.
+- **Assess before changing.** For structural work: confirm whether the current structure, layout system, and state architecture support the goal or need adjustment. Fix root causes, not symptoms. Do not implement blindly.
 
 ## Immutability and Reactivity
 
-- **No prop mutation.** Components must not assign to props. Use emits or composables for parent communication.
-- **No direct mutation of nested reactive state.** No `obj.x = y`, no `arr[i] = v`. Use immutable update patterns: new objects/arrays, spread, or store/composable APIs that perform updates in one place.
-- **No unnecessary push/update calls** used only to "trigger" reactivity. Fix the data flow instead.
+- **No prop mutation anywhere.** Components must not assign to props. Use emits or composables for parent communication.
+- **No direct mutation of nested reactive state.** Forbidden: `obj.x = y`, `arr[i] = v`, or any index or property assignment on reactive objects/arrays. Use immutable update patterns: new objects/arrays, spread, or store/composable APIs that perform updates in one place.
+- **No push/update used only to "trigger" reactivity.** Fix the data flow instead. Prefer unidirectional data flow.
+- **No reliance on DOM-level event extraction** when proper APIs exist. Model data, events, and APIs explicitly and type-safely.
 
 ## Single Source of Truth
 
 - **No artificial state syncing** between Firebase, composables, components, or stores. No parallel sources of truth for the same domain.
-- **No watcher-based glue** to compensate for architectural mistakes. Model ownership clearly: one owner per piece of state, others read or call APIs.
+- **No watcher-based glue** to compensate for broken or unclear architecture. Model ownership clearly: one owner per piece of state; others read or call APIs.
+- **No bypassing centralized mutation APIs.** All writes go through store actions or composable APIs; do not add one-off setters or assign to store state from outside.
+- **Components do not invent data shape or persistence logic.** Data models and persistence live in stores, composables, or server; components consume and emit.
 
 ## TypeScript
 
-- **No silencing TypeScript** with `any`, `as unknown as`, or ad-hoc type assertions to satisfy the compiler. Define and respect explicit data models and types.
+- **No silencing TypeScript** with `any`, `as unknown as`, or ad-hoc type assertions to satisfy the compiler. Define and respect explicit data models and types. Model data, events, and APIs explicitly and type-safely.
+
+## Styling and Layout
+
+- **No hardcoded layout sizes, heights, or overflow hacks.** No brittle CSS to hide layout bugs. Preserve correct sizing, scrolling, flex behavior, and overflow handling; ensure layout safety across the app (e.g. containers like `.screens-inner` must not break, clip, or cut off UI).
+- **No colors, spacing, fonts, or radii outside the design system.** Reuse tokens, spacing scales, border radii, and font rules from `app/assets/css/style.css`. No ad-hoc colors, magic numbers, or isolated design logic. All styling must look native to the product. Review existing CSS, variables, spacing system, typography, and color usage before adding or changing styles.
+
+## Logic and Boundaries
+
+- **No one-off logic** for a single template or block when it could be expressed as shared composition or config. No scattering business logic across components; keep it in composables or stores. Respect component boundaries and separation of concerns; avoid hidden side effects.
+
+## Documentation
+
+- **Do not leave documentation outdated after refactors.** After structural or architectural changes, update affected docs in sync (see documentation-integrity rule). Rewrite affected sections; do not append lazily.
 
 ## Quality and Process
 
-- **No quickpatching.** No demo-grade code, no minifying CSS and calling it optimization, no bloat disguised as refactor, no premature optimization that sacrifices correctness.
+- **No quickpatching.** No demo-grade code, no minifying CSS and calling it optimization, no bloat disguised as refactor, no premature optimization that sacrifices correctness. Do not add bloat instead of redesigning properly. Do not optimize prematurely by breaking correctness.
+- **No rush.** Do not prioritize implementation over architecture. Do not accept "working" if it is not correct, scalable, and maintainable.
 - **Analyze before implement.** For structural tasks: architecture review first. For styling: design token review first. For state: explicit modeling and types first. For routing: layout boundaries and middleware impact first.
+- **Work incrementally.** Verify behavior. Maintain visual, architectural, and domain consistency. Prioritize correctness, clarity, scalability, visual stability, and long-term maintainability over speed. No lazy workarounds, hacks, or rushed implementations.
 
 ## Tooling
 
-- **No unnecessary shell/CLI noise.** Do not run pwsh, npm, or other commands unless the task explicitly requires it. No tooling clutter to "make things work."
+- **No unnecessary shell/CLI noise.** Do not run pwsh, npm, or other commands unless the task strictly requires it. No tooling clutter to "make things work."
 
 Reference domain-specific and layer-specific rules when working in those areas; they extend these invariants contextually.

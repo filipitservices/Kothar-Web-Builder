@@ -5,27 +5,28 @@ alwaysApply: false
 
 # Task-Type Detection and Rule Activation
 
-Use this to trigger the right rule subsets and to enforce "analyze before implement" by task type.
+Use this to trigger the right rule subsets and to enforce "analyze before implement" by task type. Do not write code before building a complete mental model of the system. Read existing documentation first (in `/docs`). Consider system-wide impact; this is not patch work.
 
 ## Activation Map
 
 | Task type | Load these rule subsets | First step before code |
 |-----------|-------------------------|-------------------------|
 | **Architectural** (new features, layers, boundaries) | Core, Nuxt structure, frontend architecture, domain (builder / templates / showcase / live-sites as relevant) | Full-system analysis: pages, layouts, stores, composables, and docs. Confirm ownership of state and data flow. |
-| **UI / styling** (CSS, layout, tokens) | Core, CSS architecture | Audit design tokens in `app/assets/css/style.css` and page-scoped CSS. Confirm spacing scale and container usage before editing. |
+| **UI / styling** (CSS, layout, tokens) | Core, CSS architecture | Audit design tokens in `app/assets/css/style.css` and page-scoped CSS. Confirm spacing scale and container usage before editing. Do not introduce styling that contrasts with the existing design language. |
 | **State / data** (stores, composables, reactivity) | Core, Pinia state, reactivity-immutability, TypeScript | Define or review data models and types. Confirm single source of truth and mutation API. |
 | **Routing / navigation** (pages, layouts, middleware) | Core, Nuxt structure, routing | Verify layout assignment and middleware impact. Check `definePageMeta` and layout boundaries. |
 | **Builder / blocks** (builder page, BlockElements, templates list) | Core, domain-builder, domain-templates, Pinia state, reactivity | Confirm builder vs template vs block ownership; no one-off logic; use composables and store APIs. |
 | **Showcase / live sites** (dashboard, sites, gallery request) | Core, domain-showcase-live-sites, Pinia state | Confirm: live sites are not rebuilt via builder; showcase templates ≠ builder templates. |
 | **Firebase / auth** (login, session, protected routes) | Core, firebase-boundaries, Nuxt structure | Confirm server vs client boundary; no duplicate auth state; session cookie flow only. |
-| **Refactor / cleanup** | Core, refactor-standards, documentation-integrity | No quickpatch; update docs in sync with structure; no bloat. |
+| **Refactor / cleanup** | Core, refactor-standards, documentation-integrity | No quickpatch; update docs in sync with structure; no bloat. Do not minify or minimize code and call it a day. |
 | **Documentation** | documentation-integrity | Rewrite affected sections; do not append lazily. |
 
 ## Analyze-Before-Implement
 
-- **Structural task:** Read `docs/02-ARCHITECTURE.md` and relevant docs; trace data flow and layout before changing code.
-- **Styling task:** Read `app/assets/css/style.css` (`:root` tokens) and the target page/component CSS before adding or changing styles.
-- **State task:** Identify the owning store or composable; define types; ensure updates go through a single mutation path.
+- **Structural task:** Read `docs/02-ARCHITECTURE.md` and relevant docs in `/docs`; trace data flow and layout before changing code. Assess whether current structure supports the goal or needs adjustment.
+- **Styling task:** Read `app/assets/css/style.css` (`:root` tokens) and the target page/component CSS before adding or changing styles. Reuse tokens; avoid ad-hoc colors, magic numbers, or isolated design logic.
+- **State task:** Identify the owning store or composable; define types; ensure updates go through a single mutation path. No artificial syncing; no watchers to glue architecture.
 - **Routing task:** List affected routes, layouts, and middleware; confirm redirect and layout behavior.
+- **Refactor task:** Fix root causes, not symptoms. Ensure no lasting TypeScript problems without quickpatch or lazy workarounds.
 
 When in doubt, load the broader set (e.g. Core + the relevant domain + state + styling) so constraints are not missed.

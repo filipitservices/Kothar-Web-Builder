@@ -16,9 +16,10 @@ Per core invariants. Three-layer design: **Presentation** (components) → **Log
 
 ## Component Rules
 
-- **No direct store mutation from components.** Use composables (e.g. `useBlockData`, `useBusinessData`, `useAuth`) that wrap store access.
-- **Props down, events up.** Parent passes data via props; child emits events. No prop mutation; use v-model/emit for two-way flow where needed.
+- **No direct store mutation from components.** Use composables (e.g. `useBlockData`, `useBusinessData`, `useAuth`) that wrap store access. Do not bypass centralized mutation APIs.
+- **Props down, events up.** Parent passes data via props; child emits events. No prop mutation anywhere; use v-model/emit for two-way flow where needed.
 - **Block components** receive `blockId` (and optionally `screenType`) and use `useBlockData(blockId)` for all block data read/write. Do not pass store instances or raw store state as props for block data.
+- **Components do not invent data shape or persistence logic.** Data models and persistence live in stores, composables, or server; components consume and emit. Do not scatter business logic across components; keep it in composables or stores.
 
 ## Composables
 

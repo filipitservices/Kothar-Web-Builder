@@ -19,8 +19,8 @@ Per core invariants. Before styling changes, audit design tokens in `app/assets/
 
 - **No inline styles** for layout, colors, or spacing. Use classes and scoped CSS that reference tokens.
 - **No `!important`** to fix specificity. Resolve via structure and selector specificity.
-- **No ad-hoc colors** (hex, rgb) in stylesheets. No magic numbers for spacing, height, or width that are not from the scale.
-- **No hardcoded layout heights** that break flow (e.g. fixed height that causes overflow). No overflow hacks (e.g. `overflow: hidden` to hide layout bugs). No breaking container widths.
+- **No ad-hoc colors, spacing, fonts, or radii** outside the design system. No hex/rgb in stylesheets; no magic numbers for spacing, height, or width that are not from the token scale. All changes must look native to the product.
+- **No hardcoded layout sizes, heights, or overflow hacks.** No fixed heights that break flow or cause overflow; no `overflow: hidden` to hide layout bugs; no brittle CSS hacks. Preserve correct sizing, scrolling, flex behavior, and overflow handling. Do not break, clip, compress, or visually cut off important UI (including containers like `.screens-inner`).
 
 ## Structure
 
@@ -30,6 +30,10 @@ Per core invariants. Before styling changes, audit design tokens in `app/assets/
 
 ## Layout Safety
 
-- Layout must remain safe across the app: navbar, landing, dashboard, builder, sites, request form. Changes to tokens or global layout must not break container width or cause horizontal scroll unless intended.
+- Layout must remain safe across the app: navbar, landing, dashboard, builder, sites, request form. Changes to tokens or global layout must not break container width or cause horizontal scroll unless intended. Ensure layout safety across the app; do not rely on brittle CSS hacks or hardcoded heights.
+
+## Before Changing Styles
+
+- Review existing CSS, variables, spacing system, typography, and color usage before adding or changing styles. Do not introduce styling that contrasts with the existing design language. Reuse tokens, spacing scales, border radii, and font rules.
 
 Reference `app/assets/css/style.css` and `docs/02-ARCHITECTURE.md` (CSS and Styling Architecture) for current tokens and patterns.

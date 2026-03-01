@@ -5,7 +5,7 @@ alwaysApply: false
 
 # Documentation Integrity
 
-Per core invariants. After **architectural or structural refactors**, documentation must be updated in sync. Do not leave docs outdated; do not append vague "updated" notes without rewriting affected sections.
+Per core invariants. After **architectural or structural refactors**, documentation must be updated in sync. Do not leave documentation outdated after refactors; do not append vague "updated" notes without rewriting affected sections.
 
 ## When to Update Docs
 

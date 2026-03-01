@@ -15,7 +15,7 @@ Per core invariants and domain-builder. Builder templates define **structure onl
 
 ## No One-Off Logic
 
-- **Templates are compositional.** Template definitions are data (id, name, description, category, blocks array). No special-case logic in the application flow for a single template; all templates go through the same apply path.
+- **Templates are compositional.** Template definitions are data (id, name, description, category, blocks array). No special-case or one-off logic in the application flow for a single template; all templates go through the same apply path.
 - **Block items** are `{ id, type, label }`. No embedding of custom content in template definitions; content comes from blocks store after blocks are created.
 
 ## Store and Components

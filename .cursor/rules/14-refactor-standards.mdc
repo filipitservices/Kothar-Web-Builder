@@ -9,15 +9,17 @@ Per core invariants: no quickpatching, no bloat disguised as refactor.
 
 ## Forbidden
 
-- **Quickpatch:** Short-term fixes that ignore the right abstraction or data flow (e.g. a watcher to sync two sources instead of having one source). Prefer fixing the design.
-- **Demo-grade code:** Placeholder logic, commented-out "TODO" without a clear path, or code that only works in one scenario. Refactors must leave the code in a maintainable, correct state.
-- **Minifying or bundling CSS** and calling it "optimization" without addressing real layout or token usage. Optimization must not sacrifice correctness or readability.
-- **Bloat disguised as refactor:** Adding layers, indirection, or "flexibility" that do not simplify behavior or align with the existing architecture. Refactors should reduce complexity or clarify boundaries.
+- **Quickpatch:** Short-term fixes that ignore the right abstraction or data flow (e.g. a watcher to sync two sources instead of having one source). Prefer fixing the design. Do not quickpatch; do not minify or minimize code and call it a day.
+- **Demo-grade code:** Placeholder logic, commented-out "TODO" without a clear path, or code that only works in one scenario. Refactors must leave the code in a maintainable, correct state. Do not generate demo-grade code.
+- **Minifying or bundling CSS** and calling it "optimization" without addressing real layout or token usage. Optimization must not sacrifice correctness or readability. Do not optimize prematurely by breaking correctness.
+- **Bloat disguised as refactor:** Adding layers, indirection, or "flexibility" that do not simplify behavior or align with the existing architecture. Refactors should reduce complexity or clarify boundaries. Do not add bloat instead of redesigning properly.
+- **Rush over architecture:** Do not prioritize implementation over architecture. Do not accept "working" if it is not correct, scalable, and maintainable.
 
 ## Required
 
 - **Documentation sync:** After structural or architectural refactors, update the affected docs per the documentation-integrity rule. Do not leave outdated route tables, data flow descriptions, or API references.
 - **No premature optimization:** Do not optimize (e.g. lazy loading, code splitting) at the cost of correctness or clarity unless there is a stated performance goal and the change is justified.
+- **Work incrementally; verify behavior.** Maintain visual, architectural, and domain consistency. Prioritize correctness, clarity, scalability, and long-term maintainability over speed. Resolve TypeScript and architectural issues properly—no lasting problems with quickpatch or lazy workarounds.
 
 ## Scope
 

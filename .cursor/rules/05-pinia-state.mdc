@@ -16,7 +16,7 @@ Per core invariants: no artificial state syncing, no parallel sources of truth, 
 ## Mutation API
 
 - **All writes go through store actions/mutations.** Components and composables call store methods (e.g. `updateBlockCustomField`, `setBlockData`, `updateBusinessInfo`); they do not assign to store state directly from outside the store.
-- **No bypassing centralized APIs.** Do not add one-off setters or assign to `store.someRef = x` from components; add or use an action on the store.
+- **No bypassing centralized mutation APIs.** Do not add one-off setters or assign to `store.someRef = x` from components; add or use an action on the store. No artificial state syncing between Firebase, composables, and components.
 
 ## Composables and Stores
 

@@ -15,8 +15,8 @@ Per core invariants and state/styling rules. The **builder** is for design and t
 
 ## No One-Off Logic
 
-- **Templates and element blocks must be compositional and domain-aligned.** No one-off logic for a single template or a single block type that could be expressed as shared composition or config.
-- **Block components** use `useBlockData(blockId)` for all read/write. No direct store access in block components. No inline logic that duplicates what the composable or store already provides.
+- **Templates and element blocks must be compositional and domain-aligned.** No one-off logic for a single template or a single block type that could be expressed as shared composition or config. Do not create one-off logic for templates or blocks.
+- **Block components** use `useBlockData(blockId)` for all read/write. No direct store access in block components. No inline logic that duplicates what the composable or store already provides. Do not scatter business logic across components.
 
 ## Block and Template Invariants
 

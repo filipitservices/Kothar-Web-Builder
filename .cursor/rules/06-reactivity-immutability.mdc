@@ -10,9 +10,11 @@ Per core invariants: no direct mutation of nested reactive state; no `obj.x = y`
 
 ## Forbidden Patterns
 
-- **Direct property assignment on reactive objects:** `state.screens.desktop[id].customData.field = value` — forbidden. Use store action that performs an immutable update (e.g. new object, spread).
-- **Direct array index assignment:** `list[i] = item` on a reactive array — forbidden. Replace with new array (spread, filter, map) or use a store/composable method that does so.
+- **Direct property assignment on reactive objects:** `obj.x = y`, `state.screens.desktop[id].customData.field = value` — forbidden. Use store action that performs an immutable update (e.g. new object, spread).
+- **Direct array index assignment:** `arr[i] = v`, `list[i] = item` on a reactive array — forbidden. Replace with new array (spread, filter, map) or use a store/composable method that does so.
 - **Mutating props:** Any assignment to a prop (e.g. `props.foo = x`) — forbidden. Use emit or composable.
+- **Push/update only to trigger reactivity:** Do not push to arrays or update refs solely to force re-renders; fix the data flow and ownership so reactivity follows naturally.
+- **DOM event extraction when proper APIs exist:** Prefer explicit event payloads and typed APIs over reading from DOM (e.g. `event.target.value` when a proper v-model or callback API is available).
 
 ## Allowed Patterns
 
