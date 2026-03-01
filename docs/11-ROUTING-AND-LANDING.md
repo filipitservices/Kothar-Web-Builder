@@ -26,9 +26,10 @@ Kothar follows a clear page separation pattern:
 | `/` | `pages/index.vue` | Landing page with marketing messaging | Full-height, centered | Public |
 | `/dashboard` | `pages/dashboard.vue` | Central hub with builder + templates | Full-page, sections | **Protected** |
 | `/builder` | `pages/builder.vue` | Website builder interface | 3-column layout | **Protected** |
-| `/sites` | `pages/sites/index.vue` | My Live Sites — list of delivered websites | Full-page, dashboard-like | **Protected** |
+| `/sites` | `pages/sites/index.vue` | Dashboard: Live Sites + Orders tabs | Full-page, table dashboard | **Protected** |
 | `/sites/[id]` | `pages/sites/[id].vue` | Site control panel — manage one live site | Full-page, sections | **Protected** |
 | `/gallery/request/[id]` | `pages/gallery/request/[id].vue` | Template request form | 2-column layout | **Protected** |
+| `/orders/[id]/edit` | `pages/orders/[id]/edit.vue` | Order edit form (locked orders redirect to /sites) | Same as request form | **Protected** |
 | `/login` | `pages/login.vue` | Authentication (sign-in/sign-up) | Full-page | Guest-only |
 | `/reset-password` | `pages/reset-password.vue` | Password recovery | Full-page | Guest-only |
 
@@ -45,6 +46,7 @@ Routes are protected using Nuxt 4 route middleware:
 - `/sites` - My Live Sites list (requires authentication via `auth` middleware)
 - `/sites/[id]` - Site control panel (requires authentication via `auth` middleware)
 - `/gallery/request/[id]` - Template request form (requires authentication via `auth` middleware)
+- `/orders/[id]/edit` - Order edit form (requires auth; locked orders redirect to /sites)
 
 **Guest-Only Routes:**
 - `/login` - Redirects authenticated users away via `guest` middleware
@@ -73,6 +75,9 @@ app/pages/
 ├── gallery/
 │   └── request/
 │       └── [id].vue        # /gallery/request/:id - template request form (protected)
+├── orders/
+│   └── [id]/
+│       └── edit.vue        # /orders/:id/edit - order edit (protected; locked redirect)
 ├── login.vue               # /login route - authentication (guest-only)
 └── reset-password.vue      # /reset-password route (guest-only)
 ```

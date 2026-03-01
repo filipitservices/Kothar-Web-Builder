@@ -32,7 +32,10 @@ Landing (/)
                                         │
                                         ├── /builder (DIY website builder)
                                         │
-                                        ├── My Live Sites (UserMenu) → /sites → /sites/[id] (control panel)
+                                        ├── My Live Sites (UserMenu) → /sites (dashboard: Live Sites + Orders tabs)
+                                        │       │
+                                        │       ├── /sites/[id] (site control panel)
+                                        │       └── Orders tab → Modify → /orders/[id]/edit (edit request)
                                         │
                                         └── Showcase Modal (preview in-page)
                                                 │
@@ -47,6 +50,7 @@ All authenticated routes use the `auth` middleware:
 - `/builder` - Website builder (existing)
 - `/sites` - My Live Sites list; `/sites/[id]` - site control panel (manage delivered sites; not the builder)
 - `/gallery/request/[id]` - Template request form
+- `/orders/[id]/edit` - Order edit form (locked orders redirect to /sites)
 
 **Note:** The standalone `/gallery` route has been removed. Templates are now accessed directly from the dashboard.
 
@@ -302,6 +306,16 @@ Validation is centralized in `useTemplateRequestValidation` (see `app/composable
 - **Long text (description, target audience, additional notes):** Optional; if provided, max 2000 characters.
 
 **UI:** Error messages use the design token `--color-error`. Invalid inputs use the `.form-input--invalid` / `.form-select--invalid` / `.form-textarea--invalid` classes (and IconInput receives invalid styling via `.form-group--error`). Error text appears below the field; layout uses the shared `.form-error` class from `components.css`.
+
+### Order edit (`/orders/[id]/edit`)
+
+The same **TemplateRequestForm** is used on the order edit page (`app/pages/orders/[id]/edit.vue`) with:
+
+- **initialFormData** — Form prefilled from the order (via `orderToFormData` from `useOrderUpdate`).
+- **existingAttachments** — Order attachments already stored in Firestore/Storage. When present, the form shows a read-only "Current attachments" list (filename, size, and a Download link when `downloadURL` is available) above the file upload area. New files added via the upload area are appended on save.
+- **Submit section overrides** — The bottom section uses different copy for editing: title "Save your changes", description about updates being saved, button "Update request", and loading text "Saving...". The request form page keeps the default "Ready to get started?" / "Submit Request" copy.
+
+Locked orders (`modificationLocked === true`) redirect to `/sites`; the edit page does not render the form in that case.
 
 ---
 

@@ -28,11 +28,9 @@ import type {
   OrderBusinessInfo,
   OrderContactInfo,
   OrderProjectDetails,
-  OrderRequest,
-  OrderStatus
+  OrderRequest
 } from '~/types/order';
-
-const DEFAULT_STATUS: OrderStatus = 'submitted';
+import { ORDER_STATUS_DEFAULT } from '~/types/order';
 
 /** Result of a successful order submission. */
 export interface OrderSubmissionResult {
@@ -100,7 +98,8 @@ function formDataToOrderPayload(
     contactInfo,
     projectDetails,
     attachments: [],
-    status: DEFAULT_STATUS
+    status: ORDER_STATUS_DEFAULT,
+    modificationLocked: false
   };
 }
 
@@ -214,7 +213,8 @@ export function useOrderSubmission(): UseOrderSubmissionReturn {
       } = {
         ...basePayload,
         attachments,
-        status: DEFAULT_STATUS,
+        status: ORDER_STATUS_DEFAULT,
+        modificationLocked: false,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       };

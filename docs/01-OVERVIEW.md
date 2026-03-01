@@ -162,9 +162,10 @@ pnpm dev
 | `app/pages/index.vue` | Landing page (public) |
 | `app/pages/dashboard.vue` | Central hub with builder + templates (protected) |
 | `app/pages/builder.vue` | Main editor page (protected, requires auth) |
-| `app/pages/sites/index.vue` | My Live Sites list (protected) |
+| `app/pages/sites/index.vue` | Dashboard: Live Sites + Orders tabs (protected) |
 | `app/pages/sites/[id].vue` | Site control panel (protected) |
 | `app/pages/gallery/request/[id].vue` | Template request form (protected) |
+| `app/pages/orders/[id]/edit.vue` | Order edit form (protected; locked orders redirect to dashboard) |
 | `app/pages/login.vue` | Authentication page |
 | `app/middleware/auth.ts` | Route protection middleware |
 | `app/middleware/guest.ts` | Guest-only route middleware |
@@ -173,10 +174,12 @@ pnpm dev
 | `app/stores/auth.ts` | Authentication state |
 | `app/stores/showcase.ts` | Professional template showcase data |
 | `app/stores/sites.ts` | Live sites (delivered websites) state |
+| `app/stores/orders.ts` | User orders from Firestore (list, subscribe, fetch by id) |
 | `app/composables/useBlockData.ts` | Block data access API |
 | `app/composables/useBusinessData.ts` | Business data access API |
 | `app/composables/useAuth.ts` | Authentication API |
 | `app/composables/useOrderSubmission.ts` | Order submission (Firestore + Storage) |
+| `app/composables/useOrderUpdate.ts` | Order update (edit flow; does not write status or modificationLocked) |
 | `firebase/firestore.rules` | Firestore security rules (deploy with Firebase CLI) |
 | `firebase/storage.rules` | Storage security rules (deploy with Firebase CLI) |
 | `app/components/ItemsList.vue` | Renders draggable blocks |

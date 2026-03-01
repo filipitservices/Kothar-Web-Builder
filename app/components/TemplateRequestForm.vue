@@ -1,5 +1,5 @@
 <template>
-  <form class="request-form" @submit.prevent="handleSubmit">
+  <form class="request-form" :class="{ 'request-form--read-only': readOnly }" @submit.prevent="handleSubmit">
     <!-- Progress Indicator (conditionally shown) -->
     <FormProgress 
       v-if="showProgress" 
@@ -233,6 +233,29 @@
     >
       <template #icon><SparkleIcon /></template>
 
+      <div v-if="existingAttachments && existingAttachments.length > 0" class="form-group existing-attachments">
+        <label class="form-label">Current attachments</label>
+        <ul class="existing-attachments-list" aria-label="Files already attached to this request">
+          <li
+            v-for="(att, index) in existingAttachments"
+            :key="`${att.originalName}-${att.storagePath}-${index}`"
+            class="existing-attachments-item"
+          >
+            <span class="existing-attachments-name">{{ att.originalName }}</span>
+            <span class="existing-attachments-size">{{ formatAttachmentSize(att.size) }}</span>
+            <a
+              v-if="att.downloadURL"
+              :href="att.downloadURL"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="existing-attachments-link"
+            >
+              Download
+            </a>
+          </li>
+        </ul>
+      </div>
+
       <div class="form-group">
         <label class="form-label">Do you have existing brand assets?</label>
         <FileUploadArea
@@ -258,8 +281,15 @@
       </div>
     </FormSection>
 
-    <!-- Submit Section -->
-    <FormSubmit :loading="isSubmitting" />
+    <!-- Submit Section (hidden when read-only) -->
+    <FormSubmit
+      v-if="!readOnly"
+      :title="submitTitle"
+      :description="submitDescription"
+      :button-text="submitButtonText"
+      :loading-text="submitLoadingText"
+      :loading="isSubmitting"
+    />
   </form>
 </template>
 
@@ -271,6 +301,7 @@ import type {
   TemplateRequestFormData,
   TemplateRequestValidatableField
 } from '~/types/templateRequest';
+import type { OrderAttachment } from '~/types/order';
 import { useTemplateRequestForm } from '~/composables/useTemplateRequestForm';
 import { useTemplateRequestValidation } from '~/composables/useTemplateRequestValidation';
 
@@ -307,6 +338,20 @@ interface Props {
   template: ShowcaseTemplate;
   isSubmitting?: boolean;
   showProgress?: boolean;
+  /** Prefill form (e.g. for order edit); applied once when provided. */
+  initialFormData?: TemplateRequestFormData | null;
+  /** When true, all inputs are disabled and submit is hidden (e.g. locked order). */
+  readOnly?: boolean;
+  /** Files already attached to the order (e.g. on edit); shown as read-only list. */
+  existingAttachments?: OrderAttachment[];
+  /** Override submit section title (e.g. "Save your changes" on edit). */
+  submitTitle?: string;
+  /** Override submit section description. */
+  submitDescription?: string;
+  /** Override submit button label (e.g. "Update request"). */
+  submitButtonText?: string;
+  /** Override loading state label (e.g. "Saving..."). */
+  submitLoadingText?: string;
 }
 
 interface Emits {
@@ -317,7 +362,14 @@ interface Emits {
 
 const props = withDefaults(defineProps<Props>(), {
   isSubmitting: false,
-  showProgress: true
+  showProgress: true,
+  initialFormData: undefined,
+  readOnly: false,
+  existingAttachments: () => [],
+  submitTitle: undefined,
+  submitDescription: undefined,
+  submitButtonText: undefined,
+  submitLoadingText: undefined
 });
 
 const emit = defineEmits<Emits>();
@@ -335,8 +387,18 @@ const {
   defaultColors,
   updateField,
   updateColors,
-  resetColors
+  resetColors,
+  hydrateFormData
 } = useTemplateRequestForm(templateRef, uploadedFiles);
+
+// Hydrate from initial data when provided (e.g. order edit)
+watch(
+  () => props.initialFormData,
+  (data) => {
+    if (data) hydrateFormData(data);
+  },
+  { immediate: true }
+);
 
 // Validation: centralized, run on blur and submit; clear error on input
 const { errors, validateField, validateAll, clearFieldError } =
@@ -352,6 +414,16 @@ function handleFieldInput<K extends keyof TemplateRequestFormData>(
 
 function handleBlur(field: TemplateRequestValidatableField): void {
   validateField(field);
+}
+
+/** Format file size for display in existing-attachments list. */
+function formatAttachmentSize(bytes: number): string {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(k)), sizes.length - 1);
+  const size = parseFloat((bytes / Math.pow(k, i)).toFixed(1));
+  return `${size} ${sizes[i]}`;
 }
 
 /**
@@ -398,9 +470,10 @@ function trimFormPayload(data: TemplateRequestFormData): TemplateRequestFormData
 }
 
 /**
- * Handle form submission. Block if validation fails.
+ * Handle form submission. Block if validation fails; no-op when read-only.
  */
 function handleSubmit(): void {
+  if (props.readOnly) return;
   if (!validateAll()) {
     return;
   }
@@ -445,6 +518,16 @@ onMounted(() => {
   gap: 0;
 }
 
+.request-form--read-only input,
+.request-form--read-only select,
+.request-form--read-only textarea,
+.request-form--read-only [contenteditable],
+.request-form--read-only button {
+  pointer-events: none;
+  opacity: 0.85;
+  cursor: not-allowed;
+}
+
 .form-textarea--tall {
   min-height: 120px;
 }
@@ -458,5 +541,57 @@ onMounted(() => {
 .form-group--error :deep(.icon-input__field:focus) {
   border-color: var(--color-error);
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+}
+
+/* Existing attachments (order edit): read-only list */
+.existing-attachments {
+  margin-bottom: var(--space-md);
+}
+
+.existing-attachments-list {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-sm) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.existing-attachments-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  font-size: 0.875rem;
+}
+
+.existing-attachments-name {
+  flex: 1;
+  min-width: 0;
+  color: var(--color-text);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.existing-attachments-size {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+}
+
+.existing-attachments-link {
+  flex-shrink: 0;
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.existing-attachments-link:hover {
+  text-decoration: underline;
 }
 </style>

@@ -7,8 +7,21 @@
 
 import type { ColorCustomization } from '~/types/templateRequest';
 
-/** Order lifecycle status. */
-export type OrderStatus = 'submitted' | 'in_review' | 'in_progress' | 'delivered' | 'cancelled';
+/**
+ * Order lifecycle status. Strict union — admin-assignable only; clients must not mutate.
+ * Default on creation: 'submitted'.
+ */
+export type OrderStatus =
+  | 'submitted'
+  | 'under_review'
+  | 'in_production'
+  | 'awaiting_feedback'
+  | 'finalizing'
+  | 'completed'
+  | 'cancelled';
+
+/** First status in workflow; used as default when creating orders. */
+export const ORDER_STATUS_DEFAULT: OrderStatus = 'submitted';
 
 /** Metadata for a single file attachment stored in Firebase Storage. */
 export interface OrderAttachment {
@@ -65,10 +78,23 @@ export interface OrderRequest {
   /** Metadata for files uploaded to Storage; no raw File or base64. */
   attachments: OrderAttachment[];
   status: OrderStatus;
+  /**
+   * When true, order is locked (e.g. being processed). Admin-assignable only.
+   * Client must not write this field; edit UI must be disabled when true.
+   */
+  modificationLocked?: boolean;
   /** Set via serverTimestamp() on create. */
   createdAt: unknown;
   /** Set via serverTimestamp() on create and update. */
   updatedAt: unknown;
+}
+
+/**
+ * Order document as returned from Firestore with document id attached.
+ * Used by orders store and dashboard.
+ */
+export interface OrderWithId extends OrderRequest {
+  id: string;
 }
 
 /**

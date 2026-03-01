@@ -41,7 +41,8 @@ Each order document matches the **OrderRequest** type (see `app/types/order.ts`)
 | `contactInfo` | object | `contactName`, `email`, `phone`, `website`, `address`. |
 | `projectDetails` | object | `goals` (string[]), `targetAudience`, `additionalNotes`, `colorCustomization`. |
 | `attachments` | array | Metadata for each uploaded file (see below). |
-| `status` | string | One of: `submitted`, `in_review`, `in_progress`, `delivered`, `cancelled`. |
+| `status` | string | Strict workflow stage: `submitted`, `under_review`, `in_production`, `awaiting_feedback`, `finalizing`, `completed`, `cancelled`. Admin-assignable only; client must not mutate. Default on create: `submitted`. Legacy values `in_review`, `in_progress`, `delivered` are supported for display. |
+| `modificationLocked` | boolean | Optional. When `true`, order is locked (e.g. being processed). Admin-assignable only; client must not write. Edit UI is disabled when true. |
 | `createdAt` | server timestamp | Set via `serverTimestamp()` on create. |
 | `updatedAt` | server timestamp | Set via `serverTimestamp()` on create and on later updates. |
 
@@ -97,7 +98,7 @@ Orders for the logged-in user can be read from:
 users/{userId}/orders
 ```
 
-where `userId` is the authenticated user’s UID. Query this collection (e.g. with `collection()`, `query()`, `orderBy('createdAt', 'desc')`) to list or paginate a user’s orders. The document shape is **OrderRequest** (with Firestore timestamps for `createdAt`/`updatedAt`).
+where `userId` is the authenticated user’s UID. The **orders store** (`stores/orders.ts`) subscribes to this collection with `onSnapshot` and `orderBy('createdAt', 'desc')`, exposing a reactive list and `getOrderById` / `fetchOrder` for single-document access. The dashboard (sites index) and order edit page consume this store. The document’s shape is **OrderRequest** (with Firestore timestamps for `createdAt`/`updatedAt`).
 
 ---
 
@@ -133,8 +134,10 @@ The Cursor rule **15-firebase-rules.mdc** enforces this: when editing rules or F
 
 | File | Purpose |
 |------|---------|
-| `app/types/order.ts` | `OrderRequest`, `OrderAttachment`, `OrderStatus`, `OrderBusinessInfo`, `OrderContactInfo`, `OrderProjectDetails`. |
+| `app/types/order.ts` | `OrderRequest`, `OrderWithId`, `OrderAttachment`, `OrderStatus`, `OrderBusinessInfo`, `OrderContactInfo`, `OrderProjectDetails`. |
+| `app/stores/orders.ts` | Subscribes to user orders; exposes list, `getOrderById`, `fetchOrder`, status/date helpers. |
 | `app/composables/useOrderSubmission.ts` | `submitOrder()`: upload files to Storage, then write order to Firestore. Uses modular Firebase only. |
+| `app/composables/useOrderUpdate.ts` | `updateOrder()`, `orderToFormData()`: update existing order (allowed fields only; never status or modificationLocked). |
 | `app/plugins/firebase.client.ts` | Initializes Firebase app (and Auth); composable uses `getFirebaseApp()` for Firestore and Storage. |
 | `firebase/firestore.rules` | Firestore security rules; deploy with `firebase deploy --only firestore`. |
 | `firebase/storage.rules` | Storage security rules; deploy with `firebase deploy --only storage`. |

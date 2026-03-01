@@ -46,6 +46,8 @@ export interface UseTemplateRequestFormReturn {
   resetColors: () => ColorCustomization;
   /** Reset entire form to initial state */
   resetForm: () => void;
+  /** Hydrate form from existing data (e.g. order edit); does not reset on template change. */
+  hydrateFormData: (data: TemplateRequestFormData) => void;
 }
 
 /**
@@ -202,7 +204,20 @@ export function useTemplateRequestForm(
   }
 
   /**
-   * Watch for template changes and reset form
+   * Hydrate form from existing data (e.g. prefilling from an order for edit).
+   * Replaces current form state; use when initialFormData is provided by parent.
+   */
+  function hydrateFormData(data: TemplateRequestFormData): void {
+    formData.value = {
+      ...data,
+      colorCustomization: { ...data.colorCustomization },
+      goals: [...data.goals],
+      files: data.files ? [...data.files] : []
+    };
+  }
+
+  /**
+   * Watch for template changes and reset form (only when not hydrating from external data)
    */
   watch(
     () => template.value?.id,
@@ -220,6 +235,7 @@ export function useTemplateRequestForm(
     updateField,
     updateColors,
     resetColors,
-    resetForm
+    resetForm,
+    hydrateFormData
   };
 }
