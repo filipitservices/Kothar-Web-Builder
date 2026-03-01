@@ -172,6 +172,7 @@ pnpm dev
 | `app/composables/useBlockData.ts` | Block data access API |
 | `app/composables/useBusinessData.ts` | Business data access API |
 | `app/composables/useAuth.ts` | Authentication API |
+| `app/composables/useOrderSubmission.ts` | Order submission (Firestore + Storage) |
 | `app/components/ItemsList.vue` | Renders draggable blocks |
 | `app/components/ScreenCard.vue` | Single screen container |
 | `app/components/ShowcaseModal.vue` | Template preview modal |
@@ -188,6 +189,7 @@ pnpm dev
 6. [Component Catalog](06-COMPONENT-CATALOG.md) - All components
 7. [Routing & Landing](11-ROUTING-AND-LANDING.md) - Page structure & auth
 8. [Firebase Auth](16-FIREBASE-AUTH.md) - Authentication system
+9. [Firebase Firestore & Storage](18-FIREBASE-FIRESTORE-STORAGE.md) - Orders and file attachments
 
 ---
 

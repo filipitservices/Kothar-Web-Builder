@@ -358,31 +358,31 @@ The request form route remains at `/gallery/request/[id]` for URL stability.
 
 ---
 
+## Order Persistence (Firestore & Storage)
+
+When the user submits the template request form, the application:
+
+1. **Validates** the form (via `useTemplateRequestValidation`).
+2. **Uploads** all selected files to Firebase Storage at `orders/{userId}/{orderId}/{filename}`.
+3. **Writes** a structured order document to Firestore at `users/{userId}/orders/{orderId}`.
+
+Order data is mapped from validated form data into a typed **OrderRequest** shape (businessInfo, contactInfo, projectDetails, attachments, status, timestamps). File metadata (originalName, storagePath, downloadURL, size, contentType) is stored in the order document; raw `File` objects and base64 are never persisted.
+
+Submission is handled by **`useOrderSubmission`** (`app/composables/useOrderSubmission.ts`). The request page calls `submitOrder()` with the authenticated user's ID, template id/name, form data, and files. If any file upload fails, the Firestore write is not performed.
+
+See **[18-FIREBASE-FIRESTORE-STORAGE.md](18-FIREBASE-FIRESTORE-STORAGE.md)** for the full Firestore/Storage data model, document shape, and security considerations.
+
+---
+
 ## Future Considerations
 
 ### Planned Enhancements
 
 1. **Template Search** - Search by name or description
 2. **Favorites** - Save templates to user's favorites
-3. **Request Status** - Track submitted requests
+3. **Request Status** - Track submitted requests (orders already stored in Firestore)
 4. **More Templates** - Expand template library
 5. **Template Thumbnails** - Visual preview images
-
-### API Integration
-
-The request form currently logs to console. Future integration:
-
-```typescript
-async function handleSubmit() {
-  await $fetch('/api/template-requests', {
-    method: 'POST',
-    body: {
-      templateId: template.value?.id,
-      ...formData.value
-    }
-  });
-}
-```
 
 ---
 

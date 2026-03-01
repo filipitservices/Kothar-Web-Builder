@@ -231,31 +231,38 @@ function handleProgressUpdate(progress: { completed: number; total: number }): v
 }
 
 /**
- * Handle form submission
+ * Handle form submission: persist order to Firestore and upload files to Storage.
  */
 async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
+  const uid = authStore.uid ?? authStore.currentUser?.uid;
+  if (!uid) {
+    alert('You must be signed in to submit a request.');
+    return;
+  }
+
+  const template = originalTemplate.value;
+  if (!template) {
+    alert('Template not found. Please go back and choose a design.');
+    return;
+  }
+
   isSubmitting.value = true;
 
   try {
-    // Build the submission payload
-    const payload = {
+    const { submitOrder } = useOrderSubmission();
+    await submitOrder({
+      userId: uid,
       templateId: templateId.value,
-      templateName: originalTemplate.value?.name,
-      ...formData,
-      submittedAt: new Date().toISOString()
-    };
+      templateName: template.name,
+      formData,
+      files: formData.files ?? []
+    });
 
-    console.log('Form submission:', payload);
-
-    // Simulate API call (replace with actual API integration)
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Show success and redirect
     alert('Thank you! Your request has been submitted. We\'ll be in touch soon.');
-    router.push('/dashboard');
-  } catch (error) {
-    console.error('Submission error:', error);
-    alert('There was an error submitting your request. Please try again.');
+    await router.push('/dashboard');
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'There was an error submitting your request. Please try again.';
+    alert(message);
   } finally {
     isSubmitting.value = false;
   }

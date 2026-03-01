@@ -410,6 +410,8 @@ If storing user profiles in Firestore:
   - updatedAt: timestamp
 ```
 
+**Template request orders** use a separate, user-scoped structure: `users/{userId}/orders/{orderId}`. See [Firebase Firestore & Storage](18-FIREBASE-FIRESTORE-STORAGE.md) for the order document shape and file upload flow.
+
 ---
 
 ## Security Rules
