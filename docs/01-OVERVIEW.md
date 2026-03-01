@@ -158,6 +158,8 @@ pnpm dev
 | `app/pages/index.vue` | Landing page (public) |
 | `app/pages/dashboard.vue` | Central hub with builder + templates (protected) |
 | `app/pages/builder.vue` | Main editor page (protected, requires auth) |
+| `app/pages/sites/index.vue` | My Live Sites list (protected) |
+| `app/pages/sites/[id].vue` | Site control panel (protected) |
 | `app/pages/gallery/request/[id].vue` | Template request form (protected) |
 | `app/pages/login.vue` | Authentication page |
 | `app/middleware/auth.ts` | Route protection middleware |
@@ -166,6 +168,7 @@ pnpm dev
 | `app/stores/business.ts` | Global business data |
 | `app/stores/auth.ts` | Authentication state |
 | `app/stores/showcase.ts` | Professional template showcase data |
+| `app/stores/sites.ts` | Live sites (delivered websites) state |
 | `app/composables/useBlockData.ts` | Block data access API |
 | `app/composables/useBusinessData.ts` | Business data access API |
 | `app/composables/useAuth.ts` | Authentication API |

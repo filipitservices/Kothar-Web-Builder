@@ -32,6 +32,8 @@ Landing (/)
                                         │
                                         ├── /builder (DIY website builder)
                                         │
+                                        ├── My Live Sites (UserMenu) → /sites → /sites/[id] (control panel)
+                                        │
                                         └── Showcase Modal (preview in-page)
                                                 │
                                                 └── /gallery/request/[id] (request form)
@@ -43,6 +45,7 @@ All authenticated routes use the `auth` middleware:
 
 - `/dashboard` - Central hub with builder access and templates showcase
 - `/builder` - Website builder (existing)
+- `/sites` - My Live Sites list; `/sites/[id]` - site control panel (manage delivered sites; not the builder)
 - `/gallery/request/[id]` - Template request form
 
 **Note:** The standalone `/gallery` route has been removed. Templates are now accessed directly from the dashboard.

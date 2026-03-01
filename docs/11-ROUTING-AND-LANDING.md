@@ -26,6 +26,8 @@ Kothar follows a clear page separation pattern:
 | `/` | `pages/index.vue` | Landing page with marketing messaging | Full-height, centered | Public |
 | `/dashboard` | `pages/dashboard.vue` | Central hub with builder + templates | Full-page, sections | **Protected** |
 | `/builder` | `pages/builder.vue` | Website builder interface | 3-column layout | **Protected** |
+| `/sites` | `pages/sites/index.vue` | My Live Sites — list of delivered websites | Full-page, dashboard-like | **Protected** |
+| `/sites/[id]` | `pages/sites/[id].vue` | Site control panel — manage one live site | Full-page, sections | **Protected** |
 | `/gallery/request/[id]` | `pages/gallery/request/[id].vue` | Template request form | 2-column layout | **Protected** |
 | `/login` | `pages/login.vue` | Authentication (sign-in/sign-up) | Full-page | Guest-only |
 | `/reset-password` | `pages/reset-password.vue` | Password recovery | Full-page | Guest-only |
@@ -40,6 +42,8 @@ Routes are protected using Nuxt 4 route middleware:
 **Protected Routes:**
 - `/dashboard` - Central hub (requires authentication via `auth` middleware)
 - `/builder` - Website builder (requires authentication via `auth` middleware)
+- `/sites` - My Live Sites list (requires authentication via `auth` middleware)
+- `/sites/[id]` - Site control panel (requires authentication via `auth` middleware)
 - `/gallery/request/[id]` - Template request form (requires authentication via `auth` middleware)
 
 **Guest-Only Routes:**
@@ -63,6 +67,9 @@ app/pages/
 ├── index.vue               # / route - landing page (public)
 ├── dashboard.vue           # /dashboard route - central hub (protected)
 ├── builder.vue             # /builder route - editor interface (protected)
+├── sites/
+│   ├── index.vue           # /sites - My Live Sites list (protected)
+│   └── [id].vue            # /sites/:id - site control panel (protected)
 ├── gallery/
 │   └── request/
 │       └── [id].vue        # /gallery/request/:id - template request form (protected)
@@ -77,6 +84,8 @@ Routes are implicitly defined by file structure. No manual `vue-router` config r
 - `/` → renders `pages/index.vue`
 - `/dashboard` → renders `pages/dashboard.vue` (requires auth)
 - `/builder` → renders `pages/builder.vue` (requires auth)
+- `/sites` → renders `pages/sites/index.vue` (requires auth)
+- `/sites/:id` → renders `pages/sites/[id].vue` (requires auth)
 - `/gallery/request/:id` → renders `pages/gallery/request/[id].vue` (requires auth)
 - `/login` → renders `pages/login.vue` (guests only)
 - `/reset-password` → renders `pages/reset-password.vue` (guests only)
@@ -88,8 +97,13 @@ Routes are implicitly defined by file structure. No manual `vue-router` config r
 - **Dashboard → Template Preview**: Click template card → ShowcaseModal opens in-page
 - **Template Preview → Request**: "Choose This Design" → navigates to `/gallery/request/:id`
 - **Request → Dashboard**: Back link or "Choose different design" link
+- **UserMenu (authenticated)**: Dashboard, **My Live Sites** (`/sites`), Sign Out
+- **Sites list → Site control panel**: "Manage site" → `/sites/:id`
+- **Site control panel → Sites list**: "Back to your sites" → `/sites`
 - **Any page → Landing**: Logo link with `<NuxtLink to="/">`
 - **Unauthenticated → Login**: Automatic redirect via `auth` middleware
+
+**Product rule:** Live sites (managed at `/sites` and `/sites/:id`) are **not** rebuilt via the builder. The builder is for design selection and the request flow only. Delivered sites are managed in the Live Sites area.
 
 ---
 

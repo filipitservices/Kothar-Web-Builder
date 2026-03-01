@@ -27,7 +27,7 @@
                  │
 ┌────────────────▼────────────────────────────────────┐
 │                   DATA LAYER                        │
-│  Pinia Stores (blocks, business, quiz)             │
+│  Pinia Stores (blocks, business, quiz, sites)     │
 │  - State management                                 │
 │  - Data persistence (in-memory)                     │
 │  - Single source of truth                           │
@@ -98,6 +98,14 @@ The application uses two separate data stores with distinct responsibilities:
 - `customData` holds all editable fields per instance
 - Desktop and mobile can have different customizations for the same block
 - Store functions take `screenId` as first parameter for clarity
+
+#### 3. Sites Store (Live Sites)
+
+**Purpose**: State for delivered ("live") websites. Used by `/sites` (list) and `/sites/:id` (control panel). Live sites are **not** edited in the builder; the builder is for design selection and request flow only.
+
+**Data**: `SiteSummary` (list view) and `SiteDetails` (full content for one site: hero, services, contact, business hours, seasonal announcement). Setup-style store with getters (`siteSummaries`, `getSiteById`), actions (`updateSiteHero`, `updateSiteBusinessHours`, etc.), and helpers (`getStatusLabel`, `formatLastUpdated`).
+
+**Persistence**: In-memory only (no backend yet). One hardcoded site for demo.
 
 ---
 
@@ -214,9 +222,11 @@ The app uses Nuxt 4 layouts for global structure:
 **AppNavbar** (`components/AppNavbar.vue`) is the single source of global navigation:
 - Logo (Kothar) links to `/`.
 - On `/gallery/request/*`, a "Back to Dashboard" link is shown.
-- **UserMenu** is always shown (Sign In when guest; avatar and dropdown when authenticated).
+- **UserMenu** is always shown (Sign In when guest; avatar and dropdown when authenticated). When authenticated: Dashboard, **My Live Sites** (`/sites`), Sign Out.
 - On the landing page (`/`), an auth-aware CTA is shown: "Start Building" → `/login` when guest, "Dashboard" → `/dashboard` when authenticated.
 - Navbar styles live in `assets/css/navbar.css` and use global design tokens from `style.css`.
+
+**Live Sites** (`/sites`, `/sites/:id`): Delivered websites are managed here, not in the builder. The builder is for design selection and the request flow only. Live sites have their own Pinia store (`stores/sites.ts`) and control-panel UI for content updates, business hours, seasonal announcements, and change requests. No pathway from live sites back into the builder to "rebuild."
 
 No page implements its own navbar; all use the default layout and shared AppNavbar except the builder, which uses the builder layout.
 
@@ -239,6 +249,7 @@ No page implements its own navbar; all use the default layout and shared AppNavb
 - Landing: `landing.css` (extends with `--landing-*` on `.landing-container`).
 - Dashboard: `dashboard.css`.
 - Builder: `editor.css`.
+- Sites (list and detail): `sites.css`.
 - Gallery request: `request-form.css`.
 - Showcase (component): `showcase.css` (uses `--showcase-*` from template).
 
