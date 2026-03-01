@@ -15,7 +15,7 @@ This directory contains **modular, context-aware** Cursor rules. They encode eng
 
 ## File Index
 
-- **00-core-invariants.mdc** — Always applied. Central constraints: before-code analysis and full mental model; no prop or nested mutation; no artificial syncing or watcher glue; no bypassing centralized mutation APIs; no components inventing data shape; no TS silencing; no hardcoded layout/design-system violations; no one-off or scattered logic; docs updated after refactors; no quickpatch, bloat, or rush; incremental work and correctness over "working."
+- **00-core-invariants.mdc** — Always applied. Central constraints: before-code analysis and full mental model; no prop or nested mutation; no artificial syncing or watcher glue; no bypassing centralized mutation APIs; no components inventing data shape; no TS silencing; no hardcoded layout/design-system violations; no one-off or scattered logic; docs updated after refactors; no quickpatch, bloat, or rush; no needless CLI use or CLI commands; incremental work and correctness over "working."
 - **01-task-type-guidance.mdc** — Task-type → rule subset mapping and "analyze before implement" by task type. Use to load the right rules for architectural, UI, state, routing, builder, showcase, Firebase, refactor, or docs tasks. Read `/docs` first; consider system-wide impact.
 - **02-nuxt-structure.mdc** — Nuxt 4 file-based routing, layouts, middleware, composables. Globs: pages, layouts, middleware, nuxt.config.
 - **03-frontend-architecture.mdc** — Three-layer (presentation → composables → stores), component responsibilities. Globs: components, composables, pages.

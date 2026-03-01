@@ -30,3 +30,7 @@ Use this to trigger the right rule subsets and to enforce "analyze before implem
 - **Refactor task:** Fix root causes, not symptoms. Ensure no lasting TypeScript problems without quickpatch or lazy workarounds.
 
 When in doubt, load the broader set (e.g. Core + the relevant domain + state + styling) so constraints are not missed.
+
+## Tooling
+
+- **Do not run CLI commands needlessly.** Per core invariants: run shell/npm commands only when the task strictly requires it (e.g. running tests the user asked for, or a build step that is part of the request). Prefer codebase search and file edits over running commands to "verify" or "fix" things.

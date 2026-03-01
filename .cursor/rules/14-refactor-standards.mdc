@@ -14,6 +14,7 @@ Per core invariants: no quickpatching, no bloat disguised as refactor.
 - **Minifying or bundling CSS** and calling it "optimization" without addressing real layout or token usage. Optimization must not sacrifice correctness or readability. Do not optimize prematurely by breaking correctness.
 - **Bloat disguised as refactor:** Adding layers, indirection, or "flexibility" that do not simplify behavior or align with the existing architecture. Refactors should reduce complexity or clarify boundaries. Do not add bloat instead of redesigning properly.
 - **Rush over architecture:** Do not prioritize implementation over architecture. Do not accept "working" if it is not correct, scalable, and maintainable.
+- **Needless CLI use:** Do not run build, test, or lint commands as a substitute for proper analysis or fixes. Per core invariants: run commands only when the task strictly requires it.
 
 ## Required
 

@@ -53,6 +53,6 @@ These constraints apply to all code and architectural decisions. Do not weaken o
 
 ## Tooling
 
-- **No unnecessary shell/CLI noise.** Do not run pwsh, npm, or other commands unless the task strictly requires it. No tooling clutter to "make things work."
+- **No needless CLI use or CLI commands.** Do not run shell commands (pwsh, npm, npx, etc.) unless the task strictly requires it. Prefer reading files, searching the codebase, and editing code over running commands to "verify," "check," or "make things work." No tooling clutter.
 
 Reference domain-specific and layer-specific rules when working in those areas; they extend these invariants contextually.
