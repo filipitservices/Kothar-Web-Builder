@@ -1,0 +1,31 @@
+---
+description: Pinia store ownership, single source of truth, and centralized mutation APIs. Apply when changing stores or composables that wrap stores.
+globs: app/stores/**/*.ts, app/composables/**/*.ts
+alwaysApply: false
+---
+
+# Pinia State Management
+
+Per core invariants: no artificial state syncing, no parallel sources of truth, no watcher-based glue.
+
+## Store Ownership
+
+- **One logical owner per state.** Business data: `stores/business.ts`. Block instance data: `stores/blocks.ts`. Auth: `stores/auth.ts`. Templates (builder): `stores/templates.ts`. Showcase: `stores/showcase.ts`. Live sites: `stores/sites.ts`.
+- **No duplicate state** for the same domain in another store, composable, or component. If data is derived, expose it via getters or composable computed refs that read from the single store.
+
+## Mutation API
+
+- **All writes go through store actions/mutations.** Components and composables call store methods (e.g. `updateBlockCustomField`, `setBlockData`, `updateBusinessInfo`); they do not assign to store state directly from outside the store.
+- **No bypassing centralized APIs.** Do not add one-off setters or assign to `store.someRef = x` from components; add or use an action on the store.
+
+## Composables and Stores
+
+- **Composables abstract store access.** They may read store state and expose computed refs and call store actions. They must not hold a second copy of the same state that is "synced" with the store via watchers.
+- **Blocks:** `useBlockData(blockId)` reads/writes via `useBlocksStore()`. No component-level copy of block data that is kept in sync with the store.
+
+## Data Flow
+
+- **Read:** Component → composable (getter/computed) → store state.
+- **Write:** Component/composable → composable method or store action → store state. Reactivity propagates via Pinia; no manual push/update to "trigger" reactivity.
+
+Reference `docs/04-DATA-FLOW.md` for store shapes and composable APIs.

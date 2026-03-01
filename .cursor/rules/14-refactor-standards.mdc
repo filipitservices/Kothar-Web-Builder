@@ -1,0 +1,24 @@
+---
+description: No quickpatch; no demo-grade code; documentation sync. Apply when refactoring or "cleanup" tasks.
+alwaysApply: false
+---
+
+# Refactor Standards
+
+Per core invariants: no quickpatching, no bloat disguised as refactor.
+
+## Forbidden
+
+- **Quickpatch:** Short-term fixes that ignore the right abstraction or data flow (e.g. a watcher to sync two sources instead of having one source). Prefer fixing the design.
+- **Demo-grade code:** Placeholder logic, commented-out "TODO" without a clear path, or code that only works in one scenario. Refactors must leave the code in a maintainable, correct state.
+- **Minifying or bundling CSS** and calling it "optimization" without addressing real layout or token usage. Optimization must not sacrifice correctness or readability.
+- **Bloat disguised as refactor:** Adding layers, indirection, or "flexibility" that do not simplify behavior or align with the existing architecture. Refactors should reduce complexity or clarify boundaries.
+
+## Required
+
+- **Documentation sync:** After structural or architectural refactors, update the affected docs per the documentation-integrity rule. Do not leave outdated route tables, data flow descriptions, or API references.
+- **No premature optimization:** Do not optimize (e.g. lazy loading, code splitting) at the cost of correctness or clarity unless there is a stated performance goal and the change is justified.
+
+## Scope
+
+- Refactors include: moving files, changing data flow, consolidating stores or composables, changing route/layout assignment, and any "cleanup" that touches architecture. For such tasks, apply this rule and documentation-integrity together with the relevant domain and layer rules.

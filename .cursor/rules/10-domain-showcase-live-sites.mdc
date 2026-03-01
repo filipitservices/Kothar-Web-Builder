@@ -1,0 +1,27 @@
+---
+description: Showcase templates and live sites. Live sites cannot be rebuilt via builder; showcase ≠ builder templates. Apply when editing dashboard, sites, gallery request, or showcase.
+globs: app/stores/showcase.ts, app/stores/sites.ts, app/pages/sites/**/*.vue, app/pages/gallery/**/*.vue, app/pages/dashboard.vue, app/components/ShowcaseModal.vue, app/components/showcase/**/*.vue
+alwaysApply: false
+---
+
+# Domain: Showcase and Live Sites
+
+Per core invariants. **Live sites** (delivered websites) are managed in the control panel and list; they are **not** rebuilt or edited through the builder. **Showcase templates** are professional designs for the request flow; they are **not** builder wireframe templates.
+
+## Invariants
+
+- **Live sites cannot be rebuilt through the builder.** The builder is for design selection and the request flow (e.g. choose a design, submit request). Delivered sites are managed at `/sites` and `/sites/[id]` (control panel: content, business hours, seasonal announcement, etc.). No pathway from live sites back into the builder to "rebuild."
+- **Showcase templates ≠ builder templates.** Builder templates (`stores/templates.ts`) are block sequences for the DIY builder. Showcase (`stores/showcase.ts`) holds full professional designs (sections, color schemes, content structure) for preview and request form. Do not reuse builder wireframe templates as showcase templates or vice versa.
+- **Dashboard and live sites control panel are separate from builder state.** Dashboard shows builder entry and showcase; sites list and site detail are separate pages with their own store (`stores/sites.ts`) and UI. No mixing of builder block state with live site content.
+
+## Showcase Flow
+
+- **Dashboard:** User sees builder CTA and showcase template grid. Clicking a template opens ShowcaseModal (preview). "Choose This Design" → navigate to `/gallery/request/[id]`.
+- **Request form:** Template request page uses selected showcase template; form and preview are separate from builder. No application of builder templates on this flow.
+
+## Data Ownership
+
+- **Showcase:** `stores/showcase.ts` — template definitions (sections, colors, etc.). Rendered by ShowcaseRenderer. No syncing with blocks store.
+- **Sites:** `stores/sites.ts` — live site list and detail (hero, services, contact, business hours, etc.). Updated via store actions from the control panel. Not editable in builder.
+
+Reference `docs/17-DASHBOARD-AND-GALLERY.md` and `docs/11-ROUTING-AND-LANDING.md` for flows and boundaries.

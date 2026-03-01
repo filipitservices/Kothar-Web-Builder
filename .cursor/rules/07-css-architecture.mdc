@@ -1,0 +1,35 @@
+---
+description: Design tokens, spacing scale, no ad-hoc colors or magic numbers. Apply when adding or changing CSS in assets or components.
+globs: app/assets/css/**/*.css, "**/*.vue"
+alwaysApply: false
+---
+
+# CSS and Styling Architecture
+
+Per core invariants. Before styling changes, audit design tokens in `app/assets/css/style.css` (`:root`).
+
+## Design Tokens
+
+- **Colors:** Use `:root` variables only. No hardcoded hex/rgb in component or page CSS. Use `--color-primary`, `--color-bg`, `--color-border`, `--color-text`, `--color-text-muted`, etc. Page-scoped extensions (e.g. `--landing-*`, `--showcase-*`) live on a container class, not globally.
+- **Spacing:** Use `--space-xs` through `--space-3xl` (rem scale). No magic number margins or paddings (e.g. `14px`, `10px`) unless they map to a token or a documented scale.
+- **Radius:** Use `--radius-sm`, `--radius-md`, `--radius-lg`, `--radius-xl`. No ad-hoc border-radius values.
+- **Layout:** Use `--container-max: 1200px` for main content containers. Sections use `max-width: var(--container-max)` (or page-local equivalent) and `margin: 0 auto`. No content exceeding container width unless explicitly full-bleed.
+
+## Forbidden
+
+- **No inline styles** for layout, colors, or spacing. Use classes and scoped CSS that reference tokens.
+- **No `!important`** to fix specificity. Resolve via structure and selector specificity.
+- **No ad-hoc colors** (hex, rgb) in stylesheets. No magic numbers for spacing, height, or width that are not from the scale.
+- **No hardcoded layout heights** that break flow (e.g. fixed height that causes overflow). No overflow hacks (e.g. `overflow: hidden` to hide layout bugs). No breaking container widths.
+
+## Structure
+
+- **Global CSS order** (nuxt.config): `style.css` (tokens + base), `components.css`, `navbar.css`. Page-scoped CSS (e.g. `landing.css`, `dashboard.css`, `editor.css`, `sites.css`, `request-form.css`, `showcase.css`) is loaded per page via `<style scoped src="...">`; do not re-import `style.css` in page CSS.
+- **Breakpoints:** Use consistently: `480px`, `640px`, `768px`, `900px`, `1024px`, `1200px` in `@media`.
+- **Scoped styles:** Prefer Vue scoped `<style scoped>` or page-scoped CSS. No reliance on incidental global side effects.
+
+## Layout Safety
+
+- Layout must remain safe across the app: navbar, landing, dashboard, builder, sites, request form. Changes to tokens or global layout must not break container width or cause horizontal scroll unless intended.
+
+Reference `app/assets/css/style.css` and `docs/02-ARCHITECTURE.md` (CSS and Styling Architecture) for current tokens and patterns.

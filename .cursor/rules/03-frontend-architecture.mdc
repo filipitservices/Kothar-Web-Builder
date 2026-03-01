@@ -1,0 +1,31 @@
+---
+description: Three-layer architecture (presentation → composables → stores) and component responsibilities. Apply when adding or changing components or composables.
+globs: app/components/**/*.vue, app/composables/**/*.ts, app/pages/**/*.vue
+alwaysApply: false
+---
+
+# Frontend Architecture
+
+Per core invariants. Three-layer design: **Presentation** (components) → **Logic** (composables) → **Data** (Pinia stores).
+
+## Layer Responsibilities
+
+- **Presentation:** Vue components render UI and handle user input. They call composables for data and actions; they do not import stores directly (except where a composable is a thin wrapper and the pattern is established).
+- **Logic:** Composables encapsulate business logic, transform data, and call store actions. They are the abstraction between components and stores.
+- **Data:** Pinia stores hold state and expose mutations/actions. Single source of truth per domain; no duplicate state.
+
+## Component Rules
+
+- **No direct store mutation from components.** Use composables (e.g. `useBlockData`, `useBusinessData`, `useAuth`) that wrap store access.
+- **Props down, events up.** Parent passes data via props; child emits events. No prop mutation; use v-model/emit for two-way flow where needed.
+- **Block components** receive `blockId` (and optionally `screenType`) and use `useBlockData(blockId)` for all block data read/write. Do not pass store instances or raw store state as props for block data.
+
+## Composables
+
+- Return stable APIs: computed refs, functions. Do not return raw store refs when the composable is the intended API (e.g. `useBlockData` returns `getField`/`setField`, not the store).
+- One composable per concern where possible. Do not create "god" composables that mix unrelated domains.
+
+## Reference
+
+- Data flow: `docs/04-DATA-FLOW.md`
+- Component hierarchy and block lifecycle: `docs/02-ARCHITECTURE.md`, `docs/03-BLOCK-SYSTEM.md`

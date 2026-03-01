@@ -1,0 +1,30 @@
+---
+description: Immutable update patterns and no direct nested mutation. Apply when changing state updates in stores, composables, or components.
+globs: app/stores/**/*.ts, app/composables/**/*.ts, app/components/**/*.vue
+alwaysApply: false
+---
+
+# Reactivity and Immutability
+
+Per core invariants: no direct mutation of nested reactive state; no `obj.x = y`, no `arr[i] = v`.
+
+## Forbidden Patterns
+
+- **Direct property assignment on reactive objects:** `state.screens.desktop[id].customData.field = value` — forbidden. Use store action that performs an immutable update (e.g. new object, spread).
+- **Direct array index assignment:** `list[i] = item` on a reactive array — forbidden. Replace with new array (spread, filter, map) or use a store/composable method that does so.
+- **Mutating props:** Any assignment to a prop (e.g. `props.foo = x`) — forbidden. Use emit or composable.
+
+## Allowed Patterns
+
+- **Store actions** that replace state or nested objects: e.g. `screens.value[screenId] = { ...screens.value[screenId], [blockId]: newBlockData }` inside the store, or use a dedicated setter that constructs new structure.
+- **Ref assignment:** `someRef.value = newValue` where `someRef` is the ref you own (e.g. local ref in component or store state). The *value* assigned should be a new object/array when the previous value was reactive and nested updates would otherwise mutate in place.
+- **Computed/getters:** Read-only derived state. No assignment inside computed.
+
+## Store Implementation
+
+- When updating nested structures (e.g. `screens[screenId][blockId].customData`), prefer building a new object for the block or screen and assigning once, rather than multiple direct property writes. Ensures Vue/Pinia reactivity and avoids accidental shared references.
+
+## Components
+
+- **v-model / emit:** Parent owns the state; child emits events. Parent updates its ref and passes down. No child mutating a prop.
+- **Composables:** Return read refs or computed; expose setter functions that call store actions. Components never receive a "raw" store ref and mutate it from the component.

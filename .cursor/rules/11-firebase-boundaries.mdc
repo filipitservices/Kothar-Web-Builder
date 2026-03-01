@@ -1,0 +1,27 @@
+---
+description: Firebase auth and session boundaries. Server session cookies; no duplicate auth state. Apply when changing auth, login, or protected routes.
+globs: app/plugins/firebase*.ts, app/composables/useAuth.ts, app/stores/auth.ts, app/middleware/auth.ts, app/middleware/guest.ts, server/api/auth/**/*.ts, server/utils/firebase*.ts
+alwaysApply: false
+---
+
+# Firebase Integration Boundaries
+
+Per core invariants. Auth state has a single source of truth: server-validated session cookie; client exposes it via auth store and useAuth composable.
+
+## Architecture
+
+- **Session cookie:** After client sign-in, ID token is exchanged for an HTTP-only session cookie via server API. Subsequent requests send the cookie; server validates it. No client-side token storage as source of truth for "logged in."
+- **Client:** Firebase client SDK in plugin; `useAuth()` composable and `stores/auth.ts` reflect auth state (e.g. from `/api/auth/me`). No parallel copy of auth state (e.g. in another store or composable) that is "synced" with Firebase via watchers. Auth store/composable is the single client-side representation; it is populated from server session check.
+
+## Boundaries
+
+- **Server:** Session create/verify/revoke and Firebase Admin SDK live in server (e.g. `server/api/auth/`, `server/utils/firebase-admin.ts`). Credentials and admin SDK stay server-only; never expose to client.
+- **Client:** Sign-in/sign-up and session exchange (post sign-in call to session API) and reading current user via `/api/auth/me`. No direct Admin SDK or credentials on client.
+- **Middleware:** Auth and guest middleware call session verification API (SSR-safe with cookie). Use for redirects; do not duplicate auth logic in components (use composable/store).
+
+## Rules
+
+- **No syncing** Firebase auth state with a second client store or local state via watchers. Auth store (and composable) are the single consumer of "current user" on the client; they get it from the session API.
+- **Protected routes:** Use `auth` middleware in `definePageMeta`. Do not protect by only checking in component (would leak on SSR). Do not add alternative auth checks that bypass middleware.
+
+Reference `docs/16-FIREBASE-AUTH.md` for flow and API.

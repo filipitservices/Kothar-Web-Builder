@@ -1,0 +1,34 @@
+---
+description: Route protection, layout boundaries, and middleware impact. Apply when changing routes, auth, or layout assignment.
+globs: app/pages/**/*.vue, app/middleware/**/*.ts, app/layouts/**/*.vue
+alwaysApply: false
+---
+
+# Routing and Middleware
+
+Per core invariants and Nuxt structure. Before changing routes or auth, verify layout boundaries and middleware impact.
+
+## Protected Routes
+
+- **auth middleware:** Applied to `/dashboard`, `/builder`, `/sites`, `/sites/[id]`, `/gallery/request/[id]`. Unauthenticated users redirect to `/login?redirect={path}`. Session verified via server API; no protected UI sent before redirect.
+- **guest middleware:** Applied to `/login`, `/reset-password`. Authenticated users redirect to `/dashboard`.
+
+## Verification Checklist for Routing Edits
+
+1. **Layout:** Which layout does the page use? Default (navbar) vs builder (no navbar). Set via `definePageMeta({ layout: '...' })`.
+2. **Middleware:** Add `middleware: 'auth'` or `middleware: 'guest'` in `definePageMeta` for new or changed pages as appropriate.
+3. **SSR:** Middleware runs on server and client. Use `useRequestFetch` in middleware for SSR-safe API calls that need cookies. Do not rely on client-only checks for protecting content.
+4. **Navigation:** Use `<NuxtLink>` or `navigateTo()` for in-app navigation. Redirect after login to `route.query.redirect` or `/dashboard`.
+
+## Route Map (Reference)
+
+| Route | Layout | Auth |
+|-------|--------|------|
+| `/` | default | public |
+| `/dashboard` | default | auth |
+| `/builder` | builder | auth |
+| `/sites`, `/sites/[id]` | default | auth |
+| `/gallery/request/[id]` | default | auth |
+| `/login`, `/reset-password` | default | guest |
+
+Do not add duplicate navbars or route-specific layout hacks; use the two existing layouts.

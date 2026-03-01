@@ -1,0 +1,34 @@
+---
+description: Core engineering invariants for Kothar. Apply to every structural, state, or behavioral change.
+alwaysApply: true
+---
+
+# Core Invariants
+
+These constraints apply to all code and architectural decisions. Do not weaken or bypass them.
+
+## Immutability and Reactivity
+
+- **No prop mutation.** Components must not assign to props. Use emits or composables for parent communication.
+- **No direct mutation of nested reactive state.** No `obj.x = y`, no `arr[i] = v`. Use immutable update patterns: new objects/arrays, spread, or store/composable APIs that perform updates in one place.
+- **No unnecessary push/update calls** used only to "trigger" reactivity. Fix the data flow instead.
+
+## Single Source of Truth
+
+- **No artificial state syncing** between Firebase, composables, components, or stores. No parallel sources of truth for the same domain.
+- **No watcher-based glue** to compensate for architectural mistakes. Model ownership clearly: one owner per piece of state, others read or call APIs.
+
+## TypeScript
+
+- **No silencing TypeScript** with `any`, `as unknown as`, or ad-hoc type assertions to satisfy the compiler. Define and respect explicit data models and types.
+
+## Quality and Process
+
+- **No quickpatching.** No demo-grade code, no minifying CSS and calling it optimization, no bloat disguised as refactor, no premature optimization that sacrifices correctness.
+- **Analyze before implement.** For structural tasks: architecture review first. For styling: design token review first. For state: explicit modeling and types first. For routing: layout boundaries and middleware impact first.
+
+## Tooling
+
+- **No unnecessary shell/CLI noise.** Do not run pwsh, npm, or other commands unless the task explicitly requires it. No tooling clutter to "make things work."
+
+Reference domain-specific and layer-specific rules when working in those areas; they extend these invariants contextually.

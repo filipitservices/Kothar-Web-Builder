@@ -1,0 +1,33 @@
+---
+description: Nuxt 4 file-based routing, layouts, middleware, and Composition API structure. Apply when changing pages, layouts, or routing.
+globs: app/pages/**/*.vue, app/layouts/**/*.vue, app/middleware/**/*.ts, nuxt.config.ts
+alwaysApply: false
+---
+
+# Nuxt 4 Structure
+
+Per core invariants. Re-read [Nuxt 4 documentation](https://nuxt.com/docs) before making structural changes to routing, layouts, or app entry.
+
+## File-Based Routing
+
+- **Pages:** `app/pages/` define routes. No manual router config. Nested routes: `pages/sites/[id].vue` → `/sites/:id`.
+- **Layouts:** `app/layouts/`. Default layout wraps pages with `AppNavbar` and `<slot />`. Builder layout is slot-only (no navbar). Page chooses layout via `definePageMeta({ layout: 'builder' })` where needed.
+- **Middleware:** `app/middleware/`. `auth` protects routes requiring login; `guest` restricts login/reset-password to unauthenticated users. Middleware runs on both SSR and client; use it for redirects, not for rendering decisions inside components.
+
+## Conventions
+
+- Use `<script setup>` and Composition API. No `data()`, `methods`, or `computed` options; use `ref()`, `computed()`, composables.
+- Composables live in `app/composables/` and are auto-imported. Use them for shared logic; do not duplicate logic in components.
+- Plugins in `app/plugins/` run once. Use for SDK init (e.g. Firebase client); keep app logic in composables or stores.
+
+## Layout Assignment
+
+- **default:** Used by `/`, `/dashboard`, `/gallery/request/[id]`, `/login`, `/reset-password`, `/sites`, `/sites/[id]`. Provides `AppNavbar`.
+- **builder:** Used only by `/builder`. No navbar; full viewport for editor.
+
+Do not add per-page navbars; extend or configure `AppNavbar` for route-specific behavior.
+
+## Config
+
+- Global CSS order in `nuxt.config.ts`: `style.css` (tokens + base), then `components.css`, then `navbar.css`. Do not re-import base tokens in page CSS.
+- Runtime config: server-only values in root; public values in `runtimeConfig.public`. Never expose server secrets to client.

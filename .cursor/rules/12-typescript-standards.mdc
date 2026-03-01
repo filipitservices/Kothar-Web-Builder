@@ -1,0 +1,30 @@
+---
+description: Explicit data models and no type silencing. Apply when adding or changing types, interfaces, or TS in app or server code.
+globs: "**/*.ts", "**/*.vue"
+alwaysApply: false
+---
+
+# TypeScript Standards
+
+Per core invariants: no silencing TypeScript with `any`, `as unknown as`, or ad-hoc assertions.
+
+## Data Models
+
+- **Define explicit types/interfaces** for store state, composable returns, component props/emits, and API payloads. Use them consistently; do not fall back to implicit `any` or loose types.
+- **Respect defined models.** When a type says a field is `string`, do not assign a number and then assert. Fix the data or extend the type explicitly.
+
+## Forbidden
+
+- **No `any`** for domain data or public APIs. Use `unknown` and narrow, or define a proper type.
+- **No `as unknown as T`** (or similar double assertion) to silence errors. Fix the type or the implementation.
+- **No ad-hoc assertions** (e.g. `as SomeType` on values that do not match) to "make it compile." Ensure runtime shape matches the type or adjust the type.
+
+## Allowed
+
+- **Type guards and narrowing** for `unknown` (e.g. after fetch or JSON parse).
+- **Generic constraints** where the type is constrained by a real interface.
+- **Optional/chained access** with proper nullable types rather than asserting non-null.
+
+## Where Types Live
+
+- Shared domain types: `app/types/` or colocated with the feature. Store state and composable return types should be in types or in the store/composable file and exported. Reference `docs/05-API-REFERENCE.md` for existing interfaces.
