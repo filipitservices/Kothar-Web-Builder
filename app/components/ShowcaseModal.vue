@@ -198,8 +198,8 @@ watch(viewMode, () => {
 
 /* Modal sizing for this specific use case */
 .showcase-modal {
-  max-width: 1200px;
-  height: calc(100vh - 3rem);
+  max-width: var(--container-max);
+  height: calc(100vh - var(--space-3xl));
   max-height: 900px;
 }
 

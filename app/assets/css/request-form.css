@@ -1,11 +1,4 @@
-/**
- * Request Form Page Styles
- * Uses design tokens from style.css :root; shared form/button patterns from components.css.
- */
-
-/* ==========================================================================
-   PAGE LAYOUT
-   ========================================================================== */
+/* Request form page — tokens from style.css; form patterns from components.css. */
 
 .request-container {
   display: flex;
@@ -15,15 +8,11 @@
   background: var(--color-bg-muted);
 }
 
-/* ==========================================================================
-   MAIN CONTENT
-   ========================================================================== */
-
 .request-main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 2.5rem var(--space-xl);
+  padding: var(--space-2xl) var(--space-xl);
 }
 
 .request-content {
@@ -32,35 +21,29 @@
   margin: 0 auto;
 }
 
-/* Two Column Grid */
 .request-grid {
   display: grid;
   grid-template-columns: 420px 1fr;
-  gap: 3rem;
+  gap: var(--space-3xl);
   align-items: start;
 }
 
 @media (max-width: 1024px) {
   .request-grid {
     grid-template-columns: 1fr;
-    gap: 2rem;
+    gap: var(--space-xl);
   }
 }
 
 
-/* ==========================================================================
-   LEFT COLUMN: TEMPLATE PREVIEW
-   ========================================================================== */
-
 .template-preview-section {
   position: sticky;
-  top: calc(72px + 2rem); /* header height + padding */
+  top: calc(72px + var(--space-xl));
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: var(--space-lg);
 }
 
-/* Welcome Message */
 .welcome-message {
   font-size: 1.5rem;
   font-weight: 700;
@@ -84,24 +67,21 @@
   letter-spacing: 0.05em;
 }
 
-/* Device Preview - Desktop viewport simulation with CSS transform scaling */
 .preview-device {
-  margin-bottom: 1.25rem;
+  margin-bottom: var(--space-lg);
   position: relative;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--color-bg-muted);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   overflow: hidden;
 }
 
-/* Viewport container - holds the scaled desktop simulation */
 .preview-viewport {
-  /* Dimensions set via inline style for dynamic scaling */
   background: var(--color-bg);
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
+  scrollbar-color: var(--color-border-hover) transparent;
 }
 
 .preview-viewport::-webkit-scrollbar {
@@ -113,12 +93,12 @@
 }
 
 .preview-viewport::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 3px;
+  background: var(--color-border-hover);
+  border-radius: var(--radius-sm);
 }
 
 .preview-viewport::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: var(--color-text-muted);
 }
 
 /* Template Info */
@@ -140,7 +120,7 @@
   font-size: 1.125rem;
   font-weight: 700;
   color: var(--color-text);
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 var(--space-sm) 0;
   line-height: 1.3;
 }
 
@@ -151,11 +131,10 @@
   margin: 0;
 }
 
-/* Preview Links */
 .preview-links {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--space-sm);
 }
 
 .change-template-link {
@@ -186,29 +165,28 @@
   text-decoration: underline;
 }
 
-/* Progress Bar in Left Column */
 .preview-progress {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem 1.25rem;
-  background: linear-gradient(135deg, #f0f4ff 0%, #fff 100%);
-  border: 1px solid #e0e7ff;
-  border-radius: 12px;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-primary-tint);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
 }
 
 .progress-track {
   flex: 1;
   height: 6px;
   background: var(--color-border);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--color-primary) 0%, #3b82f6 100%);
-  border-radius: 3px;
+  background: var(--color-primary);
+  border-radius: var(--radius-sm);
   transition: width 0.3s ease;
 }
 
@@ -220,10 +198,6 @@
 }
 
 
-/* ==========================================================================
-   RIGHT COLUMN: REQUEST FORM
-   ========================================================================== */
-
 .form-section {
   background: var(--color-bg);
   border: 1px solid var(--color-border);
@@ -232,9 +206,8 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-/* Form Header */
 .form-header {
-  margin-bottom: 1.75rem;
+  margin-bottom: var(--space-lg);
   padding-bottom: var(--space-lg);
   border-bottom: 1px solid var(--color-border);
 }
@@ -243,7 +216,7 @@
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--color-text);
-  margin: 0 0 0.625rem 0;
+  margin: 0 0 var(--space-sm) 0;
   line-height: 1.25;
 }
 
@@ -254,20 +227,18 @@
   line-height: 1.6;
 }
 
-/* Request Form */
 .request-form {
   display: flex;
   flex-direction: column;
   gap: 0;
 }
 
-/* Submit Button */
 .submit-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-sm);
-  padding: 0.875rem 1.75rem;
+  padding: var(--space-md) var(--space-lg);
   background: var(--color-primary);
   color: var(--color-white);
   border: none;
@@ -288,23 +259,19 @@
 }
 
 .submit-button svg {
-  width: 18px;
-  height: 18px;
+  width: 1.125rem;
+  height: 1.125rem;
 }
 
 
-/* ==========================================================================
-   RESPONSIVE ADJUSTMENTS
-   ========================================================================== */
-
 @media (max-width: 768px) {
   .request-main {
-    padding: 1.5rem 1rem;
+    padding: var(--space-lg) var(--space-md);
   }
 
   .template-preview-section {
     position: static;
-    gap: 1rem;
+    gap: var(--space-md);
   }
 
   .welcome-message {
@@ -312,14 +279,14 @@
   }
 
   .preview-card {
-    padding: 1.25rem;
+    padding: var(--space-lg);
   }
 
   .preview-progress {
     flex-direction: column;
     align-items: stretch;
-    gap: 0.75rem;
-    padding: 0.875rem 1rem;
+    gap: var(--space-md);
+    padding: var(--space-md);
   }
 
   .progress-label {
@@ -327,13 +294,13 @@
   }
 
   .form-section {
-    padding: 1.5rem;
-    border-radius: 12px;
+    padding: var(--space-lg);
+    border-radius: var(--radius-lg);
   }
 
   .form-header {
-    margin-bottom: 1.5rem;
-    padding-bottom: 1.25rem;
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-lg);
   }
 
   .form-title {

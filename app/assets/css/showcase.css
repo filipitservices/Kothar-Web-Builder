@@ -1,47 +1,19 @@
-/**
- * Showcase Template Styles
- * 
- * Shared styles for showcase template rendering.
- * Used by ShowcaseRenderer and all section components.
- */
-
-/* ==========================================================================
-   DESIGN TOKENS (via CSS custom properties)
-   These are set by ShowcaseRenderer based on template.colorScheme
-   ========================================================================== */
-
-/*
-  --showcase-primary: Primary brand color
-  --showcase-secondary: Secondary brand color
-  --showcase-accent: Accent/CTA color
-  --showcase-bg: Background color
-  --showcase-text: Text color
-*/
-
-
-/* ==========================================================================
-   BASE STYLES
-   ========================================================================== */
+/* Showcase template rendering — tokens from style.css; --showcase-* set by ShowcaseRenderer. */
 
 .showcase-renderer {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  font-family: inherit;
   background: var(--showcase-bg, var(--color-bg));
   color: var(--showcase-text, var(--color-text));
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 1.5;
 }
 
 .showcase-renderer.view-mobile {
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
-
-/* ==========================================================================
-   SECTION BASE
-   ========================================================================== */
-
 .showcase-section {
-  padding: 32px 16px;
+  padding: var(--space-xl) var(--space-md);
 }
 
 .showcase-section__inner {
@@ -53,7 +25,7 @@
   font-size: 1.5em;
   font-weight: 700;
   color: var(--showcase-primary);
-  margin: 0 0 8px 0;
+  margin: 0 0 var(--space-sm) 0;
   text-align: center;
 }
 
@@ -61,20 +33,15 @@
   font-size: 0.9em;
   color: var(--color-text-muted);
   text-align: center;
-  margin: 0 0 20px 0;
+  margin: 0 0 var(--space-xl) 0;
 }
-
-
-/* ==========================================================================
-   BUTTONS (showcase-specific, uses template colors)
-   ========================================================================== */
 
 .showcase-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 16px;
-  border-radius: 6px;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-sm);
   font-weight: 600;
   font-size: 0.85em;
   cursor: pointer;
@@ -90,7 +57,7 @@
 .showcase-btn--secondary {
   background: transparent;
   border: 2px solid rgba(255, 255, 255, 0.5);
-  color: #fff;
+  color: var(--color-white);
 }
 
 .showcase-btn--outline {
@@ -100,20 +67,15 @@
 }
 
 .showcase-btn--large {
-  padding: 12px 24px;
+  padding: var(--space-md) var(--space-xl);
   font-size: 1em;
 }
 
-
-/* ==========================================================================
-   CARD PATTERNS
-   ========================================================================== */
-
 .showcase-card {
-  padding: 16px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  padding: var(--space-md);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
 }
 
 .showcase-card--featured {
@@ -122,13 +84,9 @@
 }
 
 
-/* ==========================================================================
-   GRID PATTERNS
-   ========================================================================== */
-
 .showcase-grid {
   display: grid;
-  gap: 16px;
+  gap: var(--space-md);
 }
 
 .showcase-grid--2 {
@@ -148,29 +106,25 @@
 }
 
 
-/* ==========================================================================
-   ICON STYLES
-   ========================================================================== */
-
 .showcase-icon {
-  width: 16px;
-  height: 16px;
+  width: 1rem;
+  height: 1rem;
   flex-shrink: 0;
 }
 
 .showcase-icon--sm {
-  width: 14px;
-  height: 14px;
+  width: 0.875rem;
+  height: 0.875rem;
 }
 
 .showcase-icon--md {
-  width: 24px;
-  height: 24px;
+  width: 1.5rem;
+  height: 1.5rem;
 }
 
 .showcase-icon--lg {
-  width: 36px;
-  height: 36px;
+  width: 2.25rem;
+  height: 2.25rem;
 }
 
 .showcase-icon--primary {
@@ -178,13 +132,8 @@
 }
 
 .showcase-icon--star {
-  color: #fbbf24;
+  color: var(--color-text-muted);
 }
-
-
-/* ==========================================================================
-   PLACEHOLDER PATTERNS (for demo content)
-   ========================================================================== */
 
 .showcase-placeholder {
   background: var(--color-border);
@@ -196,16 +145,12 @@
 }
 
 
-/* ==========================================================================
-   FOOTER
-   ========================================================================== */
-
 .showcase-footer {
-  background: #1f2937;
+  background: var(--color-footer-bg);
   color: var(--color-placeholder);
   text-align: center;
-  padding: 20px 16px;
-  font-size: 0.75em;
+  padding: var(--space-xl) var(--space-md);
+  font-size: 0.75rem;
 }
 
 .showcase-footer p {

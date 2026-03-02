@@ -235,23 +235,23 @@ No page implements its own navbar; all use the default layout and shared AppNavb
 ## CSS and Styling Architecture
 
 **Global CSS** (loaded via `nuxt.config.ts` `css` array, in order):
-1. `app/assets/css/style.css` – Reset, base typography, **design tokens** (`:root`), utilities, and landing section wrappers that target child component roots.
+1. `app/assets/css/style.css` – Reset, base typography, **design tokens** (`:root`), and utilities only. No page-specific selectors.
 2. `app/assets/css/components.css` – Shared UI patterns (buttons, modal, device frames, toggle group, form elements). Uses tokens from `style.css`.
 3. `app/assets/css/navbar.css` – AppNavbar only. Uses tokens from `style.css`.
 
 **Design tokens** (`:root` in `style.css`):
-- **Colors**: `--color-primary`, `--color-primary-dark`, `--color-primary-tint`, `--color-bg`, `--color-border`, `--color-text`, `--color-text-muted`, etc. No hardcoded hex in token-using files.
+- **Colors**: `--color-primary`, `--color-primary-dark`, `--color-primary-tint`, `--color-bg`, `--color-border`, `--color-text`, `--color-text-muted`, `--color-error`, `--color-error-ring`, `--color-focus-ring`, `--color-overlay`, `--color-device-bezel`, `--color-device-bezel-light`, `--color-footer-bg`, `--color-footer-border`. No hardcoded hex in token-using files.
 - **Spacing**: `--space-xs` through `--space-3xl` (rem scale).
 - **Radius**: `--radius-sm`, `--radius-md`, `--radius-lg`, `--radius-xl`.
-- **Layout**: `--container-max: 1200px` for all main content containers (navbar, landing, dashboard, request-form footer).
+- **Layout**: `--container-max: 1200px` for main content containers.
 
-**Page-scoped CSS** (loaded per page via `<style scoped src="...">`; do not re-import `style.css`):
-- Landing: `landing.css` (extends with `--landing-*` on `.landing-container`).
+**Page- and feature-scoped CSS** (loaded per page/component via `<style scoped src="...">` or component `<style src="...">`; do not re-import `style.css`):
+- Landing: `landing.css` (`.landing-container` vars and `.sect` / `.sect-inner` section wrappers).
 - Dashboard: `dashboard.css`.
 - Builder: `editor.css`.
 - Sites (list and detail): `sites.css`.
-- Gallery request: `request-form.css`.
-- Showcase (component): `showcase.css` (uses `--showcase-*` from template).
+- Gallery request / order edit: `request-form.css`.
+- Showcase (ShowcaseRenderer): `showcase.css` (uses `--showcase-*` set by template).
 
 **Breakpoints** (use consistently in `@media`): `480px`, `640px`, `768px`, `900px`, `1024px`, `1200px`.
 

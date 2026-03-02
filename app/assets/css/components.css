@@ -1,20 +1,11 @@
-/**
- * Shared Component Styles
- * 
- * Reusable UI patterns used across the application.
- * Import this file in components that need these styles.
- */
-
-/* ==========================================================================
-   BUTTONS
-   ========================================================================== */
+/* Shared UI patterns — tokens from style.css :root. */
 
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-sm);
-  padding: 0.625rem 1.25rem;
+  padding: var(--space-sm) var(--space-lg);
   border: none;
   border-radius: var(--radius-md);
   font-size: 0.875rem;
@@ -76,19 +67,14 @@
 }
 
 .btn--lg {
-  padding: 0.75rem var(--space-lg);
+  padding: var(--space-sm) var(--space-lg);
   font-size: 1rem;
 }
-
-
-/* ==========================================================================
-   MODAL
-   ========================================================================== */
 
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
+  background: var(--color-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -111,7 +97,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.25rem var(--space-lg);
+  padding: var(--space-lg);
   border-bottom: 1px solid var(--color-border);
   background: var(--color-bg);
 }
@@ -127,7 +113,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.25rem var(--space-lg);
+  padding: var(--space-lg);
   border-top: 1px solid var(--color-border);
   background: var(--color-bg);
   gap: var(--space-lg);
@@ -160,11 +146,6 @@
 }
 
 
-/* ==========================================================================
-   DEVICE FRAMES
-   Matches ScreenCard styling from the builder
-   ========================================================================== */
-
 .device-frame {
   flex-shrink: 0;
   background: var(--color-bg);
@@ -174,14 +155,13 @@
   overflow: hidden;
 }
 
-/* Desktop Frame */
 .device-frame--desktop {
   width: 700px;
   height: 550px;
-  border: 12px solid #111;
-  border-radius: 20px;
+  border: 12px solid var(--color-device-bezel);
+  border-radius: var(--radius-xl);
   position: relative;
-  margin-bottom: 40px;
+  margin-bottom: var(--space-3xl);
 }
 
 .device-frame--desktop::after {
@@ -189,46 +169,43 @@
   position: absolute;
   width: 400px;
   height: 20px;
-  background: #333;
-  border-radius: 0 0 30px 30px;
+  background: var(--color-device-bezel-light);
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
   bottom: -32px;
   left: 50%;
   transform: translateX(-50%);
 }
 
-/* Mobile Frame */
 .device-frame--mobile {
   width: 330px;
   height: 600px;
-  border: 12px solid #111;
+  border: 12px solid var(--color-device-bezel);
   border-radius: 40px;
   position: relative;
 }
 
-.device-frame--mobile::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 180px;
-  height: 14px;
-  background: #111;
-  border-radius: 0 0 20px 20px;
-  z-index: 10;
-}
-
+.device-frame--mobile::before,
 .device-frame--mobile::after {
   content: "";
   position: absolute;
-  bottom: 0;
   left: 50%;
   transform: translateX(-50%);
+  background: var(--color-device-bezel);
+  z-index: 10;
+}
+
+.device-frame--mobile::before {
+  top: 0;
+  width: 180px;
+  height: 14px;
+  border-radius: 0 0 20px 20px;
+}
+
+.device-frame--mobile::after {
+  bottom: 0;
   width: 130px;
   height: 5px;
-  background: #111;
-  border-radius: 5px;
-  z-index: 10;
+  border-radius: var(--radius-sm);
 }
 
 /* Screen Content (scrollable area inside frame) */
@@ -243,10 +220,6 @@
   display: none;
 }
 
-
-/* ==========================================================================
-   TOGGLE GROUP
-   ========================================================================== */
 
 .toggle-group {
   display: flex;
@@ -287,10 +260,6 @@
 }
 
 
-/* ==========================================================================
-   TEXT UTILITIES
-   ========================================================================== */
-
 .text-label {
   font-size: 0.75rem;
   font-weight: 600;
@@ -321,23 +290,16 @@
 }
 
 
-/* ==========================================================================
-   FORMS
-   Reusable form patterns following the design system
-   ========================================================================== */
-
-/* Form Group */
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--space-sm);
 }
 
-/* Form Row - side by side fields */
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.25rem;
+  gap: var(--space-lg);
 }
 
 @media (max-width: 640px) {
@@ -365,7 +327,7 @@
 .form-select,
 .form-textarea {
   width: 100%;
-  padding: 0.75rem var(--space-md);
+  padding: var(--space-sm) var(--space-md);
   background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -391,7 +353,7 @@
 .form-textarea:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.08);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
 }
 
 .form-input:disabled,
@@ -442,36 +404,27 @@
 .form-select--invalid:focus,
 .form-textarea--invalid:focus {
   border-color: var(--color-error);
-  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+  box-shadow: 0 0 0 3px var(--color-error-ring);
 }
 
-/* Fieldset - Visual grouping with subtle background */
 .form-fieldset {
-  border: none;
+  border: 1px solid var(--color-border);
   padding: var(--space-lg);
   margin: 0 0 var(--space-lg) 0;
-  background: #fafbfc;
+  background: var(--color-bg-muted);
   border-radius: var(--radius-lg);
-  border: 1px solid #f0f1f3;
 }
 
 .form-fieldset:last-of-type {
   margin-bottom: 0;
 }
 
-/* Fieldset inner spacing */
-.form-fieldset .form-group {
-  margin-bottom: 1.25rem;
-}
-
-.form-fieldset .form-group:last-child {
-  margin-bottom: 0;
-}
-
+.form-fieldset .form-group,
 .form-fieldset .form-row {
-  margin-bottom: 1.25rem;
+  margin-bottom: var(--space-lg);
 }
 
+.form-fieldset .form-group:last-child,
 .form-fieldset .form-row:last-child {
   margin-bottom: 0;
 }
@@ -481,7 +434,7 @@
   font-weight: 700;
   color: var(--color-text);
   padding: 0;
-  margin-bottom: 1.25rem;
+  margin-bottom: var(--space-lg);
   display: flex;
   align-items: center;
   gap: var(--space-sm);
@@ -497,8 +450,8 @@
 .checkbox-label {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem var(--space-md);
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
   background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -516,12 +469,12 @@
 
 .checkbox-label:has(input:checked) {
   border-color: var(--color-primary);
-  background: rgba(30, 58, 138, 0.04);
+  background: var(--color-primary-tint);
 }
 
 .checkbox-label:has(input:focus-visible) {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.08);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
 }
 
 .checkbox-label input[type="checkbox"] {
@@ -537,9 +490,8 @@
   flex: 1;
 }
 
-/* Form Actions */
 .form-actions {
   margin-top: var(--space-xl);
-  padding-top: 1.75rem;
+  padding-top: var(--space-lg);
   border-top: 1px solid var(--color-border);
 }
