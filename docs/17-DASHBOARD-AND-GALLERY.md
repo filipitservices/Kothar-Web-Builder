@@ -310,12 +310,16 @@ Locked orders (`modificationLocked === true`) redirect to `/sites`; the edit pag
 
 | File | Purpose |
 |------|---------|
-| `dashboard.css` | Dashboard page: control strip, showcase block, template cards; tokens from `style.css`; page-scoped vars on `.dashboard-container` |
-| `request-form.css` | Request form and order edit page layout and preview styles |
-| `components.css` | Shared UI (buttons, forms, modals, device frames); loaded globally |
-| `showcase.css` | ShowcaseRenderer and section components; uses `--showcase-*` from template |
+| `dashboard.css` | Dashboard page: control strip, showcase block (contrast zone), compact template cards; uses design tokens only; page-scoped vars on `.dashboard-container` for section backgrounds |
+| `request-form.css` | Request form page styles |
+| `components.css` | Shared UI components (buttons, forms, modals, device frames) |
+| `showcase.css` | ShowcaseRenderer section styles |
 
-All use design tokens from `app/assets/css/style.css` (`:root`): `--color-primary`, `--space-*`, `--radius-*`, `--container-max`. No hardcoded colors or magic numbers in page/component CSS.
+All CSS files follow the existing design system:
+- Primary color: `#1e3a8a`
+- Border radius: `12px` (cards), `8px` (inputs)
+- Shadow: `0 1px 3px rgba(0, 0, 0, 0.04)` (subtle)
+- System fonts (Inter stack)
 
 ---
 

@@ -1,4 +1,7 @@
-/* Dashboard page — tokens from style.css; section vars on .dashboard-container. */
+/* ==========================================================================
+   Dashboard Page — Design tokens from style.css :root only.
+   Page-scoped vars on .dashboard-container for section contrast.
+   ========================================================================== */
 
 .dashboard-container {
   --dashboard-strip-bg: var(--color-bg);
@@ -13,10 +16,15 @@
   background: var(--color-bg-muted);
 }
 
+/* ==========================================================================
+   Control strip — greeting + primary CTA
+   ========================================================================== */
+
 .dashboard-strip {
   flex: 0 0 auto;
   background: var(--dashboard-strip-bg);
   border-bottom: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-primary);
 }
 
 .dashboard-strip__inner {
@@ -100,6 +108,10 @@
   transform: translateX(2px);
 }
 
+/* ==========================================================================
+   Templates showcase — contrast block
+   ========================================================================== */
+
 .dashboard-showcase {
   flex: 1;
   background: var(--dashboard-showcase-bg);
@@ -140,7 +152,7 @@
   color: var(--color-text-muted);
   margin: 0;
   line-height: 1.4;
-  max-width: 30rem;
+  max-width: 28rem;
 }
 
 .dashboard-showcase__filter {
@@ -174,9 +186,13 @@
   color: var(--color-white);
 }
 
+/* ==========================================================================
+   Template cards grid — compact, refined
+   ========================================================================== */
+
 .dashboard-showcase__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(12.5rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: var(--space-md);
 }
 
@@ -201,6 +217,7 @@
   outline-offset: 2px;
 }
 
+/* Card preview — smaller footprint */
 .dashboard-card__preview {
   aspect-ratio: 16 / 10;
   background: var(--preview-bg, var(--color-bg-muted));
@@ -227,8 +244,8 @@
 }
 
 .dashboard-card__browser-bar span {
-  width: var(--space-xs);
-  height: var(--space-xs);
+  width: 0.3125rem;
+  height: 0.3125rem;
   border-radius: 50%;
   background: var(--color-border-hover);
 }
@@ -258,7 +275,7 @@
 }
 
 .dashboard-card__mock-line {
-  height: var(--space-sm);
+  height: 0.375rem;
   background: var(--color-bg-subtle);
   border-radius: var(--radius-sm);
   width: 100%;
@@ -272,6 +289,7 @@
   width: 55%;
 }
 
+/* Card info — tight spacing */
 .dashboard-card__info {
   padding: var(--space-sm) var(--space-md);
   display: flex;
@@ -343,6 +361,10 @@
   color: var(--color-primary-dark);
 }
 
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+
 .dashboard-footer {
   flex: 0 0 auto;
   background: var(--dashboard-strip-bg);
@@ -361,6 +383,10 @@
   color: var(--color-placeholder);
   margin: 0;
 }
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
 
 @media (max-width: 768px) {
   .dashboard-strip__inner {

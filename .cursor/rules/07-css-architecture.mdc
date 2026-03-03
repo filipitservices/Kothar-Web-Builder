@@ -10,7 +10,7 @@ Per core invariants. Before styling changes, audit design tokens in `app/assets/
 
 ## Design Tokens
 
-- **Colors:** Use `:root` variables only. No hardcoded hex/rgb in component or page CSS. Use `--color-primary`, `--color-bg`, `--color-border`, `--color-text`, `--color-text-muted`, `--color-overlay`, `--color-focus-ring`, `--color-error-ring`, `--color-device-bezel`, `--color-footer-bg`, etc. Page-scoped extensions (e.g. `--landing-*`, `--showcase-*`) live on a container class, not globally.
+- **Colors:** Use `:root` variables only. No hardcoded hex/rgb in component or page CSS. Use `--color-primary`, `--color-bg`, `--color-border`, `--color-text`, `--color-text-muted`, etc. Page-scoped extensions (e.g. `--landing-*`, `--showcase-*`) live on a container class, not globally.
 - **Spacing:** Use `--space-xs` through `--space-3xl` (rem scale). No magic number margins or paddings (e.g. `14px`, `10px`) unless they map to a token or a documented scale.
 - **Radius:** Use `--radius-sm`, `--radius-md`, `--radius-lg`, `--radius-xl`. No ad-hoc border-radius values.
 - **Layout:** Use `--container-max: 1200px` for main content containers. Sections use `max-width: var(--container-max)` (or page-local equivalent) and `margin: 0 auto`. No content exceeding container width unless explicitly full-bleed.
@@ -24,7 +24,7 @@ Per core invariants. Before styling changes, audit design tokens in `app/assets/
 
 ## Structure
 
-- **Global CSS order** (nuxt.config): `style.css` (tokens + reset + base + utilities only), `components.css`, `navbar.css`. Page- and feature-scoped CSS (`landing.css`, `dashboard.css`, `editor.css`, `sites.css`, `request-form.css`, `showcase.css`) is loaded per page or component via `<style scoped src="...">` or `<style src="...">`; do not re-import `style.css` in page CSS. Landing section wrappers (`.sect`, `.sect-inner`, `.sect--*`) live in `landing.css`.
+- **Global CSS order** (nuxt.config): `style.css` (tokens + base), `components.css`, `navbar.css`. Page-scoped CSS (e.g. `landing.css`, `dashboard.css`, `editor.css`, `sites.css`, `request-form.css`, `showcase.css`) is loaded per page via `<style scoped src="...">`; do not re-import `style.css` in page CSS.
 - **Breakpoints:** Use consistently: `480px`, `640px`, `768px`, `900px`, `1024px`, `1200px` in `@media`.
 - **Scoped styles:** Prefer Vue scoped `<style scoped>` or page-scoped CSS. No reliance on incidental global side effects.
 

@@ -1,9 +1,9 @@
-/* Builder layout — tokens from style.css :root. */
+/* Builder/editor layout. Uses design tokens from style.css :root. */
 
 .main-container {
   display: flex;
-  gap: var(--space-lg);
-  padding: var(--space-lg);
+  gap: 1.25rem;
+  padding: 1.25rem;
   height: 100vh;
   overflow: hidden;
 }
@@ -32,7 +32,7 @@
 .sidebar-header h3 {
   margin: 0;
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: 14px;
 }
 
 .sidebar-list {
@@ -69,11 +69,12 @@
   flex: 0 0 auto;
 }
 
+/* Screens Container */
 .screens-container {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: var(--space-xl);
+  gap: 20px;
   overflow: hidden;
 }
 
@@ -103,11 +104,12 @@
   }
 }
 
+/* Editable content styles */
 .editable {
   position: relative;
-  padding: 2px var(--space-xs);
-  margin: -2px calc(-1 * var(--space-xs));
-  border-radius: var(--radius-sm);
+  padding: 2px 4px;
+  margin: -2px -4px;
+  border-radius: 3px;
   cursor: text;
   transition: all 0.15s ease;
   outline: none;
@@ -115,12 +117,12 @@
 }
 
 .editable:hover {
-  background: var(--color-primary-tint);
+  background: rgba(30, 58, 138, 0.03);
 }
 
 .editable:focus {
-  background: var(--color-primary-tint);
-  outline: 1px solid var(--color-border-hover);
+  background: rgba(30, 58, 138, 0.08);
+  outline: 1px solid rgba(30, 58, 138, 0.2);
 }
 
 .editable.has-local-value {

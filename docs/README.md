@@ -137,7 +137,7 @@ docs/
 - **State Management**: Pinia stores
 - **TypeScript**: Full type safety
 - **Patterns**: Composition API, composables, reactive refs
-- **Styling**: Design tokens (`style.css`), scoped and page-scoped CSS
+- **Styling**: Scoped CSS, Tailwind utilities
 
 ---
 

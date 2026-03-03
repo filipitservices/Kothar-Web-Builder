@@ -76,7 +76,7 @@
   width: 28px;
   height: 28px;
   border-radius: 999px;
-  background: var(--color-primary);
+  background: linear-gradient(135deg, var(--color-primary) 0%, #3b82f6 100%);
   color: var(--color-white);
   flex-shrink: 0;
 }
