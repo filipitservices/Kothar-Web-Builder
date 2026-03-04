@@ -1,10 +1,10 @@
 <template>
-  <section class="showcase-section showcase-section--team">
-    <div class="showcase-section__inner">
-      <h2 v-if="data.title" class="showcase-section__title">{{ data.title }}</h2>
+  <section class="show-sect show-sect--team">
+    <div class="show-sect__inner">
+      <h2 v-if="data.title" class="show-sect__title">{{ data.title }}</h2>
       <div class="team__grid">
         <div v-for="member in data.members" :key="member.name" class="team__member">
-          <div class="team__photo showcase-placeholder showcase-placeholder--circle"></div>
+          <div class="team__photo show-ph show-ph--circle"></div>
           <h3 class="team__name">{{ member.name }}</h3>
           <p class="team__title">{{ member.title }}</p>
           <p v-if="member.bio" class="team__bio">{{ member.bio }}</p>

@@ -1,21 +1,21 @@
 <template>
-  <div v-if="site" class="site-detail-container">
-    <main class="site-detail-main">
-      <div class="site-detail-content">
-        <NuxtLink to="/sites" class="site-detail-back">
+  <div v-if="site" class="site-page">
+    <main class="site-main">
+      <div class="site-content">
+        <NuxtLink to="/sites" class="site-back">
           <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" /></svg>
           Back to your sites
         </NuxtLink>
 
-        <header class="site-detail-header">
-          <h1 class="site-detail-title">{{ site.businessName }}</h1>
-          <p class="site-detail-subtitle">Manage your site content and settings. Changes here update what visitors see.</p>
+        <header class="site-header">
+          <h1 class="site-title">{{ site.businessName }}</h1>
+          <p class="site-subtitle">Manage your site content and settings. Changes here update what visitors see.</p>
         </header>
 
         <!-- Hero content -->
-        <section class="site-detail-section">
-          <h2 class="site-detail-section-title">Main headline & message</h2>
-          <p class="site-detail-section-hint">The first thing visitors see. Keep it clear and welcoming.</p>
+        <section class="site-sect">
+          <h2 class="site-sect__title">Main headline & message</h2>
+          <p class="site-sect__hint">The first thing visitors see. Keep it clear and welcoming.</p>
           <div class="form-group">
             <label for="hero-headline" class="form-label">Headline</label>
             <input
@@ -50,9 +50,9 @@
         </section>
 
         <!-- Business hours -->
-        <section class="site-detail-section">
-          <h2 class="site-detail-section-title">Business hours</h2>
-          <p class="site-detail-section-hint">When you're open. Visitors see this on your contact section.</p>
+        <section class="site-sect">
+          <h2 class="site-sect__title">Business hours</h2>
+          <p class="site-sect__hint">When you're open. Visitors see this on your contact section.</p>
           <div class="site-hours-list">
             <div
               v-for="(entry, index) in localHours"
@@ -79,9 +79,9 @@
         </section>
 
         <!-- Seasonal announcement -->
-        <section class="site-detail-section">
-          <h2 class="site-detail-section-title">Seasonal or promotional message</h2>
-          <p class="site-detail-section-hint">A banner visitors see at the top. Turn it on when you have a special offer or notice.</p>
+        <section class="site-sect">
+          <h2 class="site-sect__title">Seasonal or promotional message</h2>
+          <p class="site-sect__hint">A banner visitors see at the top. Turn it on when you have a special offer or notice.</p>
           <div class="form-group">
             <label class="checkbox-label">
               <input
@@ -106,18 +106,18 @@
         </section>
 
         <!-- Hero image -->
-        <section class="site-detail-section">
-          <h2 class="site-detail-section-title">Hero image</h2>
-          <p class="site-detail-section-hint">The main image on your homepage. Upload a new one when you're ready.</p>
+        <section class="site-sect">
+          <h2 class="site-sect__title">Hero image</h2>
+          <p class="site-sect__hint">The main image on your homepage. Upload a new one when you're ready.</p>
           <div class="site-image-placeholder">
             <p class="site-image-placeholder-text">Image upload will be available when we connect your account. For now, your site uses the default layout.</p>
           </div>
         </section>
 
         <!-- Preview strip -->
-        <section class="site-detail-section site-preview-strip">
-          <h2 class="site-detail-section-title">Quick preview</h2>
-          <p class="site-detail-section-hint">How your headline and announcement look to visitors.</p>
+        <section class="site-sect site-preview-strip">
+          <h2 class="site-sect__title">Quick preview</h2>
+          <p class="site-sect__hint">How your headline and announcement look to visitors.</p>
           <div class="site-preview-mock">
             <div v-if="site.seasonalAnnouncement.enabled && site.seasonalAnnouncement.text" class="site-preview-announcement">
               {{ site.seasonalAnnouncement.text }}
@@ -131,11 +131,11 @@
         </section>
 
         <!-- Request change -->
-        <section class="site-detail-section">
-          <h2 class="site-detail-section-title">Need a bigger change?</h2>
-          <p class="site-detail-section-hint">We can update structure, add new sections, or redesign. Submit a request and our team will get back to you.</p>
-          <div class="site-detail-actions">
-            <button type="button" class="site-detail-cta" @click="requestChange">
+        <section class="site-sect">
+          <h2 class="site-sect__title">Need a bigger change?</h2>
+          <p class="site-sect__hint">We can update structure, add new sections, or redesign. Submit a request and our team will get back to you.</p>
+          <div class="site-actions">
+            <button type="button" class="site-cta" @click="requestChange">
               Request a change from our team
             </button>
           </div>
@@ -150,11 +150,11 @@
     </footer>
   </div>
 
-  <div v-else class="site-detail-container">
-    <main class="site-detail-main">
-      <div class="site-detail-content">
+  <div v-else class="site-page">
+    <main class="site-main">
+      <div class="site-content">
         <p class="sites-empty">This site wasn't found.</p>
-        <NuxtLink to="/sites" class="site-detail-back">Back to your sites</NuxtLink>
+        <NuxtLink to="/sites" class="site-back">Back to your sites</NuxtLink>
       </div>
     </main>
   </div>

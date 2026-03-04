@@ -1,13 +1,13 @@
 <template>
-  <section class="showcase-section showcase-section--gallery">
-    <div class="showcase-section__inner">
-      <h2 v-if="data.title" class="showcase-section__title">{{ data.title }}</h2>
+  <section class="show-sect show-sect--gallery">
+    <div class="show-sect__inner">
+      <h2 v-if="data.title" class="show-sect__title">{{ data.title }}</h2>
       <div v-if="data.categories" class="gallery__categories">
         <span v-for="cat in data.categories" :key="cat" class="gallery__category">{{ cat }}</span>
       </div>
       <div class="gallery__grid" :class="{ 'gallery__grid--mobile': viewMode === 'mobile' }">
         <div v-for="(image, i) in galleryItems" :key="i" class="gallery__item">
-          <div class="gallery__placeholder showcase-placeholder"></div>
+          <div class="gallery__placeholder show-ph"></div>
           <p v-if="getCaption(image)" class="gallery__caption">{{ getCaption(image) }}</p>
         </div>
       </div>

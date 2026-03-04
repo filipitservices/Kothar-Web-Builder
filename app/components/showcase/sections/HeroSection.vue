@@ -1,12 +1,12 @@
 <template>
-  <section class="showcase-section showcase-section--hero">
+  <section class="show-sect show-sect--hero">
     <div class="hero__inner">
       <div class="hero__content">
         <h1 class="hero__headline">{{ data.headline }}</h1>
         <p class="hero__subheadline">{{ data.subheadline }}</p>
         <div class="hero__ctas">
-          <button class="showcase-btn showcase-btn--primary">{{ data.primaryCta }}</button>
-          <button v-if="data.secondaryCta" class="showcase-btn showcase-btn--secondary">
+          <button class="show-btn show-btn--primary">{{ data.primaryCta }}</button>
+          <button v-if="data.secondaryCta" class="show-btn show-btn--secondary">
             {{ data.secondaryCta }}
           </button>
         </div>
@@ -32,7 +32,7 @@ defineProps<{
 </script>
 
 <style scoped>
-.showcase-section--hero {
+.show-sect--hero {
   background: linear-gradient(135deg, var(--showcase-primary), color-mix(in srgb, var(--showcase-primary) 70%, black));
   color: #fff;
   padding: 48px 16px;

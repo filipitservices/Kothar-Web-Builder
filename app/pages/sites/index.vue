@@ -9,73 +9,73 @@
           </p>
         </section>
 
-        <div class="dashboard-tabs">
+        <div class="sites-tabs">
           <button
             type="button"
-            class="dashboard-tab"
-            :class="{ 'dashboard-tab--active': activeTab === 'sites' }"
+            class="sites-tab"
+            :class="{ 'sites-tab--active': activeTab === 'sites' }"
             :aria-selected="activeTab === 'sites'"
             @click="activeTab = 'sites'"
           >
             Live Sites
-            <span v-if="sitesStore.siteSummaries.length > 0" class="dashboard-tab-count">
+            <span v-if="sitesStore.siteSummaries.length > 0" class="sites-tab-count">
               {{ sitesStore.siteSummaries.length }}
             </span>
           </button>
           <button
             type="button"
-            class="dashboard-tab"
-            :class="{ 'dashboard-tab--active': activeTab === 'orders' }"
+            class="sites-tab"
+            :class="{ 'sites-tab--active': activeTab === 'orders' }"
             :aria-selected="activeTab === 'orders'"
             @click="activeTab = 'orders'"
           >
             Orders
-            <span v-if="ordersStore.orders.length > 0" class="dashboard-tab-count">
+            <span v-if="ordersStore.orders.length > 0" class="sites-tab-count">
               {{ ordersStore.orders.length }}
             </span>
           </button>
         </div>
 
-        <section v-show="activeTab === 'sites'" class="dashboard-panel" :aria-hidden="activeTab !== 'sites'">
-          <div class="dashboard-table-wrapper">
-            <table class="dashboard-table" role="table">
+        <section v-show="activeTab === 'sites'" class="sites-panel" :aria-hidden="activeTab !== 'sites'">
+          <div class="sites-table-wrap">
+            <table class="sites-table" role="table">
               <thead>
                 <tr>
-                  <th scope="col" class="dashboard-th dashboard-th--business">Business</th>
-                  <th scope="col" class="dashboard-th dashboard-th--domain">Domain</th>
-                  <th scope="col" class="dashboard-th dashboard-th--updated">Last update</th>
-                  <th scope="col" class="dashboard-th dashboard-th--status">Status</th>
-                  <th scope="col" class="dashboard-th dashboard-th--action"><span class="visually-hidden">Action</span></th>
+                  <th scope="col" class="sites-th">Business</th>
+                  <th scope="col" class="sites-th">Domain</th>
+                  <th scope="col" class="sites-th">Last update</th>
+                  <th scope="col" class="sites-th">Status</th>
+                  <th scope="col" class="sites-th"><span class="visually-hidden">Action</span></th>
                 </tr>
               </thead>
               <tbody>
                 <tr
                   v-for="site in sitesStore.siteSummaries"
                   :key="site.id"
-                  class="dashboard-row"
+                  class="sites-row"
                 >
-                  <td class="dashboard-td dashboard-td--business">
-                    <span class="dashboard-cell-primary">{{ site.businessName }}</span>
-                    <span class="dashboard-cell-meta">{{ site.industry }}</span>
+                  <td class="sites-td">
+                    <span class="sites-cell-primary">{{ site.businessName }}</span>
+                    <span class="sites-cell-meta">{{ site.industry }}</span>
                   </td>
-                  <td class="dashboard-td dashboard-td--domain">
-                    <span class="dashboard-cell-domain">{{ site.domainLabel }}</span>
+                  <td class="sites-td">
+                    <span class="sites-cell-domain">{{ site.domainLabel }}</span>
                   </td>
-                  <td class="dashboard-td dashboard-td--updated">
-                    <span class="dashboard-cell-muted">{{ sitesStore.formatLastUpdated(site.lastUpdatedAt) }}</span>
+                  <td class="sites-td">
+                    <span class="sites-cell-muted">{{ sitesStore.formatLastUpdated(site.lastUpdatedAt) }}</span>
                   </td>
-                  <td class="dashboard-td dashboard-td--status">
+                  <td class="sites-td">
                     <span
-                      class="dashboard-pill dashboard-pill--site"
-                      :class="`dashboard-pill--site-${site.status}`"
+                      class="sites-pill"
+                      :class="`sites-pill--site-${site.status}`"
                     >
                       {{ sitesStore.getStatusLabel(site.status) }}
                     </span>
                   </td>
-                  <td class="dashboard-td dashboard-td--action">
-                    <NuxtLink :to="`/sites/${site.id}`" class="dashboard-action-link">
+                  <td class="sites-td">
+                    <NuxtLink :to="`/sites/${site.id}`" class="sites-action-link">
                       Manage
-                      <svg class="dashboard-action-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <svg class="sites-action-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                         <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
                       </svg>
                     </NuxtLink>
@@ -84,72 +84,72 @@
               </tbody>
             </table>
           </div>
-          <p v-if="sitesStore.siteSummaries.length === 0" class="dashboard-empty">
+          <p v-if="sitesStore.siteSummaries.length === 0" class="sites-empty">
             You don't have any live websites yet. When a site is delivered, it will appear here.
           </p>
         </section>
 
-        <section v-show="activeTab === 'orders'" class="dashboard-panel" :aria-hidden="activeTab !== 'orders'">
-          <div class="dashboard-table-wrapper">
-            <table class="dashboard-table dashboard-table--orders" role="table">
+        <section v-show="activeTab === 'orders'" class="sites-panel" :aria-hidden="activeTab !== 'orders'">
+          <div class="sites-table-wrap">
+            <table class="sites-table sites-table--orders" role="table">
               <thead>
                 <tr>
-                  <th scope="col" class="dashboard-th dashboard-th--template">Template</th>
-                  <th scope="col" class="dashboard-th dashboard-th--date">Submitted</th>
-                  <th scope="col" class="dashboard-th dashboard-th--status">Status</th>
-                  <th scope="col" class="dashboard-th dashboard-th--edit">Editing</th>
-                  <th scope="col" class="dashboard-th dashboard-th--action"><span class="visually-hidden">Action</span></th>
+                  <th scope="col" class="sites-th">Template</th>
+                  <th scope="col" class="sites-th">Submitted</th>
+                  <th scope="col" class="sites-th">Status</th>
+                  <th scope="col" class="sites-th">Editing</th>
+                  <th scope="col" class="sites-th"><span class="visually-hidden">Action</span></th>
                 </tr>
               </thead>
               <tbody>
                 <tr
                   v-for="order in ordersStore.orders"
                   :key="order.id"
-                  class="dashboard-row"
+                  class="sites-row"
                 >
-                  <td class="dashboard-td dashboard-td--template">
-                    <span class="dashboard-cell-primary">{{ order.templateName }}</span>
-                    <span class="dashboard-cell-meta">{{ order.businessInfo.businessName }}</span>
+                  <td class="sites-td">
+                    <span class="sites-cell-primary">{{ order.templateName }}</span>
+                    <span class="sites-cell-meta">{{ order.businessInfo.businessName }}</span>
                   </td>
-                  <td class="dashboard-td dashboard-td--date">
-                    <span class="dashboard-cell-muted">{{ ordersStore.formatOrderDate(order.createdAt) }}</span>
+                  <td class="sites-td">
+                    <span class="sites-cell-muted">{{ ordersStore.formatOrderDate(order.createdAt) }}</span>
                   </td>
-                  <td class="dashboard-td dashboard-td--status">
+                  <td class="sites-td">
                     <span
-                      class="dashboard-pill dashboard-pill--order"
-                      :class="`dashboard-pill--order-${ordersStore.getOrderStatusClass(order.status)}`"
+                      class="sites-pill"
+                      :class="`sites-pill--order-${ordersStore.getOrderStatusClass(order.status)}`"
                     >
                       {{ ordersStore.getOrderStatusLabel(order.status) }}
                     </span>
                   </td>
-                  <td class="dashboard-td dashboard-td--edit">
+                  <td class="sites-td">
                     <span
                       v-if="order.modificationLocked"
-                      class="dashboard-cell-muted dashboard-cell--locked"
+                      class="sites-cell-muted sites-cell--locked"
                       title="This order is being processed and cannot be edited"
                     >
                       Locked
                     </span>
-                    <span v-else class="dashboard-cell-ok">Editable</span>
+                    <span v-else class="sites-cell-ok">Editable</span>
                   </td>
-                  <td class="dashboard-td dashboard-td--action">
+                  <td class="sites-td">
                     <NuxtLink
                       v-if="!order.modificationLocked"
                       :to="`/orders/${order.id}/edit`"
-                      class="dashboard-action-link"
+                      class="sites-action-link"
                     >
                       Modify
-                      <svg class="dashboard-action-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <svg class="sites-action-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                         <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
                       </svg>
                     </NuxtLink>
-                    <span v-else class="dashboard-action-disabled" title="Editing is disabled while the order is being processed">—</span>
+                    <span v-else class="sites-action-disabled" title="Editing is disabled while the order is being processed">—</span>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
-          <p v-if="ordersStore.orders.length === 0" class="dashboard-empty">
+          <p v-if="ordersStore.orders.length === 0" class="sites-empty">
             You don't have any orders yet. Submit a template request from the dashboard to get started.
           </p>
         </section>
@@ -157,8 +157,8 @@
     </main>
 
     <footer class="sites-footer">
-      <div class="footer-inner">
-        <p class="footer-text">&copy; {{ new Date().getFullYear() }} {{ appConfig.appName }}. All rights reserved.</p>
+      <div class="sites-footer__inner">
+        <p class="sites-footer__text">&copy; {{ new Date().getFullYear() }} {{ appConfig.appName }}. All rights reserved.</p>
       </div>
     </footer>
   </div>

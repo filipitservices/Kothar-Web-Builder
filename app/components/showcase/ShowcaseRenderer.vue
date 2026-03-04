@@ -1,5 +1,5 @@
 <template>
-  <div class="showcase-renderer" :class="[`view-${viewMode}`]" :style="colorVars">
+  <div class="show-renderer" :class="[`view-${viewMode}`]" :style="colorVars">
     <component
       v-for="(section, index) in template.sections"
       :key="index"
@@ -7,7 +7,7 @@
       :data="section.data"
       :view-mode="viewMode"
     />
-    <footer class="showcase-footer">
+    <footer class="show-footer">
       <p>&copy; {{ currentYear }} {{ template.name }}. All rights reserved.</p>
     </footer>
   </div>

@@ -1,18 +1,18 @@
 <template>
-  <section class="showcase-section showcase-section--pricing">
-    <div class="showcase-section__inner">
-      <h2 v-if="data.title" class="showcase-section__title">{{ data.title }}</h2>
+  <section class="show-sect show-sect--pricing">
+    <div class="show-sect__inner">
+      <h2 v-if="data.title" class="show-sect__title">{{ data.title }}</h2>
       <div class="pricing__grid">
         <div 
           v-for="(plan, i) in data.items" 
           :key="i" 
-          class="pricing__card showcase-card"
-          :class="{ 'showcase-card--featured': i === 1 }"
+          class="pricing__card show-card"
+          :class="{ 'show-card--featured': i === 1 }"
         >
           <h3 class="pricing__name">{{ plan.name }}</h3>
           <div class="pricing__price">{{ plan.price }}</div>
           <p class="pricing__description">{{ plan.description }}</p>
-          <button class="showcase-btn showcase-btn--outline">Select Plan</button>
+          <button class="show-btn show-btn--outline">Select Plan</button>
         </div>
       </div>
     </div>

@@ -7,7 +7,7 @@
    PAGE LAYOUT
    ========================================================================== */
 
-.request-container {
+.req {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -19,21 +19,21 @@
    MAIN CONTENT
    ========================================================================== */
 
-.request-main {
+.req__main {
   flex: 1;
   display: flex;
   flex-direction: column;
   padding: 2.5rem var(--space-xl);
 }
 
-.request-content {
+.req__content {
   max-width: var(--container-max);
   width: 100%;
   margin: 0 auto;
 }
 
 /* Two Column Grid */
-.request-grid {
+.req__grid {
   display: grid;
   grid-template-columns: 420px 1fr;
   gap: 3rem;
@@ -41,7 +41,7 @@
 }
 
 @media (max-width: 1024px) {
-  .request-grid {
+  .req__grid {
     grid-template-columns: 1fr;
     gap: 2rem;
   }
@@ -52,7 +52,7 @@
    LEFT COLUMN: TEMPLATE PREVIEW
    ========================================================================== */
 
-.template-preview-section {
+.req-preview {
   position: sticky;
   top: calc(72px + 2rem); /* header height + padding */
   display: flex;
@@ -60,15 +60,14 @@
   gap: 1.25rem;
 }
 
-/* Welcome Message */
-.welcome-message {
+.req-welcome {
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--color-text);
   margin: 0 0 var(--space-md);
 }
 
-.preview-card {
+.req-preview-card {
   background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -76,7 +75,7 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-.preview-label {
+.req-preview-label {
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--color-primary);
@@ -84,8 +83,7 @@
   letter-spacing: 0.05em;
 }
 
-/* Device Preview - Desktop viewport simulation with CSS transform scaling */
-.preview-device {
+.req-preview-device {
   margin-bottom: 1.25rem;
   position: relative;
   background: #f8fafc;
@@ -94,9 +92,7 @@
   overflow: hidden;
 }
 
-/* Viewport container - holds the scaled desktop simulation */
-.preview-viewport {
-  /* Dimensions set via inline style for dynamic scaling */
+.req-preview-viewport {
   background: var(--color-bg);
   overflow-y: auto;
   overflow-x: hidden;
@@ -104,29 +100,28 @@
   scrollbar-color: #cbd5e1 transparent;
 }
 
-.preview-viewport::-webkit-scrollbar {
+.req-preview-viewport::-webkit-scrollbar {
   width: 6px;
 }
 
-.preview-viewport::-webkit-scrollbar-track {
+.req-preview-viewport::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.preview-viewport::-webkit-scrollbar-thumb {
+.req-preview-viewport::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 3px;
 }
 
-.preview-viewport::-webkit-scrollbar-thumb:hover {
+.req-preview-viewport::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
 
-/* Template Info */
-.preview-info {
+.req-preview-info {
   margin-bottom: 1rem;
 }
 
-.preview-industry {
+.req-preview-industry {
   display: inline-block;
   font-size: 0.75rem;
   font-weight: 600;
@@ -136,7 +131,7 @@
   margin-bottom: 0.25rem;
 }
 
-.preview-name {
+.req-preview-name {
   font-size: 1.125rem;
   font-weight: 700;
   color: var(--color-text);
@@ -144,15 +139,14 @@
   line-height: 1.3;
 }
 
-.preview-description {
+.req-preview-desc {
   font-size: 0.875rem;
   color: var(--color-text-muted);
   line-height: 1.5;
   margin: 0;
 }
 
-/* Preview Links */
-.preview-links {
+.req-preview-links {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -186,8 +180,7 @@
   text-decoration: underline;
 }
 
-/* Progress Bar in Left Column */
-.preview-progress {
+.req-progress {
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -197,7 +190,7 @@
   border-radius: 12px;
 }
 
-.progress-track {
+.req-progress-track {
   flex: 1;
   height: 6px;
   background: var(--color-border);
@@ -205,14 +198,14 @@
   overflow: hidden;
 }
 
-.progress-fill {
+.req-progress-fill {
   height: 100%;
   background: linear-gradient(90deg, var(--color-primary) 0%, #3b82f6 100%);
   border-radius: 3px;
   transition: width 0.3s ease;
 }
 
-.progress-label {
+.req-progress-label {
   flex-shrink: 0;
   font-size: 0.8125rem;
   font-weight: 500;
@@ -224,7 +217,7 @@
    RIGHT COLUMN: REQUEST FORM
    ========================================================================== */
 
-.form-section {
+.req-form {
   background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
@@ -232,14 +225,13 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-/* Form Header */
-.form-header {
+.req-form__header {
   margin-bottom: 1.75rem;
   padding-bottom: var(--space-lg);
   border-bottom: 1px solid var(--color-border);
 }
 
-.form-title {
+.req-form__title {
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--color-text);
@@ -247,22 +239,20 @@
   line-height: 1.25;
 }
 
-.form-subtitle {
+.req-form__subtitle {
   font-size: 0.9375rem;
   color: var(--color-text-muted);
   margin: 0;
   line-height: 1.6;
 }
 
-/* Request Form */
-.request-form {
+.req-form-body {
   display: flex;
   flex-direction: column;
   gap: 0;
 }
 
-/* Submit Button */
-.submit-button {
+.req-submit {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -278,16 +268,16 @@
   transition: background 0.15s ease;
 }
 
-.submit-button:hover:not(:disabled) {
+.req-submit:hover:not(:disabled) {
   background: var(--color-primary-dark);
 }
 
-.submit-button:disabled {
+.req-submit:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.submit-button svg {
+.req-submit svg {
   width: 18px;
   height: 18px;
 }
@@ -298,49 +288,49 @@
    ========================================================================== */
 
 @media (max-width: 768px) {
-  .request-main {
+  .req__main {
     padding: 1.5rem 1rem;
   }
 
-  .template-preview-section {
+  .req-preview {
     position: static;
     gap: 1rem;
   }
 
-  .welcome-message {
+  .req-welcome {
     font-size: 1rem;
   }
 
-  .preview-card {
+  .req-preview-card {
     padding: 1.25rem;
   }
 
-  .preview-progress {
+  .req-progress {
     flex-direction: column;
     align-items: stretch;
     gap: 0.75rem;
     padding: 0.875rem 1rem;
   }
 
-  .progress-label {
+  .req-progress-label {
     text-align: center;
   }
 
-  .form-section {
+  .req-form {
     padding: 1.5rem;
     border-radius: 12px;
   }
 
-  .form-header {
+  .req-form__header {
     margin-bottom: 1.5rem;
     padding-bottom: 1.25rem;
   }
 
-  .form-title {
+  .req-form__title {
     font-size: 1.25rem;
   }
 
-  .form-subtitle {
+  .req-form__subtitle {
     font-size: 0.875rem;
   }
 }

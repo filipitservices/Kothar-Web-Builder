@@ -1,14 +1,14 @@
 <template>
   <Teleport to="body">
     <div class="modal-overlay" @click.self="handleClose">
-      <div class="modal-container showcase-modal">
+      <div class="modal-container show-modal">
         <!-- Header -->
         <div class="modal-header">
-          <div class="showcase-modal__header-info">
+          <div class="show-modal__info">
             <span class="text-label">{{ template?.industry }}</span>
             <h2 class="text-title">{{ template?.name }}</h2>
           </div>
-          <div class="showcase-modal__header-actions">
+          <div class="show-modal__actions">
             <div class="toggle-group">
               <button 
                 class="toggle-group__btn" 
@@ -44,8 +44,8 @@
         </div>
 
         <!-- Body - Device Frame -->
-        <div class="modal-body showcase-modal__body" ref="contentRef">
-          <div class="showcase-modal__device-container">
+        <div class="modal-body show-modal__body" ref="contentRef">
+          <div class="show-modal__device">
             <div 
               v-if="viewMode === 'desktop'" 
               class="device-frame device-frame--desktop"
@@ -79,7 +79,7 @@
         <!-- Footer -->
         <div class="modal-footer">
           <p class="text-muted text-clamp-2">{{ template?.description }}</p>
-          <div class="showcase-modal__footer-actions">
+          <div class="show-modal__footer-actions">
             <button class="btn btn--secondary" @click="handleClose">
               Close Preview
             </button>
@@ -197,27 +197,27 @@ watch(viewMode, () => {
  */
 
 /* Modal sizing for this specific use case */
-.showcase-modal {
+.show-modal {
   max-width: 1200px;
   height: calc(100vh - 3rem);
   max-height: 900px;
 }
 
 /* Header layout */
-.showcase-modal__header-info {
+.show-modal__info {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
 }
 
-.showcase-modal__header-actions {
+.show-modal__actions {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
 /* Body - device preview area */
-.showcase-modal__body {
+.show-modal__body {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -226,7 +226,7 @@ watch(viewMode, () => {
   overflow: hidden;
 }
 
-.showcase-modal__device-container {
+.show-modal__device {
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -235,7 +235,7 @@ watch(viewMode, () => {
 }
 
 /* Footer actions */
-.showcase-modal__footer-actions {
+.show-modal__footer-actions {
   display: flex;
   gap: 0.75rem;
   flex-shrink: 0;
@@ -243,7 +243,7 @@ watch(viewMode, () => {
 
 /* Responsive */
 @media (max-width: 900px) {
-  .showcase-modal {
+  .show-modal {
     max-width: none;
     max-height: none;
     height: 100vh;
@@ -261,11 +261,11 @@ watch(viewMode, () => {
     gap: 1rem;
   }
 
-  .showcase-modal__footer-actions {
+  .show-modal__footer-actions {
     justify-content: stretch;
   }
 
-  .showcase-modal__footer-actions .btn {
+  .show-modal__footer-actions .btn {
     flex: 1;
   }
 }

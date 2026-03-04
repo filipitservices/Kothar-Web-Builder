@@ -1,7 +1,7 @@
 <template>
-  <section class="showcase-section showcase-section--features">
-    <div class="showcase-section__inner">
-      <h2 v-if="data.title" class="showcase-section__title">{{ data.title }}</h2>
+  <section class="show-sect show-sect--features">
+    <div class="show-sect__inner">
+      <h2 v-if="data.title" class="show-sect__title">{{ data.title }}</h2>
       <div class="features__grid">
         <div v-for="feature in data.items" :key="feature.title" class="features__item">
           <h3 class="features__title">{{ feature.title }}</h3>

@@ -1,11 +1,11 @@
 <template>
-  <section class="showcase-section showcase-section--services">
-    <div class="showcase-section__inner">
-      <h2 v-if="data.title" class="showcase-section__title">{{ data.title }}</h2>
-      <p v-if="data.subtitle" class="showcase-section__subtitle">{{ data.subtitle }}</p>
+  <section class="show-sect show-sect--services">
+    <div class="show-sect__inner">
+      <h2 v-if="data.title" class="show-sect__title">{{ data.title }}</h2>
+      <p v-if="data.subtitle" class="show-sect__subtitle">{{ data.subtitle }}</p>
       <div class="services__grid" :class="{ 'services__grid--mobile': viewMode === 'mobile' }">
-        <div v-for="service in data.items" :key="service.name" class="services__card showcase-card">
-          <div class="services__icon showcase-icon--lg showcase-icon--primary">
+        <div v-for="service in data.items" :key="service.name" class="services__card show-card">
+          <div class="services__icon show-icon show-icon--lg show-icon--primary">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="10"/>
               <path d="M12 6v6l4 2"/>

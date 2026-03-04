@@ -30,7 +30,7 @@ const variant = computed(() => props.data.variant || 'centered');
 
 <template>
   <section 
-    class="cta-section showcase-section"
+    class="cta-section show-sect"
     :class="[
       `cta-section--${variant}`,
       `view-${viewMode}`
@@ -43,10 +43,10 @@ const variant = computed(() => props.data.variant || 'centered');
         <p v-if="data.subtitle" class="cta-subtitle">{{ data.subtitle }}</p>
         
         <div class="cta-actions">
-          <button class="showcase-btn showcase-btn--primary-filled showcase-btn--large">
+          <button class="show-btn show-btn--primary-filled show-btn--large">
             {{ data.primaryCta }}
           </button>
-          <button v-if="data.secondaryCta" class="showcase-btn showcase-btn--ghost">
+          <button v-if="data.secondaryCta" class="show-btn show-btn--ghost">
             {{ data.secondaryCta }}
           </button>
         </div>
@@ -63,7 +63,7 @@ const variant = computed(() => props.data.variant || 'centered');
           <p v-if="data.subtitle" class="cta-subtitle cta-subtitle--light">{{ data.subtitle }}</p>
         </div>
         <div class="cta-banner__action">
-          <button class="showcase-btn showcase-btn--primary showcase-btn--large">
+          <button class="show-btn show-btn--primary show-btn--large">
             {{ data.primaryCta }}
           </button>
         </div>
@@ -79,7 +79,7 @@ const variant = computed(() => props.data.variant || 'centered');
           
           <ul v-if="data.features?.length" class="cta-features">
             <li v-for="(feature, idx) in data.features" :key="idx">
-              <svg class="showcase-icon showcase-icon--sm showcase-icon--primary" viewBox="0 0 20 20" fill="currentColor">
+              <svg class="show-icon show-icon--sm show-icon--primary" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
               </svg>
               {{ feature }}
@@ -89,7 +89,7 @@ const variant = computed(() => props.data.variant || 'centered');
         <div class="cta-split__form">
           <form class="cta-form" @submit.prevent>
             <input type="email" placeholder="Enter your email" class="cta-input" />
-            <button type="submit" class="showcase-btn showcase-btn--primary-filled">
+            <button type="submit" class="show-btn show-btn--primary-filled">
               {{ data.primaryCta }}
             </button>
           </form>
@@ -105,9 +105,9 @@ const variant = computed(() => props.data.variant || 'centered');
           <h2 class="cta-title cta-title--minimal">{{ data.title }}</h2>
           <p v-if="data.subtitle" class="cta-subtitle">{{ data.subtitle }}</p>
         </div>
-        <button class="showcase-btn showcase-btn--outline">
+        <button class="show-btn show-btn--outline">
           {{ data.primaryCta }}
-          <svg class="showcase-icon showcase-icon--sm" viewBox="0 0 20 20" fill="currentColor">
+          <svg class="show-icon show-icon--sm" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
           </svg>
         </button>
@@ -122,7 +122,7 @@ const variant = computed(() => props.data.variant || 'centered');
         <p v-if="data.subtitle" class="cta-subtitle cta-subtitle--light">{{ data.subtitle }}</p>
         
         <div class="cta-actions">
-          <button class="showcase-btn showcase-btn--primary showcase-btn--large showcase-btn--pill">
+          <button class="show-btn show-btn--primary show-btn--large show-btn--pill">
             {{ data.primaryCta }}
           </button>
         </div>

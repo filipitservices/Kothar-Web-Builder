@@ -1,18 +1,18 @@
 <template>
-  <div class="request-container">
-    <main class="request-main">
-      <div class="request-content">
-        <div class="request-grid">
-          <aside class="template-preview-section">
-            <div class="preview-card">
-              <div class="preview-label">Live Preview</div>
-              <p class="welcome-message">Edit your request</p>
+  <div class="req">
+    <main class="req__main">
+      <div class="req__content">
+        <div class="req__grid">
+          <aside class="req-preview">
+            <div class="req-preview-card">
+              <div class="req-preview-label">Live Preview</div>
+              <p class="req-welcome">Edit your request</p>
               <div
-                class="preview-device"
+                class="req-preview-device"
                 ref="previewContainerRef"
                 :style="containerStyle"
               >
-                <div class="preview-viewport" :style="viewportStyle">
+                <div class="req-preview-viewport" :style="viewportStyle">
                   <ShowcaseRenderer
                     v-if="previewTemplate"
                     :template="previewTemplate"
@@ -20,29 +20,29 @@
                   />
                 </div>
               </div>
-              <div class="preview-info">
-                <span class="preview-industry">{{ originalTemplate?.industry }}</span>
-                <h3 class="preview-name">{{ originalTemplate?.name }}</h3>
-                <p class="preview-description">{{ originalTemplate?.description }}</p>
+              <div class="req-preview-info">
+                <span class="req-preview-industry">{{ originalTemplate?.industry }}</span>
+                <h3 class="req-preview-name">{{ originalTemplate?.name }}</h3>
+                <p class="req-preview-desc">{{ originalTemplate?.description }}</p>
               </div>
-              <div class="preview-links">
+              <div class="req-preview-links">
                 <NuxtLink to="/sites" class="change-template-link">
                   Back to dashboard →
                 </NuxtLink>
               </div>
             </div>
-            <div class="preview-progress">
-              <div class="progress-track">
-                <div class="progress-fill" :style="{ width: progressPercentage + '%' }"></div>
+            <div class="req-progress">
+              <div class="req-progress-track">
+                <div class="req-progress-fill" :style="{ width: progressPercentage + '%' }"></div>
               </div>
-              <span class="progress-label">{{ formProgress.completed }} of {{ formProgress.total }} fields completed</span>
+              <span class="req-progress-label">{{ formProgress.completed }} of {{ formProgress.total }} fields completed</span>
             </div>
           </aside>
 
-          <section class="form-section">
-            <div class="form-header">
-              <h1 class="form-title">Update Your Request</h1>
-              <p class="form-subtitle">
+          <section class="req-form">
+            <div class="req-form__header">
+              <h1 class="req-form__title">Update Your Request</h1>
+              <p class="req-form__subtitle">
                 Change any details below. Your order status is set by our team and cannot be edited here.
               </p>
             </div>

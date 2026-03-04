@@ -1,6 +1,6 @@
 <template>
-  <section class="showcase-section showcase-section--stats">
-    <div class="showcase-section__inner">
+  <section class="show-sect show-sect--stats">
+    <div class="show-sect__inner">
       <div class="stats__grid">
         <div v-for="stat in data.items" :key="stat.label" class="stats__item">
           <div class="stats__value">{{ stat.value }}</div>
@@ -28,7 +28,7 @@ defineProps<{
 </script>
 
 <style scoped>
-.showcase-section--stats {
+.show-sect--stats {
   background: var(--showcase-primary);
   color: #fff;
   padding: 24px 16px;

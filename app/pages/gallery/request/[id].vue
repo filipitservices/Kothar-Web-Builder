@@ -1,25 +1,24 @@
 <template>
-  <div class="request-container">
+  <div class="req">
     <!-- Main Content -->
-    <main class="request-main">
-      <div class="request-content">
+    <main class="req__main">
+      <div class="req__content">
         <!-- Two Column Layout -->
-        <div class="request-grid">
+        <div class="req__grid">
           <!-- Left: Template Preview -->
-          <aside class="template-preview-section">
-            <div class="preview-card">
-              <div class="preview-label">Live Preview</div>
-              <!-- Welcome Message -->
-              <p class="welcome-message">
+          <aside class="req-preview">
+            <div class="req-preview-card">
+              <div class="req-preview-label">Live Preview</div>
+              <p class="req-welcome">
                 Great choice{{ userName ? `, ${userName}` : '' }}!
               </p>
               <div 
-                class="preview-device" 
+                class="req-preview-device" 
                 ref="previewContainerRef"
                 :style="containerStyle"
               >
                 <div 
-                  class="preview-viewport"
+                  class="req-preview-viewport"
                   :style="viewportStyle"
                 >
                   <ShowcaseRenderer
@@ -29,12 +28,12 @@
                   />
                 </div>
               </div>
-              <div class="preview-info">
-                <span class="preview-industry">{{ originalTemplate?.industry }}</span>
-                <h3 class="preview-name">{{ originalTemplate?.name }}</h3>
-                <p class="preview-description">{{ originalTemplate?.description }}</p>
+              <div class="req-preview-info">
+                <span class="req-preview-industry">{{ originalTemplate?.industry }}</span>
+                <h3 class="req-preview-name">{{ originalTemplate?.name }}</h3>
+                <p class="req-preview-desc">{{ originalTemplate?.description }}</p>
               </div>
-              <div class="preview-links">
+              <div class="req-preview-links">
                 <NuxtLink to="/dashboard" class="change-template-link">
                   Choose a different design →
                 </NuxtLink>
@@ -44,20 +43,18 @@
               </div>
             </div>
 
-            <!-- Progress Bar (moved from form) -->
-            <div class="preview-progress">
-              <div class="progress-track">
-                <div class="progress-fill" :style="{ width: progressPercentage + '%' }"></div>
+            <div class="req-progress">
+              <div class="req-progress-track">
+                <div class="req-progress-fill" :style="{ width: progressPercentage + '%' }"></div>
               </div>
-              <span class="progress-label">{{ formProgress.completed }} of {{ formProgress.total }} fields completed</span>
+              <span class="req-progress-label">{{ formProgress.completed }} of {{ formProgress.total }} fields completed</span>
             </div>
           </aside>
 
-          <!-- Right: Request Form -->
-          <section class="form-section">
-            <div class="form-header">
-              <h1 class="form-title">Tell Us About Your Business</h1>
-              <p class="form-subtitle">
+          <section class="req-form">
+            <div class="req-form__header">
+              <h1 class="req-form__title">Tell Us About Your Business</h1>
+              <p class="req-form__subtitle">
                 We'll use this information to customize your website. The more details you provide, the better we can tailor the design to your needs.
               </p>
             </div>

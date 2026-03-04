@@ -1,7 +1,7 @@
 <template>
-  <section class="showcase-section showcase-section--about">
-    <div class="showcase-section__inner">
-      <h2 v-if="data.title" class="showcase-section__title">{{ data.title }}</h2>
+  <section class="show-sect show-sect--about">
+    <div class="show-sect__inner">
+      <h2 v-if="data.title" class="show-sect__title">{{ data.title }}</h2>
       <p class="about__content">{{ data.content }}</p>
     </div>
   </section>

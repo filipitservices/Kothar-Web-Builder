@@ -1,7 +1,7 @@
 <template>
-  <section class="showcase-section showcase-section--process">
-    <div class="showcase-section__inner">
-      <h2 v-if="data.title" class="showcase-section__title">{{ data.title }}</h2>
+  <section class="show-sect show-sect--process">
+    <div class="show-sect__inner">
+      <h2 v-if="data.title" class="show-sect__title">{{ data.title }}</h2>
       <div class="process__steps">
         <div v-for="step in data.steps" :key="step.number" class="process__step">
           <div class="process__number">{{ step.number }}</div>

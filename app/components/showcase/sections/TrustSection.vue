@@ -1,9 +1,9 @@
 <template>
-  <section class="showcase-section showcase-section--trust">
-    <div class="showcase-section__inner">
+  <section class="show-sect show-sect--trust">
+    <div class="show-sect__inner">
       <div class="trust__badges">
         <span v-for="badge in data.badges" :key="badge" class="trust__badge">
-          <svg viewBox="0 0 20 20" fill="currentColor" class="showcase-icon showcase-icon--sm">
+          <svg viewBox="0 0 20 20" fill="currentColor" class="show-icon show-icon--sm">
             <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
           </svg>
           {{ badge }}
@@ -29,7 +29,7 @@ defineProps<{
 </script>
 
 <style scoped>
-.showcase-section--trust {
+.show-sect--trust {
   background: #f9fafb;
   padding: 20px 16px;
 }
