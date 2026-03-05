@@ -34,21 +34,21 @@ withDefaults(defineProps<Props>(), {
 <style scoped>
 .form-section {
   border: none;
-  padding: 1.5rem;
-  margin: 0 0 1rem 0;
-  background: #fff;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  padding: var(--space-lg);
+  margin: 0 0 var(--space-md) 0;
+  background: var(--color-bg);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .form-section:hover {
-  border-color: #d1d5db;
+  border-color: var(--color-border-hover);
 }
 
 .form-section:focus-within {
-  border-color: #1e3a8a;
-  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.06);
+  border-color: var(--color-primary);
+  box-shadow: var(--focus-ring-primary);
 }
 
 .form-section:last-of-type {
@@ -56,13 +56,13 @@ withDefaults(defineProps<Props>(), {
 }
 
 .form-section--featured {
-  background: linear-gradient(135deg, #fafbfc 0%, #fff 100%);
-  border-color: #e0e7ff;
+  background: var(--color-bg-muted);
+  border-color: var(--color-primary-tint);
 }
 
 /* Inner spacing for form elements */
 .form-section :deep(.form-group) {
-  margin-bottom: 1.25rem;
+  margin-bottom: var(--space-lg);
 }
 
 .form-section :deep(.form-group:last-child) {
@@ -70,7 +70,7 @@ withDefaults(defineProps<Props>(), {
 }
 
 .form-section :deep(.form-row) {
-  margin-bottom: 1.25rem;
+  margin-bottom: var(--space-lg);
 }
 
 .form-section :deep(.form-row:last-child) {
@@ -81,12 +81,12 @@ withDefaults(defineProps<Props>(), {
 .form-section__legend {
   display: flex;
   align-items: center;
-  gap: 0.875rem;
+  gap: var(--space-md);
   padding: 0;
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--space-lg);
   font-size: 1rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--color-text);
 }
 
 /* Icon container */
@@ -94,62 +94,62 @@ withDefaults(defineProps<Props>(), {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-md);
   flex-shrink: 0;
 }
 
 .form-section__icon :deep(svg) {
-  width: 20px;
-  height: 20px;
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
-/* Icon variants */
+/* Icon variants – use tokens where possible; subtle tints for distinction */
 .form-section__icon--palette {
-  background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
-  color: #1e3a8a;
+  background: var(--color-primary-tint);
+  color: var(--color-primary);
 }
 
 .form-section__icon--building {
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  color: #92400e;
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted-dark);
 }
 
 .form-section__icon--contact {
-  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-  color: #065f46;
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted-dark);
 }
 
 .form-section__icon--target {
-  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-  color: #991b1b;
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted-dark);
 }
 
 .form-section__icon--sparkle {
-  background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
-  color: #6d28d9;
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted-dark);
 }
 
 /* Text content */
 .form-section__text {
   display: flex;
   flex-direction: column;
-  gap: 0.125rem;
+  gap: var(--space-xs);
   flex: 1;
 }
 
 .form-section__title {
   font-size: 0.9375rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--color-text);
   line-height: 1.3;
 }
 
 .form-section__hint {
   font-size: 0.8125rem;
   font-weight: 400;
-  color: #6b7280;
+  color: var(--color-text-muted);
   line-height: 1.3;
 }
 
@@ -158,13 +158,13 @@ withDefaults(defineProps<Props>(), {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  background: #f3f4f6;
+  width: 1.5rem;
+  height: 1.5rem;
+  background: var(--color-bg-subtle);
   border-radius: 50%;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--color-text-muted);
   flex-shrink: 0;
 }
 

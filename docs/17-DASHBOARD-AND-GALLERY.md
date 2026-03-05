@@ -237,7 +237,7 @@ interface Props {
 **Form Component:** `app/components/TemplateRequestForm.vue`
 **CSS:** `app/assets/css/request-form.css`
 
-SMB onboarding form for requesting a website based on a selected showcase template.
+SMB onboarding form for requesting a website based on a selected showcase template. The form uses gamified, section-based interactions: industry selection via **IndustryCardGrid** (selectable cards), **GuidedBusinessDescription** (three optional blocks: what we do, who we serve, what sets us apart), **YearsInBusinessInput** (segmented options only; field is optional), and **GoalSelector** (multi-select goals; no order). All use design tokens and support a read-only state when the form is disabled.
 
 ### Architecture
 
@@ -257,6 +257,8 @@ TemplateRequestForm
     │
     └── @submit ────────────► [id].vue handles API submission
 ```
+
+**State:** Form draft in `useTemplateRequestForm`; page seeds once via `initialFormData` → `hydrateFormData`. Updates via `updateField`. Children are controlled (`modelValue` / `update:modelValue`).
 
 ### Navigation
 

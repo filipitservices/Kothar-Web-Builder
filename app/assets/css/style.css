@@ -21,6 +21,8 @@
   --color-link: #0066cc;
   --color-error: #dc2626;
   --color-placeholder: #9ca3af;
+  /** Focus ring (primary) – used by form-option, form-section, focus-within surfaces */
+  --focus-ring-primary: 0 0 0 3px rgba(30, 58, 138, 0.08);
   /* Spacing scale (rem) */
   --space-xs: 0.25rem;
   --space-sm: 0.5rem;

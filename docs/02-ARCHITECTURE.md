@@ -241,6 +241,7 @@ No page implements its own navbar; all use the default layout and shared AppNavb
 
 **Design tokens** (`:root` in `style.css`):
 - **Colors**: `--color-primary`, `--color-primary-dark`, `--color-primary-tint`, `--color-bg`, `--color-border`, `--color-text`, `--color-text-muted`, etc. No hardcoded hex in token-using files.
+- **Focus**: `--focus-ring-primary` for focus-within box-shadow on form sections and selectable options.
 - **Spacing**: `--space-xs` through `--space-3xl` (rem scale).
 - **Radius**: `--radius-sm`, `--radius-md`, `--radius-lg`, `--radius-xl`.
 - **Layout**: `--container-max: 1200px` for all main content containers (navbar, landing, dashboard, request-form footer).

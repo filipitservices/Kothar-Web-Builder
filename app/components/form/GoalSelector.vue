@@ -1,59 +1,70 @@
 <template>
   <div class="goal-selector">
-    <label
-      v-for="goal in goals"
-      :key="goal.value"
-      class="goal-card"
-      :class="{ 'goal-card--selected': modelValue.includes(goal.value) }"
-    >
-      <input
-        type="checkbox"
-        :value="goal.value"
-        :checked="modelValue.includes(goal.value)"
-        class="goal-card__input"
-        @change="handleChange(goal.value, ($event.target as HTMLInputElement).checked)"
-      />
-      <span class="goal-card__icon">
-        <component :is="getIconComponent(goal.value)" />
-      </span>
-      <span class="goal-card__label">{{ goal.label }}</span>
-      <span class="goal-card__check">
-        <svg viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-        </svg>
-      </span>
-    </label>
+    <div class="goal-selector__grid">
+      <label
+        v-for="goal in goals"
+        :key="goal.value"
+        class="goal-card form-option"
+        :class="{
+          'form-option--selected': modelValue.includes(goal.value),
+          'form-option--read-only': readOnly
+        }"
+      >
+        <input
+          type="checkbox"
+          :value="goal.value"
+          :checked="modelValue.includes(goal.value)"
+          :disabled="readOnly"
+          class="form-option__input"
+          :aria-label="`Select: ${goal.label}`"
+          @change="handleChange(goal.value, $event)"
+        />
+        <span class="goal-card__icon">
+          <component :is="getIconComponent(goal.value)" />
+        </span>
+        <span class="goal-card__label">{{ goal.label }}</span>
+        <span class="goal-card__check">
+          <svg viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+          </svg>
+        </span>
+      </label>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { h, type FunctionalComponent } from 'vue';
-import type { WebsiteGoalValue } from '~/constants/formOptions';
 
 interface GoalOption {
   value: string;
   label: string;
 }
 
-interface Props {
-  goals: readonly GoalOption[];
-  modelValue: string[];
-}
-
-const props = defineProps<Props>();
+const props = withDefaults(
+  defineProps<{
+    goals: readonly GoalOption[];
+    modelValue: string[];
+    readOnly?: boolean;
+  }>(),
+  {
+    readOnly: false
+  }
+);
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string[]): void;
 }>();
 
-/**
- * Handle checkbox change with immutable update
- */
-function handleChange(value: string, checked: boolean): void {
+function handleChange(value: string, event: Event): void {
+  if (props.readOnly) return;
+  const target = event.target;
+  if (!(target instanceof HTMLInputElement)) return;
+  const checked = target.checked;
   if (checked) {
     emit('update:modelValue', [...props.modelValue, value]);
   } else {
-    emit('update:modelValue', props.modelValue.filter(v => v !== value));
+    emit('update:modelValue', props.modelValue.filter((v) => v !== value));
   }
 }
 
@@ -112,84 +123,54 @@ function getIconComponent(value: string): FunctionalComponent {
 </script>
 
 <style scoped>
-.goal-selector {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
-}
-
-@media (max-width: 640px) {
-  .goal-selector {
-    grid-template-columns: 1fr;
-  }
+.goal-selector__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
 }
 
 .goal-card {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.15s ease;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  background: var(--color-bg);
   position: relative;
-}
-
-.goal-card:hover {
-  border-color: #d1d5db;
-  background: #fafbfc;
-}
-
-.goal-card--selected {
-  border-color: #1e3a8a;
-  background: rgba(30, 58, 138, 0.04);
-}
-
-.goal-card--selected:hover {
-  background: rgba(30, 58, 138, 0.06);
-}
-
-.goal-card__input {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
 }
 
 .goal-card__icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  background: #f3f4f6;
-  border-radius: 8px;
+  width: 2.25rem;
+  height: 2.25rem;
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
   transition: background-color 0.15s ease;
 }
 
 .goal-card__icon :deep(svg) {
-  width: 18px;
-  height: 18px;
-  color: #6b7280;
+  width: 1.125rem;
+  height: 1.125rem;
+  color: var(--color-text-muted);
   transition: color 0.15s ease;
 }
 
-.goal-card--selected .goal-card__icon {
-  background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+.form-option--selected .goal-card__icon {
+  background: var(--color-primary-tint);
 }
 
-.goal-card--selected .goal-card__icon :deep(svg) {
-  color: #1e3a8a;
+.form-option--selected .goal-card__icon :deep(svg) {
+  color: var(--color-primary);
 }
 
 .goal-card__label {
   flex: 1;
+  min-width: 0;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--color-text-muted-dark);
   line-height: 1.4;
 }
 
@@ -197,25 +178,25 @@ function getIconComponent(value: string): FunctionalComponent {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
-  background: #e5e7eb;
+  width: 1.25rem;
+  height: 1.25rem;
+  background: var(--color-border);
   border-radius: 50%;
   flex-shrink: 0;
   opacity: 0;
   transform: scale(0.8);
-  transition: all 0.15s ease;
+  transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
 .goal-card__check svg {
-  width: 12px;
-  height: 12px;
-  color: #fff;
+  width: 0.75rem;
+  height: 0.75rem;
+  color: var(--color-white);
 }
 
-.goal-card--selected .goal-card__check {
+.form-option--selected .goal-card__check {
   opacity: 1;
   transform: scale(1);
-  background: #1e3a8a;
+  background: var(--color-primary);
 }
 </style>

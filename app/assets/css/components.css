@@ -445,6 +445,42 @@
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
 }
 
+/* Form selectable option – unified transition and states (industry, years, goals, color presets) */
+.form-option {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+.form-option:hover:not(.form-option--read-only) {
+  border-color: var(--color-border-hover);
+  background-color: var(--color-bg-muted);
+}
+.form-option:focus-within {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: var(--focus-ring-primary);
+}
+.form-option--selected {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-tint);
+}
+.form-option--selected:hover:not(.form-option--read-only) {
+  background-color: var(--color-primary-tint);
+}
+.form-option--read-only {
+  cursor: default;
+  opacity: 0.9;
+}
+.form-option__input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+}
+
 /* Fieldset - Visual grouping with subtle background */
 .form-fieldset {
   border: none;

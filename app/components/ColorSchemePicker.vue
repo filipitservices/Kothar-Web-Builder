@@ -105,7 +105,7 @@
               type="color"
               :value="colors[colorDef.key]"
               class="color-custom-input"
-              @input="handleColorInput(colorDef.key, ($event.target as HTMLInputElement).value)"
+              @input="onColorInput(colorDef.key, $event)"
             />
             <span
               class="color-custom-swatch"
@@ -186,11 +186,17 @@ function selectPreset(preset: ColorPreset): void {
 /**
  * Handle individual color input change
  */
+function onColorInput(key: keyof ColorCustomization, event: Event): void {
+  const target = event.target;
+  if (!(target instanceof HTMLInputElement)) return;
+  handleColorInput(key, target.value);
+}
+
 function handleColorInput(key: keyof ColorCustomization, value: string): void {
   if (!isValidHexColor(value)) {
     return;
   }
-  
+
   emit('update:colors', {
     ...props.colors,
     [key]: value
@@ -212,9 +218,9 @@ function handleReset(): void {
  */
 
 .color-scheme-picker {
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
@@ -222,21 +228,21 @@ function handleReset(): void {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 1rem 1.25rem;
-  background: #fafbfc;
-  border-bottom: 1px solid #f0f1f3;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-bg-muted);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .color-scheme-title {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--color-text-muted-dark);
 }
 
 .color-scheme-hint {
   font-size: 0.8125rem;
-  color: #6b7280;
+  color: var(--color-text-muted);
   margin: 0;
   line-height: 1.5;
 }
@@ -256,17 +262,17 @@ function handleReset(): void {
 .color-presets-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
+  gap: var(--space-sm);
 }
 
 .color-preset-card {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  padding: 0.875rem;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   cursor: pointer;
   text-align: left;
   position: relative;
@@ -274,19 +280,25 @@ function handleReset(): void {
 }
 
 .color-preset-card:hover {
-  border-color: #d1d5db;
-  background: #fafbfc;
+  border-color: var(--color-border-hover);
+  background: var(--color-bg-muted);
 }
 
 .color-preset-card--selected {
-  border-color: #1e3a8a;
-  background: rgba(30, 58, 138, 0.03);
-  box-shadow: 0 0 0 1px #1e3a8a;
+  border-color: var(--color-primary);
+  background: var(--color-primary-tint);
+  box-shadow: 0 0 0 1px var(--color-primary);
 }
 
 .color-preset-card--selected:hover {
-  border-color: #1e3a8a;
-  background: rgba(30, 58, 138, 0.05);
+  border-color: var(--color-primary);
+  background: var(--color-primary-tint);
+}
+
+.color-preset-card:focus-visible {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.08);
 }
 
 .color-preset-swatches {
@@ -318,23 +330,23 @@ function handleReset(): void {
 .color-preset-name {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--color-text-muted-dark);
   line-height: 1.3;
 }
 
 .color-preset-description {
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   line-height: 1.3;
 }
 
 .color-preset-check {
   position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  width: 20px;
-  height: 20px;
-  color: #1e3a8a;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--color-primary);
 }
 
 .color-preset-check svg {

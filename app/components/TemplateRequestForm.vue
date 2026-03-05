@@ -42,58 +42,41 @@
           :class="{ 'form-input--invalid': errors.businessName }"
           placeholder="e.g., Smith Plumbing Services"
           required
-          @input="handleFieldInput('businessName', ($event.target as HTMLInputElement).value)"
+          @input="onTextInput($event, 'businessName')"
           @blur="handleBlur('businessName')"
         />
         <p v-if="errors.businessName" class="form-error">{{ errors.businessName }}</p>
       </div>
 
-      <div class="form-row">
-        <div class="form-group" :class="{ 'form-group--error': errors.industry }">
-          <label for="industry" class="form-label">Industry / Type <span class="required">*</span></label>
-          <select
-            id="industry"
-            :value="formData.industry"
-            class="form-select"
-            :class="{ 'form-select--invalid': errors.industry }"
-            required
-            @change="handleFieldInput('industry', ($event.target as HTMLSelectElement).value)"
-            @blur="handleBlur('industry')"
-          >
-            <option value="">Select your industry</option>
-            <option v-for="option in INDUSTRY_OPTIONS" :key="option.value" :value="option.value">
-              {{ option.label }}
-            </option>
-          </select>
-          <p v-if="errors.industry" class="form-error">{{ errors.industry }}</p>
-        </div>
-        <div class="form-group" :class="{ 'form-group--error': errors.yearsInBusiness }">
-          <label for="yearsInBusiness" class="form-label">Years in Business</label>
-          <input
-            id="yearsInBusiness"
-            :value="formData.yearsInBusiness"
-            type="text"
-            class="form-input"
-            :class="{ 'form-input--invalid': errors.yearsInBusiness }"
-            placeholder="e.g., 15"
-            inputmode="numeric"
-            @input="handleFieldInput('yearsInBusiness', ($event.target as HTMLInputElement).value)"
-            @blur="handleBlur('yearsInBusiness')"
-          />
-          <p v-if="errors.yearsInBusiness" class="form-error">{{ errors.yearsInBusiness }}</p>
-        </div>
+      <div class="form-group" :class="{ 'form-group--error': errors.industry }">
+        <label class="form-label">Industry / Type <span class="required">*</span></label>
+        <IndustryCardGrid
+          :model-value="formData.industry"
+          :read-only="readOnly"
+          label="Industry / Type"
+          @update:model-value="handleFieldInput('industry', $event)"
+        />
+        <p v-if="errors.industry" class="form-error">{{ errors.industry }}</p>
+      </div>
+
+      <div class="form-group" :class="{ 'form-group--error': errors.yearsInBusiness }">
+        <label class="form-label">Years in Business</label>
+        <YearsInBusinessInput
+          :model-value="formData.yearsInBusiness"
+          :read-only="readOnly"
+          @update:model-value="handleFieldInput('yearsInBusiness', $event)"
+          @blur="handleBlur('yearsInBusiness')"
+        />
+        <p v-if="errors.yearsInBusiness" class="form-error">{{ errors.yearsInBusiness }}</p>
       </div>
 
       <div class="form-group" :class="{ 'form-group--error': errors.businessDescription }">
-        <label for="businessDescription" class="form-label">Tell us about your business</label>
-        <textarea
-          id="businessDescription"
-          :value="formData.businessDescription"
-          class="form-textarea"
-          :class="{ 'form-textarea--invalid': errors.businessDescription }"
-          rows="3"
-          placeholder="What makes your business unique? What do you specialize in?"
-          @input="handleFieldInput('businessDescription', ($event.target as HTMLTextAreaElement).value)"
+        <GuidedBusinessDescription
+          :model-value="formData.businessDescription"
+          label="Tell us about your business"
+          hint="Fill in one or more blocks to describe your business."
+          :read-only="readOnly"
+          @update:model-value="handleFieldInput('businessDescription', $event)"
           @blur="handleBlur('businessDescription')"
         />
         <p v-if="errors.businessDescription" class="form-error">{{ errors.businessDescription }}</p>
@@ -203,6 +186,7 @@
         <GoalSelector
           :model-value="formData.goals"
           :goals="WEBSITE_GOALS"
+          :read-only="readOnly"
           @update:model-value="handleFieldInput('goals', $event)"
         />
         <p v-if="errors.goals" class="form-error">{{ errors.goals }}</p>
@@ -217,7 +201,7 @@
           :class="{ 'form-textarea--invalid': errors.targetAudience }"
           rows="2"
           placeholder="e.g., Homeowners in the Greater Metro area, property managers, commercial businesses"
-          @input="handleFieldInput('targetAudience', ($event.target as HTMLTextAreaElement).value)"
+          @input="onTextInput($event, 'targetAudience')"
           @blur="handleBlur('targetAudience')"
         />
         <p v-if="errors.targetAudience" class="form-error">{{ errors.targetAudience }}</p>
@@ -233,7 +217,7 @@
     >
       <template #icon><SparkleIcon /></template>
 
-      <div v-if="existingAttachments && existingAttachments.length > 0" class="form-group existing-attachments">
+      <div v-if="existingAttachments?.length" class="form-group existing-attachments">
         <label class="form-label">Current attachments</label>
         <ul class="existing-attachments-list" aria-label="Files already attached to this request">
           <li
@@ -274,7 +258,7 @@
           :class="{ 'form-textarea--invalid': errors.additionalNotes }"
           rows="4"
           placeholder="Tell us anything else that would help us create the perfect website for your business..."
-          @input="handleFieldInput('additionalNotes', ($event.target as HTMLTextAreaElement).value)"
+          @input="onTextInput($event, 'additionalNotes')"
           @blur="handleBlur('additionalNotes')"
         />
         <p v-if="errors.additionalNotes" class="form-error">{{ errors.additionalNotes }}</p>
@@ -294,7 +278,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch } from 'vue';
 import type { ShowcaseTemplate } from '~/stores/showcase';
 import type {
   ColorCustomization,
@@ -313,6 +297,9 @@ import FormSubmit from '~/components/form/FormSubmit.vue';
 import IconInput from '~/components/form/IconInput.vue';
 import GoalSelector from '~/components/form/GoalSelector.vue';
 import FileUploadArea from '~/components/form/FileUploadArea.vue';
+import IndustryCardGrid from '~/components/form/IndustryCardGrid.vue';
+import GuidedBusinessDescription from '~/components/form/GuidedBusinessDescription.vue';
+import YearsInBusinessInput from '~/components/form/YearsInBusinessInput.vue';
 
 // Icons
 import {
@@ -328,10 +315,7 @@ import {
   MapPinIcon
 } from '~/components/icons/SectionIcons.vue';
 
-// Constants
-import { INDUSTRY_OPTIONS, WEBSITE_GOALS } from '~/constants/formOptions';
-
-// Re-export types for consumers
+import { WEBSITE_GOALS } from '~/constants/formOptions';
 export type { ColorCustomization, TemplateRequestFormData } from '~/types/templateRequest';
 
 interface Props {
@@ -374,10 +358,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>();
 
-// File upload state (managed locally, passed to composable)
 const uploadedFiles = ref<readonly File[]>([]);
-
-// Template ref for the composable
 const templateRef = computed(() => props.template);
 
 // Use the form composable
@@ -391,7 +372,6 @@ const {
   hydrateFormData
 } = useTemplateRequestForm(templateRef, uploadedFiles);
 
-// Hydrate from initial data when provided (e.g. order edit)
 watch(
   () => props.initialFormData,
   (data) => {
@@ -400,7 +380,6 @@ watch(
   { immediate: true }
 );
 
-// Validation: centralized, run on blur and submit; clear error on input
 const { errors, validateField, validateAll, clearFieldError } =
   useTemplateRequestValidation(formData);
 
@@ -416,7 +395,16 @@ function handleBlur(field: TemplateRequestValidatableField): void {
   validateField(field);
 }
 
-/** Format file size for display in existing-attachments list. */
+function onTextInput(
+  event: Event,
+  field: 'businessName' | 'targetAudience' | 'additionalNotes'
+): void {
+  const target = event.target;
+  if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+    handleFieldInput(field, target.value);
+  }
+}
+
 function formatAttachmentSize(bytes: number): string {
   if (bytes === 0) return '0 B';
   const k = 1024;
@@ -426,87 +414,40 @@ function formatAttachmentSize(bytes: number): string {
   return `${size} ${sizes[i]}`;
 }
 
-/**
- * Handle files update from FileUploadArea
- */
 function handleFilesUpdate(files: readonly File[]): void {
   uploadedFiles.value = files;
 }
 
-/**
- * Handle color updates from the picker
- */
 function handleColorsUpdate(colors: ColorCustomization): void {
   updateColors(colors);
   emit('colorChange', colors);
 }
 
-/**
- * Handle color reset
- */
 function handleColorsReset(): void {
   const colors = resetColors();
   emit('colorChange', colors);
 }
 
-/**
- * Trim string fields for submission (validation already ran).
- */
-function trimFormPayload(data: TemplateRequestFormData): TemplateRequestFormData {
-  return {
-    ...data,
-    businessName: data.businessName.trim(),
-    industry: data.industry.trim(),
-    yearsInBusiness: data.yearsInBusiness.trim(),
-    businessDescription: data.businessDescription.trim(),
-    contactName: data.contactName.trim(),
-    email: data.email.trim(),
-    phone: data.phone.trim(),
-    website: data.website.trim(),
-    address: data.address.trim(),
-    targetAudience: data.targetAudience.trim(),
-    additionalNotes: data.additionalNotes.trim()
-  };
-}
-
-/**
- * Handle form submission. Block if validation fails; no-op when read-only.
- */
 function handleSubmit(): void {
   if (props.readOnly) return;
-  if (!validateAll()) {
-    return;
-  }
-  const raw = {
+  if (!validateAll()) return;
+  emit('submit', {
     ...formData.value,
     brandAssets: uploadedFiles.value.map((f) => f.name),
     files: [...uploadedFiles.value]
-  };
-  const submissionData = trimFormPayload(raw);
-  emit('submit', submissionData);
+  });
 }
 
-/**
- * Emit progress updates when progress changes
- */
 watch(
   () => progress.value,
   (newProgress) => {
-    emit('progressUpdate', { 
-      completed: newProgress.completed, 
-      total: newProgress.total 
+    emit('progressUpdate', {
+      completed: newProgress.completed,
+      total: newProgress.total
     });
   },
   { immediate: true }
 );
-
-// Also emit on mount to ensure parent has initial values
-onMounted(() => {
-  emit('progressUpdate', { 
-    completed: progress.value.completed, 
-    total: progress.value.total 
-  });
-});
 </script>
 
 <style src="~/assets/css/components.css"></style>
@@ -529,7 +470,7 @@ onMounted(() => {
 }
 
 .form-textarea--tall {
-  min-height: 120px;
+  min-height: 7.5rem;
 }
 
 /* Invalid state for IconInput when parent form-group has error */

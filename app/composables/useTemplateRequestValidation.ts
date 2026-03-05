@@ -1,12 +1,5 @@
-/**
- * Template Request Form Validation
- *
- * Centralized, deterministic validation for the template order form.
- * All rules are explicit and type-safe; no ad-hoc inline checks.
- * Used by TemplateRequestForm; validation state is reactive and does not mutate form data.
- */
-
-import { ref, computed, type Ref, type ComputedRef } from 'vue';
+/** Centralized validation for the template request form; does not mutate form data. */
+import { ref, type Ref } from 'vue';
 import type {
   TemplateRequestFormData,
   TemplateRequestValidatableField,
@@ -222,16 +215,10 @@ function validateGoals(goals: string[]): string | undefined {
 }
 
 export interface UseTemplateRequestValidationReturn {
-  /** Current validation errors per field (reactive) */
   errors: Ref<TemplateRequestValidationErrors>;
-  /** Validate a single field and store its error */
   validateField: (field: TemplateRequestValidatableField) => string | undefined;
-  /** Validate all fields, update errors, return true only if valid */
   validateAll: () => boolean;
-  /** Clear error for one field (e.g. on input) */
   clearFieldError: (field: TemplateRequestValidatableField) => void;
-  /** Whether the form is currently valid (no errors) */
-  isValid: ComputedRef<boolean>;
 }
 
 /**
@@ -338,16 +325,10 @@ export function useTemplateRequestValidation(
     errors.value = { ...rest };
   }
 
-  const isValid = computed<boolean>(() => {
-    const e = errors.value;
-    return Object.keys(e).length === 0;
-  });
-
   return {
     errors,
     validateField,
     validateAll,
-    clearFieldError,
-    isValid
+    clearFieldError
   };
 }
