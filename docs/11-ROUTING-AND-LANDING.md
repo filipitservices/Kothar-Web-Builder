@@ -101,6 +101,7 @@ Routes are implicitly defined by file structure. No manual `vue-router` config r
 - **Dashboard → Builder**: Builder hero card with `<NuxtLink to="/builder">`
 - **Dashboard → Template Preview**: Click template card → ShowcaseModal opens in-page
 - **Template Preview → Request**: "Choose This Design" → navigates to `/gallery/request/:id`
+- **Request → Builder (with template)**: "Open in Builder" → `/builder?showcaseTemplate=[id]` (builder pre-loads template blocks)
 - **Request → Dashboard**: Back link or "Choose different design" link
 - **UserMenu (authenticated)**: Dashboard, **My Live Sites** (`/sites`), Sign Out
 - **Sites list → Site control panel**: "Manage site" → `/sites/:id`

@@ -1,15 +1,16 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
+import type { TemplateBlock } from '~/types/builder';
 
 /**
  * Showcase Templates Store
  * 
- * IMPORTANT: This store is COMPLETELY SEPARATE from the builder templates.
- * 
- * These are full, professional website showcases meant to demonstrate
- * finished designs for SMBs. They are NOT block compositions from the builder.
- * Each showcase template represents a complete visual website design that
- * users can request to have built for their business.
+ * Full professional website showcases that also define their builder block
+ * sequence. Each template has:
+ *   - `sections`: Rich content for visual preview (ShowcaseRenderer).
+ *   - `blocks`: The corresponding builder block layout (same TemplateBlock
+ *     structure the builder uses). When a user opens the builder from the
+ *     request editor, these blocks initialise the builder canvas.
  * 
  * Industry Categories:
  * - Local Services: Plumbers, electricians, HVAC, contractors
@@ -48,6 +49,8 @@ export interface ShowcaseTemplate {
     text: string;
   };
   sections: ShowcaseSection[];
+  /** Builder block sequence — used to initialise the builder canvas. */
+  blocks: TemplateBlock[];
 }
 
 export const useShowcaseStore = defineStore('showcase', () => {
@@ -146,6 +149,17 @@ export const useShowcaseStore = defineStore('showcase', () => {
             hours: 'Mon-Fri: 7AM-7PM | Sat: 8AM-4PM | Emergency: 24/7'
           }
         }
+      ],
+      blocks: [
+        { type: 'navbar', label: 'Navigation' },
+        { type: 'hero', label: 'Hero Section' },
+        { type: 'credentials', label: 'Trust Badges' },
+        { type: 'services', label: 'Our Services' },
+        { type: 'process', label: 'How It Works' },
+        { type: 'testimonial', label: 'Customer Reviews' },
+        { type: 'cta', label: 'Call To Action' },
+        { type: 'form', label: 'Contact Form' },
+        { type: 'footer', label: 'Footer' }
       ]
     },
     {
@@ -224,6 +238,16 @@ export const useShowcaseStore = defineStore('showcase', () => {
             hours: 'Mon-Fri: 7AM-6PM | Sat: 8AM-2PM'
           }
         }
+      ],
+      blocks: [
+        { type: 'navbar', label: 'Navigation' },
+        { type: 'hero', label: 'Hero Section' },
+        { type: 'services', label: 'Electrical Solutions' },
+        { type: 'stats', label: 'Key Metrics' },
+        { type: 'testimonial', label: 'Customer Reviews' },
+        { type: 'cta', label: 'Call To Action' },
+        { type: 'form', label: 'Contact Form' },
+        { type: 'footer', label: 'Footer' }
       ]
     },
 
@@ -305,6 +329,16 @@ export const useShowcaseStore = defineStore('showcase', () => {
             hours: 'Mon-Fri: 8:30AM-5:30PM | Evenings by Appointment'
           }
         }
+      ],
+      blocks: [
+        { type: 'navbar', label: 'Navigation' },
+        { type: 'hero', label: 'Hero Section' },
+        { type: 'services', label: 'Practice Areas' },
+        { type: 'team', label: 'Our Attorneys' },
+        { type: 'testimonial', label: 'Client Testimonials' },
+        { type: 'cta', label: 'Call To Action' },
+        { type: 'form', label: 'Contact Form' },
+        { type: 'footer', label: 'Footer' }
       ]
     },
     {
@@ -381,6 +415,16 @@ export const useShowcaseStore = defineStore('showcase', () => {
             email: 'hello@clearpathcpa.com'
           }
         }
+      ],
+      blocks: [
+        { type: 'navbar', label: 'Navigation' },
+        { type: 'hero', label: 'Hero Section' },
+        { type: 'services', label: 'Our Services' },
+        { type: 'credentials', label: 'Certifications' },
+        { type: 'stats', label: 'Key Metrics' },
+        { type: 'testimonial', label: 'Client Reviews' },
+        { type: 'form', label: 'Contact Form' },
+        { type: 'footer', label: 'Footer' }
       ]
     },
     {
@@ -448,6 +492,15 @@ export const useShowcaseStore = defineStore('showcase', () => {
             primaryCta: 'Book a Call'
           }
         }
+      ],
+      blocks: [
+        { type: 'navbar', label: 'Navigation' },
+        { type: 'hero', label: 'Hero Section' },
+        { type: 'services', label: 'Our Expertise' },
+        { type: 'process', label: 'Our Approach' },
+        { type: 'stats', label: 'Results & Impact' },
+        { type: 'cta', label: 'Call To Action' },
+        { type: 'footer', label: 'Footer' }
       ]
     },
 
@@ -528,6 +581,16 @@ export const useShowcaseStore = defineStore('showcase', () => {
             phone: '(555) 567-8901'
           }
         }
+      ],
+      blocks: [
+        { type: 'navbar', label: 'Navigation' },
+        { type: 'hero', label: 'Hero Section' },
+        { type: 'gallery', label: 'Featured Work' },
+        { type: 'services', label: 'Photography Services' },
+        { type: 'pricing', label: 'Packages' },
+        { type: 'testimonial', label: 'Client Reviews' },
+        { type: 'form', label: 'Contact Form' },
+        { type: 'footer', label: 'Footer' }
       ]
     },
     {
@@ -596,6 +659,15 @@ export const useShowcaseStore = defineStore('showcase', () => {
             primaryCta: 'Get in Touch'
           }
         }
+      ],
+      blocks: [
+        { type: 'navbar', label: 'Navigation' },
+        { type: 'hero', label: 'Hero Section' },
+        { type: 'services', label: 'What We Do' },
+        { type: 'gallery', label: 'Selected Work' },
+        { type: 'process', label: 'Our Process' },
+        { type: 'cta', label: 'Call To Action' },
+        { type: 'footer', label: 'Footer' }
       ]
     },
 
@@ -673,6 +745,17 @@ export const useShowcaseStore = defineStore('showcase', () => {
             hours: 'Mon-Thu: 8AM-6PM | Fri: 8AM-3PM | Sat: By Appointment'
           }
         }
+      ],
+      blocks: [
+        { type: 'navbar', label: 'Navigation' },
+        { type: 'hero', label: 'Hero Section' },
+        { type: 'services', label: 'Dental Services' },
+        { type: 'team', label: 'Meet Our Team' },
+        { type: 'credentials', label: 'Trust Badges' },
+        { type: 'testimonial', label: 'Patient Reviews' },
+        { type: 'location', label: 'Location & Hours' },
+        { type: 'form', label: 'Schedule Appointment' },
+        { type: 'footer', label: 'Footer' }
       ]
     },
 
@@ -747,6 +830,16 @@ export const useShowcaseStore = defineStore('showcase', () => {
             hours: 'Tue-Thu: 5PM-10PM | Fri-Sat: 5PM-11PM | Sun: 10AM-3PM (Brunch)'
           }
         }
+      ],
+      blocks: [
+        { type: 'navbar', label: 'Navigation' },
+        { type: 'hero', label: 'Hero Section' },
+        { type: 'text', label: 'Our Story' },
+        { type: 'gallery', label: 'Menu Highlights' },
+        { type: 'features', label: 'Why Dine With Us' },
+        { type: 'testimonial', label: 'Customer Reviews' },
+        { type: 'location', label: 'Visit Us' },
+        { type: 'footer', label: 'Footer' }
       ]
     },
 
@@ -809,6 +902,15 @@ export const useShowcaseStore = defineStore('showcase', () => {
             hours: 'Mon-Sat: 10AM-6PM | Sun: 12PM-5PM'
           }
         }
+      ],
+      blocks: [
+        { type: 'navbar', label: 'Navigation' },
+        { type: 'hero', label: 'Hero Section' },
+        { type: 'gallery', label: 'Featured Collections' },
+        { type: 'features', label: 'The Artisan Difference' },
+        { type: 'testimonial', label: 'Customer Reviews' },
+        { type: 'location', label: 'Visit Our Store' },
+        { type: 'footer', label: 'Footer' }
       ]
     }
   ]);

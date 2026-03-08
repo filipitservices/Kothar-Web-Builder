@@ -1,5 +1,8 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
+import type { TemplateBlock } from '~/types/builder';
+
+export type { TemplateBlock };
 
 /**
  * Template Store
@@ -11,11 +14,6 @@ import { ref, computed } from 'vue';
  * When applied, templates create block instances with unique IDs
  * and add them to the target screen (desktop or mobile).
  */
-
-export interface TemplateBlock {
-  type: string;
-  label: string;
-}
 
 export interface Template {
   id: string;

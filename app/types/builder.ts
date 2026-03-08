@@ -34,3 +34,9 @@ export interface DrawingState {
 }
 
 export type ScreenId = 'desktop' | 'mobile' | 'both';
+
+/** Block definition within a template (structure only, no content). */
+export interface TemplateBlock {
+  type: BlockType;
+  label: string;
+}

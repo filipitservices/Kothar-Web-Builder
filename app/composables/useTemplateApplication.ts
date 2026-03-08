@@ -1,12 +1,18 @@
 import { useTemplatesStore } from '~/stores/templates';
 import type { Ref } from 'vue';
-import type { BlockItem } from '~/types/builder';
+import type { BlockItem, TemplateBlock } from '~/types/builder';
 
 /**
  * Template Application Composable
  *
  * Handles applying templates to desktop/mobile screens.
  * Pure state transformation: replaces list refs; no direct DOM manipulation.
+ *
+ * Two entry points:
+ *   - applyTemplate(templateId, screen) — looks up a builder template by id.
+ *   - applyBlocks(blocks, screen) — accepts a TemplateBlock[] directly,
+ *     allowing any source (builder templates, showcase templates, etc.)
+ *     to initialize the builder through the same code path.
  */
 
 interface UseTemplateApplicationParams {
@@ -18,19 +24,11 @@ export function useTemplateApplication(params: UseTemplateApplicationParams) {
   const { desktopList, mobileList } = params;
   const templatesStore = useTemplatesStore();
 
-  /**
-   * Generate a unique block ID for a given block type
-   * Format: {type}-{timestamp}-{uuid}
-   * This ensures no ID collisions even when applying same template multiple times
-   */
   const generateBlockId = (blockType: string): string => {
     return `${blockType}-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
   };
 
-  /**
-   * Create a block item from a template block definition
-   */
-  const createBlockItem = (templateBlock: { type: string; label: string }): BlockItem => {
+  const createBlockItem = (templateBlock: TemplateBlock): BlockItem => {
     return {
       id: generateBlockId(templateBlock.type),
       type: templateBlock.type,
@@ -39,78 +37,45 @@ export function useTemplateApplication(params: UseTemplateApplicationParams) {
   };
 
   /**
-   * Apply template to a specific screen
-   * This is a pure state transformation - replaces the list array
+   * Apply a raw block array to the target screen(s).
+   * This is the core state transformation — every other method delegates here.
    */
-  const applyToScreen = (
-    templateId: string,
-    screenType: 'desktop' | 'mobile'
-  ): boolean => {
-    const template = templatesStore.getTemplateById(templateId);
-    
-    if (!template) {
-      console.error(`Template not found: ${templateId}`);
-      return false;
-    }
-
-    // Create new block items from template
-    const newBlocks = template.blocks.map(createBlockItem);
-
-    // State transformation: Replace the target list
-    if (screenType === 'desktop') {
-      desktopList.value = newBlocks;
+  const applyBlocks = (
+    blocks: TemplateBlock[],
+    screen: 'desktop' | 'mobile' | 'both'
+  ): void => {
+    if (screen === 'both') {
+      desktopList.value = blocks.map(createBlockItem);
+      mobileList.value = blocks.map(createBlockItem);
+    } else if (screen === 'desktop') {
+      desktopList.value = blocks.map(createBlockItem);
     } else {
-      mobileList.value = newBlocks;
+      mobileList.value = blocks.map(createBlockItem);
     }
-
-    return true;
   };
 
   /**
-   * Apply template to both screens
-   * Each screen gets its own set of block instances with unique IDs
-   */
-  const applyToBoth = (templateId: string): boolean => {
-    const template = templatesStore.getTemplateById(templateId);
-    
-    if (!template) {
-      console.error(`Template not found: ${templateId}`);
-      return false;
-    }
-
-    // Create separate instances for each screen
-    const desktopBlocks = template.blocks.map(createBlockItem);
-    const mobileBlocks = template.blocks.map(createBlockItem);
-
-    // State transformation: Replace both lists
-    desktopList.value = desktopBlocks;
-    mobileList.value = mobileBlocks;
-
-    return true;
-  };
-
-  /**
-   * Main entry point for template application
-   * Handles all three cases: desktop, mobile, both
+   * Look up a builder template by id and apply it.
+   * Returns false if the template is not found.
    */
   const applyTemplate = (
     templateId: string,
     screen: 'desktop' | 'mobile' | 'both'
   ): boolean => {
-    if (screen === 'both') {
-      return applyToBoth(templateId);
-    } else {
-      return applyToScreen(templateId, screen);
+    const template = templatesStore.getTemplateById(templateId);
+
+    if (!template) {
+      console.error(`Template not found: ${templateId}`);
+      return false;
     }
+
+    applyBlocks(template.blocks, screen);
+    return true;
   };
 
-  /**
-   * Get preview of what blocks will be added
-   * Useful for confirmation dialogs
-   */
   const getTemplatePreview = (templateId: string) => {
     const template = templatesStore.getTemplateById(templateId);
-    
+
     if (!template) {
       return null;
     }
@@ -128,6 +93,7 @@ export function useTemplateApplication(params: UseTemplateApplicationParams) {
 
   return {
     applyTemplate,
+    applyBlocks,
     getTemplatePreview
   };
 }

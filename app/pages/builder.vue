@@ -61,11 +61,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, type Ref } from 'vue';
+import { ref, onMounted, type Ref } from 'vue';
 import { useBusinessData } from '~/composables/useBusinessData';
 import { useValidation } from '~/composables/useValidation';
 import { useDrawing } from '~/composables/useDrawing';
 import { useTemplateApplication } from '~/composables/useTemplateApplication';
+import { useShowcaseStore } from '~/stores/showcase';
 import InfoBar from '~/components/InfoBar.vue';
 import ScreensPanel from '~/components/ScreensPanel.vue';
 import ItemsList from '~/components/ItemsList.vue';
@@ -74,10 +75,6 @@ import SidebarBranding from '~/components/SidebarBranding.vue';
 import type { BlockItem, FieldErrorKey, DrawingState, ScreenId } from '~/types/builder';
 import { AVAILABLE_BLOCKS, INFO_BAR_FIELDS, CANVAS_DIMENSIONS, INITIAL_FIELD_ERRORS } from '~/constants/builder';
 
-// Route protection: Requires authentication
-// The middleware runs on both SSR and client-side navigation
-// Unauthenticated users are redirected to /login before any UI renders
-// Builder uses its own layout (no global navbar) to preserve fullscreen editor
 definePageMeta({
   middleware: 'auth',
   layout: 'builder'
@@ -85,16 +82,18 @@ definePageMeta({
 
 defineOptions({ name: 'BuilderPage', display: 'Website Builder Interface' });
 
-// State (declare here for template reference)
+const route = useRoute();
+const router = useRouter();
+const showcaseStore = useShowcaseStore();
+
 const desktopList: Ref<BlockItem[]> = ref([]);
 const mobileList: Ref<BlockItem[]> = ref([]);
 
 const { getField: getBusinessField } = useBusinessData();
 const { validate, businessHoursOptions } = useValidation();
 const { desktopDrawingState, desktopStrokes, mobileDrawingState, mobileStrokes, toggleDrawing, toggleTextMode, setCanvasRef, updateDesktopDrawingState, updateMobileDrawingState } = useDrawing();
-const { applyTemplate } = useTemplateApplication({ desktopList, mobileList });
+const { applyTemplate, applyBlocks } = useTemplateApplication({ desktopList, mobileList });
 
-// State continued
 const availableList: Ref<BlockItem[]> = ref(AVAILABLE_BLOCKS);
 const desktopCanvasWidth: Ref<number> = ref(CANVAS_DIMENSIONS.desktop.width);
 const desktopCanvasHeight: Ref<number> = ref(CANVAS_DIMENSIONS.desktop.height);
@@ -102,7 +101,24 @@ const mobileCanvasWidth: Ref<number> = ref(CANVAS_DIMENSIONS.mobile.width);
 const mobileCanvasHeight: Ref<number> = ref(CANVAS_DIMENSIONS.mobile.height);
 const fieldErrors: Ref<Record<FieldErrorKey, string | null>> = ref(INITIAL_FIELD_ERRORS);
 
-// Handlers
+/**
+ * One-time initialisation from a showcase template.
+ * Reads the `showcaseTemplate` query param, applies the template's blocks to
+ * both screens, then removes the param so the initialisation does not re-run
+ * on subsequent navigations or refreshes.
+ */
+onMounted(() => {
+  const showcaseTemplateId = route.query.showcaseTemplate;
+  if (typeof showcaseTemplateId !== 'string' || !showcaseTemplateId) return;
+
+  const template = showcaseStore.getTemplateById(showcaseTemplateId);
+  if (!template) return;
+
+  applyBlocks(template.blocks, 'both');
+
+  router.replace({ path: '/builder' });
+});
+
 const handleDesktopDrawingStateUpdate = (newState: Partial<DrawingState>): void => {
   updateDesktopDrawingState(newState);
 };

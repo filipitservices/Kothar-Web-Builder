@@ -15,7 +15,9 @@ The dashboard serves as the authenticated central hub for Kothar, providing user
 | System | Purpose | Data Source | User Flow |
 |--------|---------|-------------|-----------|
 | **Builder Templates** | Starting points for DIY website building | `stores/templates.ts` | Dashboard → Builder → Select template → Edit blocks |
-| **Showcase Templates** | Professional designs for managed services | `stores/showcase.ts` | Dashboard → Preview → Request form → Consultation |
+| **Showcase Templates** | Professional designs for managed services | `stores/showcase.ts` | Dashboard → Preview → Request form → Builder (optional) or Consultation |
+
+**Unified flow:** Showcase templates now define a `blocks: TemplateBlock[]` field (same structure as builder templates). From the request editor, users can click "Open in Builder" to navigate to `/builder?showcaseTemplate=[id]`. The builder reads the query param on mount, initialises the canvas with the template's block layout, and clears the param. Both template systems converge on `applyBlocks()` in `useTemplateApplication`.
 
 ---
 
@@ -30,7 +32,7 @@ Landing (/)
     │
     └── Authenticated: "Dashboard" → /dashboard
                                         │
-                                        ├── /builder (DIY website builder)
+                                        ├── /builder (DIY website builder — standalone)
                                         │
                                         ├── My Live Sites (UserMenu) → /sites (dashboard: Live Sites + Orders tabs)
                                         │       │
@@ -40,6 +42,11 @@ Landing (/)
                                         └── Showcase Modal (preview in-page)
                                                 │
                                                 └── /gallery/request/[id] (request form)
+                                                        │
+                                                        ├── "Open in Builder" → /builder?showcaseTemplate=[id]
+                                                        │       (Builder opens pre-loaded with template blocks)
+                                                        │
+                                                        └── Submit request form (existing flow)
 ```
 
 ### Route Protection
@@ -136,7 +143,7 @@ interface ShowcaseSection {
   type: 'hero' | 'services' | 'about' | 'features' | 'testimonials' | 
         'team' | 'pricing' | 'gallery' | 'contact' | 'cta' | 'faq' | 
         'stats' | 'process' | 'trust' | 'location';
-  data: Record<string, any>;
+  data: Record<string, unknown>;
 }
 
 interface ShowcaseTemplate {
@@ -152,10 +159,13 @@ interface ShowcaseTemplate {
     background: string;
     text: string;
   };
-  sections: ShowcaseSection[];
+  sections: ShowcaseSection[];       // Rich content for visual preview
+  blocks: TemplateBlock[];           // Builder block sequence (same type as builder templates)
   thumbnail?: string;
 }
 ```
+
+The `blocks` field uses the shared `TemplateBlock` interface from `types/builder.ts` — the same structure used by builder templates in `stores/templates.ts`. This means showcase templates are predefined builder layouts that can initialise the builder canvas directly without translation.
 
 ### Available Templates
 
@@ -262,9 +272,10 @@ TemplateRequestForm
 
 ### Navigation
 
+- **Open in Builder**: Primary CTA — navigates to `/builder?showcaseTemplate=[id]`, where the builder loads pre-populated with the template's block layout
 - Back link: Returns to `/dashboard` (templates section)
 - "Choose a different design" link: Returns to `/dashboard`
-- "Build your own" link: Goes to `/builder`
+- "Build your own from scratch" link: Goes to `/builder` (no template context)
 
 ### Layout
 

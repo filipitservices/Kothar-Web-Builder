@@ -34,6 +34,15 @@
                 <p class="req-preview-desc">{{ originalTemplate?.description }}</p>
               </div>
               <div class="req-preview-links">
+                <NuxtLink
+                  :to="{ path: '/builder', query: { showcaseTemplate: templateId } }"
+                  class="req-preview-builder-cta"
+                >
+                  Open in Builder
+                  <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                  </svg>
+                </NuxtLink>
                 <NuxtLink to="/dashboard" class="change-template-link">
                   Choose a different design →
                 </NuxtLink>

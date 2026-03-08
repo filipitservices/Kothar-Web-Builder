@@ -152,6 +152,31 @@
   gap: 0.5rem;
 }
 
+.req-preview-builder-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  padding: 0.625rem 1.25rem;
+  background: var(--color-primary);
+  color: var(--color-white);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s ease;
+  margin-bottom: var(--space-xs);
+}
+
+.req-preview-builder-cta:hover {
+  background: var(--color-primary-dark);
+}
+
+.req-preview-builder-cta svg {
+  width: 16px;
+  height: 16px;
+}
+
 .change-template-link {
   display: inline-block;
   font-size: 0.875rem;

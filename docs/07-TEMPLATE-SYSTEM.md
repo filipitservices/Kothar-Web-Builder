@@ -10,11 +10,39 @@ The template system provides pre-built website layouts that users can apply with
 
 ### Key Features
 
-- **6 Predefined Templates**: Small Business, Landing Page, Portfolio, SaaS Product, Simple Contact, Full Featured
-- **Category Filtering**: Business, Portfolio, Landing, Ecommerce
+- **14 Industry-Specific Builder Templates**: Organized by industry (Local Services, Professional, Creative, Retail, Healthcare, Hospitality)
+- **10 Showcase Templates with Builder Integration**: Full professional designs that also define builder block sequences
+- **Unified Flow**: Showcase template → Request editor → Builder (pre-loaded with template blocks)
+- **Category Filtering**: Industry-based categories
 - **Screen Selection**: Apply to desktop, mobile, or both
 - **State Transformation**: Pure state updates, no DOM manipulation
 - **Unique Block IDs**: Each application generates fresh block instances
+- **Shared `TemplateBlock` type**: Both builder and showcase templates use the same block definition structure (`types/builder.ts`)
+
+### Unified Template-to-Builder Flow
+
+```
+Dashboard → Showcase template → ShowcaseModal → "Choose This Design"
+    │
+    ↓
+/gallery/request/[id] (Request editor)
+    │
+    ├── "Open in Builder" → /builder?showcaseTemplate=[id]
+    │       ↓
+    │   Builder mounts → reads showcaseTemplate query param
+    │       ↓
+    │   Looks up showcase template → applyBlocks(template.blocks, 'both')
+    │       ↓
+    │   Builder canvas populated with template's block layout
+    │       ↓
+    │   Query param cleared (router.replace)
+    │       ↓
+    │   User edits, rearranges, customizes blocks
+    │
+    └── Submit request form (existing flow)
+```
+
+Templates are predefined builder layouts. The builder edits those layouts. The user flow moves naturally from template → request editor → builder.
 
 ---
 
@@ -52,24 +80,32 @@ The template system provides pre-built website layouts that users can apply with
 
 ### Data Flow
 
+**Path A: Builder sidebar (builder templates)**
+
 ```
-User clicks template
-         │
-         ↓
-TemplatesList emits 'apply' event
-  { templateId: string, screen: 'desktop' | 'mobile' | 'both' }
-         │
-         ↓
-index.vue calls handleTemplateApply()
-         │
-         ↓
-useTemplateApplication.applyTemplate()
-         │
-         ├──────> Get template definition from store
-         │        templatesStore.getTemplateById(id)
+TemplatesList emits 'apply' → builder.vue handleTemplateApply()
+  → useTemplateApplication.applyTemplate(templateId, screen)
+    → templatesStore.getTemplateById(id)
+    → applyBlocks(template.blocks, screen)
+```
+
+**Path B: Showcase template → builder (unified flow)**
+
+```
+Request page "Open in Builder" → /builder?showcaseTemplate=[id]
+  → builder.vue onMounted()
+    → showcaseStore.getTemplateById(id)
+    → applyBlocks(template.blocks, 'both')
+    → router.replace({ path: '/builder' })
+```
+
+**Both paths converge on `applyBlocks()`:**
+
+```
+applyBlocks(blocks: TemplateBlock[], screen)
          │
          ├──────> Generate block items with unique IDs
-         │        template.blocks.map(createBlockItem)
+         │        blocks.map(createBlockItem)
          │        createBlockItem() → { id, type, label }
          │        generateBlockId() → "{type}-{timestamp}-{uuid}"
          │
@@ -79,13 +115,7 @@ useTemplateApplication.applyTemplate()
                   both
          │
          ↓
-Vue reactivity triggers update
-         │
-         ↓
-ItemsList re-renders with new blocks
-         │
-         ↓
-Block components mount with blockId props
+Vue reactivity triggers update → ItemsList re-renders → Block components mount
 ```
 
 ---
@@ -167,16 +197,18 @@ emit('apply', templateId: string, screen: 'desktop' | 'mobile' | 'both')
 
 **`applyTemplate(templateId, screen)`**
 
-Applies a template to specified screen(s). Returns `true` on success, `false` if template not found.
-
-Flow:
-1. Lookup template in store
-2. Generate new block items with unique IDs
-3. Replace target list array(s)
-4. Vue reactivity handles UI update
+Applies a builder template (from `stores/templates.ts`) to specified screen(s). Returns `true` on success, `false` if template not found. Delegates to `applyBlocks`.
 
 ```typescript
-const success = applyTemplate('small-business', 'desktop');
+const success = applyTemplate('local-contractor', 'desktop');
+```
+
+**`applyBlocks(blocks, screen)`**
+
+Core method: applies a `TemplateBlock[]` to the target screen(s). Used by both `applyTemplate` (builder templates) and the showcase-to-builder initialisation flow. Generates fresh block IDs for every block.
+
+```typescript
+applyBlocks(showcaseTemplate.blocks, 'both');
 // desktopList.value = [
 //   { id: 'navbar-1234-abc123', type: 'navbar', label: 'Navigation' },
 //   { id: 'hero-1234-def456', type: 'hero', label: 'Hero Section' },
@@ -727,35 +759,39 @@ const BLOCK_COMPONENTS = {
 ### Types
 
 ```typescript
-// Template definition
+// Shared block definition (types/builder.ts) — used by both stores
+interface TemplateBlock {
+  type: BlockType;
+  label: string;
+}
+
+// Builder template (stores/templates.ts)
 interface Template {
   id: string;
   name: string;
   description: string;
-  category: 'business' | 'portfolio' | 'landing' | 'ecommerce';
+  category: 'local-services' | 'professional' | 'creative' | 'retail' | 'healthcare' | 'hospitality';
   thumbnail?: string;
   blocks: TemplateBlock[];
 }
 
-// Block in template
-interface TemplateBlock {
-  type: string;
-  label: string;
+// Showcase template (stores/showcase.ts) — includes both sections and blocks
+interface ShowcaseTemplate {
+  id: string;
+  name: string;
+  industry: string;
+  description: string;
+  category: ShowcaseCategory;
+  colorScheme: { primary; secondary; accent; background; text };
+  sections: ShowcaseSection[];  // Rich content for visual preview
+  blocks: TemplateBlock[];      // Builder block sequence
 }
 
-// Block item (after instantiation)
+// Block item (after instantiation in the builder)
 interface BlockItem {
   id: string;      // Generated unique ID
-  type: string;    // Block type
-  label: string;   // Display label
-}
-
-// Template preview
-interface TemplatePreview {
-  name: string;
-  description: string;
-  blockCount: number;
-  blocks: { type: string; label: string }[];
+  type: BlockType;
+  label: string;
 }
 ```
 
@@ -771,14 +807,19 @@ emit('apply', templateId: string, screen: 'desktop' | 'mobile' | 'both')
 ```typescript
 // useTemplateApplication
 applyTemplate(templateId: string, screen: 'desktop' | 'mobile' | 'both'): boolean
+applyBlocks(blocks: TemplateBlock[], screen: 'desktop' | 'mobile' | 'both'): void
 getTemplatePreview(templateId: string): TemplatePreview | null
 
 // useTemplatesStore
 getTemplatesByCategory(category: string): Template[]
 getTemplateById(id: string): Template | undefined
 
-// Getters
-getAllTemplates: ComputedRef<Template[]>
+// useShowcaseStore
+getTemplateById(id: string): ShowcaseTemplate | undefined
+getTemplatesByCategory(category: ShowcaseCategory): ShowcaseTemplate[]
+
+// Getters (both stores)
+getAllTemplates: ComputedRef<Template[] | ShowcaseTemplate[]>
 categories: ComputedRef<string[]>
 ```
 
