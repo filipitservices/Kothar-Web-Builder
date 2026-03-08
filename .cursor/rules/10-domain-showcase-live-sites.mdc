@@ -11,17 +11,18 @@ Per core invariants. **Live sites** (delivered websites) are managed in the cont
 ## Invariants
 
 - **Live sites cannot be rebuilt through the builder.** The builder is for design selection and the request flow (e.g. choose a design, submit request). Delivered sites are managed at `/sites` and `/sites/[id]` (control panel: content, business hours, seasonal announcement, etc.). No pathway from live sites back into the builder to "rebuild."
-- **Showcase templates ≠ builder templates.** Builder templates (`stores/templates.ts`) are block sequences for the DIY builder. Showcase (`stores/showcase.ts`) holds full professional designs (sections, color schemes, content structure) for preview and request form. Do not reuse builder wireframe templates as showcase templates or vice versa.
+- **Showcase templates ≠ builder templates, but showcase sections map to builder blocks.** Builder templates (`stores/templates.ts`) are block sequences for the DIY builder. Showcase (`stores/showcase.ts`) holds full professional designs (sections, color schemes, content structure) for preview and request form. Showcase template sections are mapped to builder block types via `utils/templateLayoutMapper.ts` to initialize the request layout. The two template stores remain separate; the mapper is the bridge.
 - **Dashboard and live sites control panel are separate from builder state.** Dashboard shows builder entry and showcase; sites list and site detail are separate pages with their own store (`stores/sites.ts`) and UI. No mixing of builder block state with live site content.
 
-## Showcase Flow
+## Showcase Flow (Unified with Builder)
 
-- **Dashboard:** User sees builder CTA and showcase template grid. Clicking a template opens ShowcaseModal (preview). "Choose This Design" → navigate to `/gallery/request/[id]`.
-- **Request form:** Template request page uses selected showcase template; form and preview are separate from builder. No application of builder templates on this flow.
+- **Dashboard:** User sees "Choose a Template" CTA and showcase template grid. Clicking a template opens ShowcaseModal (preview). "Choose This Design" → navigate to `/gallery/request/[id]`.
+- **Request editor:** Template request page uses the selected showcase template for preview. On first visit, the request state store (`stores/requestState.ts`) is initialized with a builder-compatible layout derived from the showcase template's sections (via `utils/templateLayoutMapper.ts`). The user can open the builder from the request editor to rearrange the layout visually.
+- **Builder integration:** The builder operates on the layout stored in `requestState`. Changes persist across navigation. The layout is included in the order payload on submission.
 
 ## Data Ownership
 
 - **Showcase:** `stores/showcase.ts` — template definitions (sections, colors, etc.). Rendered by ShowcaseRenderer. No syncing with blocks store.
 - **Sites:** `stores/sites.ts` — live site list and detail (hero, services, contact, business hours, etc.). Updated via store actions from the control panel. Not editable in builder.
 
-Reference `docs/17-DASHBOARD-AND-GALLERY.md` and `docs/11-ROUTING-AND-LANDING.md` for flows and boundaries.
+Reference `docs/17-DASHBOARD-AND-GALLERY.md`, `docs/11-ROUTING-AND-LANDING.md`, and `docs/19-UNIFIED-REQUEST-BUILDER-FLOW.md` for flows and boundaries.

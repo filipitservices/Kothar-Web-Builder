@@ -10,7 +10,7 @@ Per core invariants: no artificial state syncing, no parallel sources of truth, 
 
 ## Store Ownership
 
-- **One logical owner per state.** Business data: `stores/business.ts`. Block instance data: `stores/blocks.ts`. Auth: `stores/auth.ts`. Templates (builder): `stores/templates.ts`. Showcase: `stores/showcase.ts`. Live sites: `stores/sites.ts`.
+- **One logical owner per state.** Business data: `stores/business.ts`. Block instance data: `stores/blocks.ts`. Auth: `stores/auth.ts`. Templates (builder): `stores/templates.ts`. Showcase: `stores/showcase.ts`. Live sites: `stores/sites.ts`. In-progress request (layout + form snapshot): `stores/requestState.ts`.
 - **No duplicate state** for the same domain in another store, composable, or component. If data is derived, expose it via getters or composable computed refs that read from the single store.
 
 ## Mutation API

@@ -1,16 +1,17 @@
 ---
 description: Builder page, blocks, and builder templates. Design and template composition only; no one-off logic. Apply when editing builder, BlockElements, or builder template flow.
-globs: app/pages/builder.vue, app/components/BlockElements/**/*.vue, app/components/ItemsList.vue, app/composables/useBlockData.ts, app/composables/useTemplateApplication.ts, app/stores/blocks.ts, app/stores/templates.ts
+globs: app/pages/builder.vue, app/components/BlockElements/**/*.vue, app/components/ItemsList.vue, app/composables/useBlockData.ts, app/composables/useTemplateApplication.ts, app/stores/blocks.ts, app/stores/templates.ts, app/stores/requestState.ts, app/utils/templateLayoutMapper.ts
 alwaysApply: false
 ---
 
 # Domain: Builder
 
-Per core invariants and state/styling rules. The **builder** is for design and template composition. It is not used to "rebuild" or edit live sites.
+Per core invariants and state/styling rules. The **builder** is a layout editor for the request flow. It is not used to "rebuild" or edit live sites, and it cannot operate without an active request context.
 
 ## Builder Scope
 
-- **Builder page** (`/builder`): Drag-and-drop blocks, dual-screen (desktop/mobile) canvas, business info (InfoBar), block customization via inline editing, drawing, template library, AI chat. Uses **builder** layout (no global navbar).
+- **Builder page** (`/builder`): Drag-and-drop blocks, dual-screen (desktop/mobile) canvas, business info (InfoBar), block customization via inline editing, drawing, template library, AI chat. Uses **builder** layout (no global navbar). Requires an active request in `stores/requestState.ts`; redirects to `/dashboard` otherwise.
+- **Request state** lives in `stores/requestState.ts`. Layout (desktop + mobile block lists) is initialized from a showcase template via `utils/templateLayoutMapper.ts` and is the single source of truth for the builder's block arrangement.
 - **Block data** lives in `stores/blocks.ts` keyed by screen and blockId. **Builder templates** (starting points for DIY building) live in `stores/templates.ts`. Template application uses `useTemplateApplication` and replaces list arrays (state transformation); no DOM manipulation.
 
 ## No One-Off Logic
@@ -26,6 +27,7 @@ Per core invariants and state/styling rules. The **builder** is for design and t
 
 ## References
 
+- Unified flow: `docs/19-UNIFIED-REQUEST-BUILDER-FLOW.md`
 - Block system: `docs/03-BLOCK-SYSTEM.md`
 - Data flow: `docs/04-DATA-FLOW.md`
 - Builder code organization: `docs/13-BUILDER-CODE-ORGANIZATION.md`

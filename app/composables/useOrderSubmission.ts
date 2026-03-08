@@ -28,6 +28,7 @@ import type {
   OrderBusinessInfo,
   OrderContactInfo,
   OrderProjectDetails,
+  OrderLayout,
   OrderRequest
 } from '~/types/order';
 import { ORDER_STATUS_DEFAULT } from '~/types/order';
@@ -56,7 +57,8 @@ export class OrderSubmissionError extends Error {
 function formDataToOrderPayload(
   templateId: string,
   templateName: string,
-  data: TemplateRequestFormData
+  data: TemplateRequestFormData,
+  layout?: OrderLayout
 ): Omit<OrderRequest, 'createdAt' | 'updatedAt'> {
   const businessInfo: OrderBusinessInfo = {
     businessName: data.businessName.trim(),
@@ -86,6 +88,7 @@ function formDataToOrderPayload(
     businessInfo,
     contactInfo,
     projectDetails,
+    layout,
     attachments: [],
     status: ORDER_STATUS_DEFAULT,
     modificationLocked: false
@@ -152,6 +155,7 @@ export interface OrderSubmissionParams {
   templateName: string;
   formData: TemplateRequestFormData;
   files: File[];
+  layout?: OrderLayout;
 }
 
 /**
@@ -169,7 +173,7 @@ export function useOrderSubmission(): UseOrderSubmissionReturn {
       );
     }
 
-    const { userId, templateId, templateName, formData, files } = params;
+    const { userId, templateId, templateName, formData, files, layout } = params;
 
     if (!userId.trim()) {
       return Promise.reject(new OrderSubmissionError('User ID is required.'));
@@ -181,7 +185,7 @@ export function useOrderSubmission(): UseOrderSubmissionReturn {
     const orderRef = doc(ordersColl);
     const orderId = orderRef.id;
 
-    const basePayload = formDataToOrderPayload(templateId, templateName, formData);
+    const basePayload = formDataToOrderPayload(templateId, templateName, formData, layout);
 
     return (async () => {
       let attachments: OrderAttachment[] = [];

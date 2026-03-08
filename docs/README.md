@@ -53,11 +53,18 @@ Read these documents in order for complete project understanding:
    - Props and events
    - Styling patterns
 
-7. **[Dashboard & Templates](17-DASHBOARD-AND-GALLERY.md)** 🆕
+7. **[Dashboard & Templates](17-DASHBOARD-AND-GALLERY.md)**
    - Integrated dashboard architecture
    - Showcase template system (separate from builder)
    - SMB onboarding flow
    - Template preview and request flow
+
+8. **[Unified Request–Builder Flow](19-UNIFIED-REQUEST-BUILDER-FLOW.md)** 🆕
+   - How template selection, request editor, and builder connect
+   - Layout state model and request state store
+   - How templates initialize builder layout
+   - Navigation between request editor and builder
+   - Layout in the order payload
 
 ---
 

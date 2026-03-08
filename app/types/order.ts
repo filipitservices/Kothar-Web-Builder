@@ -62,6 +62,19 @@ export interface OrderProjectDetails {
   colorCustomization: ColorCustomization;
 }
 
+/** A single section in the persisted layout. Mirrors BlockItem but uses plain string for type. */
+export interface OrderLayoutSection {
+  id: string;
+  type: string;
+  label: string;
+}
+
+/** Layout configuration produced by the builder, attached to an order. */
+export interface OrderLayout {
+  desktop: OrderLayoutSection[];
+  mobile: OrderLayoutSection[];
+}
+
 /**
  * Firestore document shape for a template request order.
  * Stored at users/{userId}/orders/{orderId}.
@@ -75,6 +88,8 @@ export interface OrderRequest {
   businessInfo: OrderBusinessInfo;
   contactInfo: OrderContactInfo;
   projectDetails: OrderProjectDetails;
+  /** Layout configuration from the builder (section arrangement). */
+  layout?: OrderLayout;
   /** Metadata for files uploaded to Storage; no raw File or base64. */
   attachments: OrderAttachment[];
   status: OrderStatus;

@@ -448,6 +448,8 @@ watch(
   },
   { immediate: true }
 );
+
+defineExpose({ formData });
 </script>
 
 <style src="~/assets/css/components.css"></style>

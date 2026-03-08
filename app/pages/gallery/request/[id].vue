@@ -37,10 +37,36 @@
                 <NuxtLink to="/dashboard" class="change-template-link">
                   Choose a different design →
                 </NuxtLink>
-                <NuxtLink to="/builder" class="builder-link">
-                  Or build your own from scratch →
-                </NuxtLink>
               </div>
+            </div>
+
+            <!-- Layout Summary -->
+            <div v-if="layoutSections.length > 0" class="req-layout-summary">
+              <div class="req-layout-summary__header">
+                <h4 class="req-layout-summary__title">Page Layout</h4>
+                <span class="req-layout-summary__count">{{ layoutSections.length }} sections</span>
+              </div>
+              <ol class="req-layout-summary__list">
+                <li
+                  v-for="section in layoutSections"
+                  :key="section.id"
+                  class="req-layout-summary__item"
+                >
+                  {{ section.label }}
+                </li>
+              </ol>
+              <button
+                type="button"
+                class="req-layout-summary__cta"
+                @click="openBuilder"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <line x1="3" y1="9" x2="21" y2="9"/>
+                  <line x1="9" y1="21" x2="9" y2="9"/>
+                </svg>
+                Customize Layout in Builder
+              </button>
             </div>
 
             <div class="req-progress">
@@ -61,9 +87,11 @@
 
             <TemplateRequestForm
               v-if="originalTemplate"
+              ref="formRef"
               :template="originalTemplate"
               :is-submitting="isSubmitting"
               :show-progress="false"
+              :initial-form-data="restoredFormData"
               @color-change="handleColorChange"
               @submit="handleSubmit"
               @progress-update="handleProgressUpdate"
@@ -76,17 +104,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, unref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useShowcaseStore, type ShowcaseTemplate } from '~/stores/showcase';
 import { useAuthStore } from '~/stores/auth';
+import { useRequestStateStore } from '~/stores/requestState';
+import type { OrderLayout } from '~/types/order';
 import ShowcaseRenderer from '~/components/showcase/ShowcaseRenderer.vue';
 import TemplateRequestForm, {
   type TemplateRequestFormData,
   type ColorCustomization
 } from '~/components/TemplateRequestForm.vue';
 
-// Route protection
 definePageMeta({
   middleware: 'auth'
 });
@@ -97,40 +126,34 @@ const route = useRoute();
 const router = useRouter();
 const showcaseStore = useShowcaseStore();
 const authStore = useAuthStore();
+const requestState = useRequestStateStore();
 
-// Get user's display name for welcome message
+const formRef = ref<InstanceType<typeof TemplateRequestForm> | null>(null);
+
 const userName = computed(() => {
   const user = authStore.currentUser;
   if (!user) return '';
-  // Prefer displayName, fallback to email prefix
   if (user.displayName) return user.displayName.split(' ')[0];
   if (user.email) return user.email.split('@')[0];
   return '';
 });
 
-// Get template from route param
 const templateId = computed(() => route.params.id as string);
 
-// Original template from store (immutable reference)
 const originalTemplate = ref<ShowcaseTemplate | undefined>(undefined);
-
-// Preview template with customizable colors (derived from original)
 const previewTemplate = ref<ShowcaseTemplate | undefined>(undefined);
 
-// Form state
 const isSubmitting = ref(false);
 
-// Progress tracking (received from form component)
 const formProgress = ref({ completed: 1, total: 14 });
 const progressPercentage = computed(() => {
   if (formProgress.value.total === 0) return 0;
   return Math.round((formProgress.value.completed / formProgress.value.total) * 100);
 });
 
-// Viewport scaling for desktop-like preview
 const previewContainerRef = ref<HTMLElement | null>(null);
-const VIEWPORT_WIDTH = 1280; // Simulated desktop viewport width
-const VIEWPORT_HEIGHT = 800; // Simulated desktop viewport height
+const VIEWPORT_WIDTH = 1280;
+const VIEWPORT_HEIGHT = 800;
 const viewportScale = ref(1);
 
 const viewportStyle = computed(() => ({
@@ -140,20 +163,27 @@ const viewportStyle = computed(() => ({
   transformOrigin: 'top left'
 }));
 
-// Container needs explicit height since transform doesn't affect layout flow
 const containerStyle = computed(() => ({
   height: `${VIEWPORT_HEIGHT * viewportScale.value}px`
 }));
 
 /**
- * Calculate the scale factor to fit the viewport in the container
+ * Layout sections from the request state store (desktop layout is canonical).
  */
+const layoutSections = computed(() =>
+  requestState.hasActiveRequest ? requestState.layout.desktop : []
+);
+
+/**
+ * Form data restored from the store after returning from the builder.
+ * Only provided once on mount; thereafter the form manages its own state.
+ */
+const restoredFormData = ref<TemplateRequestFormData | null>(null);
+
 function calculateViewportScale(): void {
   const container = previewContainerRef.value;
   if (!container) return;
-
   const containerWidth = container.clientWidth;
-  // Scale to fit the container width, maintaining aspect ratio
   viewportScale.value = containerWidth / VIEWPORT_WIDTH;
 }
 
@@ -162,22 +192,26 @@ let resizeObserver: ResizeObserver | null = null;
 onMounted(async () => {
   const template = showcaseStore.getTemplateById(templateId.value);
   if (!template) {
-    // Redirect to dashboard if template not found
     router.push('/dashboard');
     return;
   }
 
-  // Store the original template
   originalTemplate.value = template;
-
-  // Create a copy for the preview that can be modified with custom colors
   previewTemplate.value = createPreviewTemplate(template, template.colorScheme);
 
-  // Initialize viewport scaling after next tick
+  // Initialize or re-use request state store
+  if (!requestState.hasActiveRequest || requestState.templateId !== templateId.value) {
+    requestState.initializeFromTemplate(template);
+  }
+
+  // Restore form data if returning from builder
+  if (requestState.savedFormData) {
+    restoredFormData.value = requestState.savedFormData as TemplateRequestFormData;
+  }
+
   await nextTick();
   calculateViewportScale();
 
-  // Set up resize observer for responsive scaling
   if (previewContainerRef.value) {
     resizeObserver = new ResizeObserver(() => {
       calculateViewportScale();
@@ -190,10 +224,6 @@ onUnmounted(() => {
   resizeObserver?.disconnect();
 });
 
-/**
- * Create a preview template with custom color scheme
- * This creates a new object so Vue reactivity picks up changes
- */
 function createPreviewTemplate(
   base: ShowcaseTemplate,
   colors: ColorCustomization
@@ -210,26 +240,44 @@ function createPreviewTemplate(
   };
 }
 
-/**
- * Handle color changes from the form - update the preview template
- */
 function handleColorChange(colors: ColorCustomization): void {
   if (!originalTemplate.value) return;
-
-  // Create new preview template with updated colors
   previewTemplate.value = createPreviewTemplate(originalTemplate.value, colors);
 }
 
-/**
- * Handle progress updates from the form
- */
 function handleProgressUpdate(progress: { completed: number; total: number }): void {
   formProgress.value = { ...progress };
 }
 
 /**
- * Handle form submission: persist order to Firestore and upload files to Storage.
+ * Save current form state to the request store and navigate to the builder.
  */
+function openBuilder(): void {
+  const rawFormData = unref(formRef.value?.formData);
+  if (rawFormData) {
+    requestState.saveFormData(rawFormData);
+  }
+  router.push('/builder');
+}
+
+/**
+ * Build a serializable OrderLayout from the request state store.
+ */
+function getOrderLayout(): OrderLayout {
+  return {
+    desktop: requestState.layout.desktop.map((b) => ({
+      id: b.id,
+      type: b.type,
+      label: b.label,
+    })),
+    mobile: requestState.layout.mobile.map((b) => ({
+      id: b.id,
+      type: b.type,
+      label: b.label,
+    })),
+  };
+}
+
 async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
   const uid = authStore.uid ?? authStore.currentUser?.uid;
   if (!uid) {
@@ -252,8 +300,12 @@ async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
       templateId: templateId.value,
       templateName: template.name,
       formData,
-      files: formData.files ?? []
+      files: formData.files ?? [],
+      layout: getOrderLayout()
     });
+
+    // Clear request state after successful submission
+    requestState.$reset();
 
     alert('Thank you! Your request has been submitted. We\'ll be in touch soon.');
     await router.push('/dashboard');
@@ -268,3 +320,89 @@ async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
 
 <style src="~/assets/css/components.css"></style>
 <style scoped src="~/assets/css/request-form.css"></style>
+
+<style scoped>
+/* Layout summary card */
+.req-layout-summary {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.req-layout-summary__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
+}
+
+.req-layout-summary__title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.req-layout-summary__count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.req-layout-summary__list {
+  list-style: none;
+  margin: 0 0 var(--space-md);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.req-layout-summary__item {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-sm);
+}
+
+.req-layout-summary__item::before {
+  content: counter(list-item) ". ";
+  counter-increment: list-item;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.req-layout-summary__list {
+  counter-reset: list-item;
+}
+
+.req-layout-summary__cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  width: 100%;
+  padding: 0.75rem var(--space-md);
+  background: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.req-layout-summary__cta:hover {
+  background: var(--color-primary-dark);
+}
+
+.req-layout-summary__cta svg {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+</style>
