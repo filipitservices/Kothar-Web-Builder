@@ -43,10 +43,10 @@ withDefaults(defineProps<Props>(), {
 
 <style scoped>
 .form-submit {
-  margin-top: 1.5rem;
-  background: linear-gradient(135deg, #1e3a8a 0%, #2d5aa8 100%);
-  border-radius: 12px;
-  padding: 1.75rem;
+  margin-top: var(--space-2xl);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
   box-shadow: 0 10px 30px rgba(30, 58, 138, 0.15);
 }
 
@@ -54,7 +54,7 @@ withDefaults(defineProps<Props>(), {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 2rem;
+  gap: var(--space-xl);
 }
 
 .form-submit__info {
@@ -64,13 +64,14 @@ withDefaults(defineProps<Props>(), {
 .form-submit__title {
   font-size: 1.125rem;
   font-weight: 700;
-  color: #fff;
-  margin: 0 0 0.375rem 0;
+  color: var(--color-white);
+  margin: 0 0 var(--space-xs) 0;
 }
 
 .form-submit__description {
   font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--color-white);
+  opacity: 0.9;
   margin: 0;
   line-height: 1.5;
 }
@@ -79,23 +80,23 @@ withDefaults(defineProps<Props>(), {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.875rem 1.75rem;
-  background: #fff;
-  color: #1e3a8a;
+  padding: 0.875rem var(--space-xl);
+  background: var(--color-white);
+  color: var(--color-primary);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .form-submit__btn:hover:not(:disabled) {
-  background: #f0f4ff;
+  background: var(--color-primary-tint);
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .form-submit__btn:active:not(:disabled) {
@@ -137,7 +138,7 @@ withDefaults(defineProps<Props>(), {
 
 @media (max-width: 640px) {
   .form-submit {
-    padding: 1.5rem;
+    padding: var(--space-lg);
   }
 
   .form-submit__content {

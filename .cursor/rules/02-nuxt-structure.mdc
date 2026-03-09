@@ -22,8 +22,10 @@ Per core invariants. Re-read [Nuxt 4 documentation](https://nuxt.com/docs) befor
 
 ## Layout Assignment
 
-- **default:** Used by `/`, `/dashboard`, `/gallery/request/[id]`, `/login`, `/reset-password`, `/sites`, `/sites/[id]`. Provides `AppNavbar`.
-- **builder:** Used only by `/builder`. No navbar; full viewport for editor.
+- **default:** Used by `/`, `/dashboard`, `/gallery/request/[id]`, `/orders/[id]/edit`, `/login`, `/reset-password`, `/sites`, `/sites/[id]`. Provides `AppNavbar`.
+- **builder:** Used by `/gallery/request/[id]/builder` and `/orders/[id]/builder`. No navbar; full viewport for editor.
+
+The builder is not a standalone page. It only exists within request/order flows at `/gallery/request/[id]/builder` and `/orders/[id]/builder`.
 
 Do not add per-page navbars; extend or configure `AppNavbar` for route-specific behavior.
 

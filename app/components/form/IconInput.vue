@@ -51,8 +51,8 @@ defineEmits<{
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  color: #9ca3af;
-  transition: color 0.15s ease;
+  color: var(--color-placeholder);
+  transition: color 0.2s ease;
 }
 
 .icon-input__icon :deep(svg) {
@@ -61,32 +61,32 @@ defineEmits<{
 }
 
 .icon-input:focus-within .icon-input__icon {
-  color: #1e3a8a;
+  color: var(--color-primary);
 }
 
 .icon-input__field {
   width: 100%;
   padding: 0.75rem 1rem 0.75rem 2.75rem;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   font-size: 0.9375rem;
   font-family: inherit;
-  color: #111827;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  color: var(--color-text);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .icon-input__field::placeholder {
-  color: #9ca3af;
+  color: var(--color-placeholder);
 }
 
 .icon-input__field:hover {
-  border-color: #d1d5db;
+  border-color: var(--color-border-hover);
 }
 
 .icon-input__field:focus {
   outline: none;
-  border-color: #1e3a8a;
-  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.08);
+  border-color: var(--color-primary);
+  box-shadow: var(--focus-ring-primary);
 }
 </style>

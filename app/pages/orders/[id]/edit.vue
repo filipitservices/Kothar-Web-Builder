@@ -6,7 +6,6 @@
           <aside class="req-preview">
             <div class="req-preview-card">
               <div class="req-preview-label">Live Preview</div>
-              <p class="req-welcome">Edit your request</p>
               <div
                 class="req-preview-device"
                 ref="previewContainerRef"
@@ -25,7 +24,22 @@
                 <h3 class="req-preview-name">{{ originalTemplate?.name }}</h3>
                 <p class="req-preview-desc">{{ originalTemplate?.description }}</p>
               </div>
+
+              <!-- Builder link + customized indicator -->
               <div class="req-preview-links">
+                <button
+                  type="button"
+                  class="req-builder-link"
+                  @click="openBuilder"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="3" y1="9" x2="21" y2="9"/>
+                    <line x1="9" y1="21" x2="9" y2="9"/>
+                  </svg>
+                  Customize page layout
+                  <span v-if="layoutCustomized" class="req-layout-badge">Modified</span>
+                </button>
                 <NuxtLink to="/sites" class="change-template-link">
                   Back to dashboard →
                 </NuxtLink>
@@ -75,8 +89,8 @@ import { useShowcaseStore, type ShowcaseTemplate } from '~/stores/showcase';
 import { useAuthStore } from '~/stores/auth';
 import { useOrdersStore } from '~/stores/orders';
 import { useOrderUpdate } from '~/composables/useOrderUpdate';
-import type { TemplateRequestFormData } from '~/types/templateRequest';
-import type { ColorCustomization } from '~/types/templateRequest';
+import { useRequestLayoutStore } from '~/stores/requestLayout';
+import type { TemplateRequestFormData, ColorCustomization } from '~/types/templateRequest';
 import type { OrderWithId } from '~/types/order';
 import ShowcaseRenderer from '~/components/showcase/ShowcaseRenderer.vue';
 import TemplateRequestForm from '~/components/TemplateRequestForm.vue';
@@ -92,6 +106,7 @@ const router = useRouter();
 const showcaseStore = useShowcaseStore();
 const authStore = useAuthStore();
 const ordersStore = useOrdersStore();
+const requestLayoutStore = useRequestLayoutStore();
 const { orderToFormData, updateOrder } = useOrderUpdate();
 
 const orderId = computed(() => route.params.id as string);
@@ -121,6 +136,8 @@ const viewportStyle = computed(() => ({
 const containerStyle = computed(() => ({
   height: `${VIEWPORT_HEIGHT * viewportScale.value}px`
 }));
+
+const layoutCustomized = computed(() => requestLayoutStore.isCustomized);
 
 function createPreviewTemplate(
   base: ShowcaseTemplate,
@@ -174,6 +191,21 @@ async function loadOrderAndTemplate(): Promise<void> {
   originalTemplate.value = template;
   initialFormData.value = orderToFormData(order);
   previewTemplate.value = createPreviewTemplate(template, order.projectDetails.colorCustomization);
+
+  // Initialize layout store if not already active for this order
+  const returnTo = `/orders/${orderId.value}/edit`;
+  if (!requestLayoutStore.active || requestLayoutStore.sourceOrderId !== order.id) {
+    if (order.layout) {
+      requestLayoutStore.initFromOrderLayout(
+        order.layout,
+        order.id,
+        template.sections,
+        returnTo
+      );
+    } else {
+      requestLayoutStore.initFromTemplateForOrder(template, order.id, returnTo);
+    }
+  }
 }
 
 function calculateViewportScale(): void {
@@ -198,6 +230,10 @@ onUnmounted(() => {
   resizeObserver?.disconnect();
 });
 
+function openBuilder(): void {
+  router.push(`/orders/${orderId.value}/builder`);
+}
+
 async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
   const uid = userId.value;
   const order = orderRef.value;
@@ -205,13 +241,20 @@ async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
 
   isSubmitting.value = true;
   try {
+    const layout = requestLayoutStore.active
+      ? requestLayoutStore.getLayoutForSubmission()
+      : undefined;
+
     await updateOrder({
       userId: uid,
       orderId: order.id,
       formData,
       existingAttachments: order.attachments ?? [],
-      newFiles: formData.files?.length ? [...formData.files] : undefined
+      newFiles: formData.files?.length ? [...formData.files] : undefined,
+      layout,
     });
+
+    requestLayoutStore.reset();
     alert('Your request has been updated.');
     await router.push('/sites');
   } catch (err) {

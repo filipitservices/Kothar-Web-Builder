@@ -5,21 +5,8 @@
       <div class="dash-strip__inner">
         <div class="dash-strip__greeting">
           <h1 class="dash-strip__title">Welcome back{{ userName ? `, ${userName}` : '' }}</h1>
-          <p class="dash-strip__subtitle">Choose a path below to get started.</p>
+          <p class="dash-strip__subtitle">Browse templates below and choose a design to get started.</p>
         </div>
-        <NuxtLink to="/builder" class="dash-strip__cta">
-          <span class="dash-strip__cta-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-              <line x1="3" y1="9" x2="21" y2="9"/>
-              <line x1="9" y1="21" x2="9" y2="9"/>
-            </svg>
-          </span>
-          <span>Open Builder</span>
-          <svg class="dash-strip__cta-arrow" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-            <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
-          </svg>
-        </NuxtLink>
       </div>
     </header>
 

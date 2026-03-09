@@ -7,6 +7,20 @@
 
 import type { ColorCustomization } from '~/types/templateRequest';
 
+/** A single block in the page layout (matches builder BlockItem shape). */
+export interface OrderLayoutBlock {
+  id: string;
+  type: string;
+  label: string;
+}
+
+/** Page layout configuration stored with the order. */
+export interface OrderLayout {
+  blocks: OrderLayoutBlock[];
+  /** True when the user has modified the layout from the original template arrangement. */
+  customized: boolean;
+}
+
 /**
  * Order lifecycle status. Strict union — admin-assignable only; clients must not mutate.
  * Default on creation: 'submitted'.
@@ -75,6 +89,8 @@ export interface OrderRequest {
   businessInfo: OrderBusinessInfo;
   contactInfo: OrderContactInfo;
   projectDetails: OrderProjectDetails;
+  /** Page layout configuration (template sections + any builder modifications). */
+  layout?: OrderLayout;
   /** Metadata for files uploaded to Storage; no raw File or base64. */
   attachments: OrderAttachment[];
   status: OrderStatus;

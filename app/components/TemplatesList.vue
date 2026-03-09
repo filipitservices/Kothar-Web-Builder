@@ -9,7 +9,7 @@
       :categories="categories"
       :selected-category="selectedCategory"
       :get-category-label="getCategoryLabel"
-      @select="selectedCategory = ($event as Template['category'] | null)"
+      @select="selectedCategory = ($event as TemplateCategory | null)"
     />
 
     <div class="templates-container">
@@ -33,7 +33,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useTemplatesStore } from '~/stores/templates';
-import type { Template } from '~/stores/templates';
+import type { TemplateCategory } from '~/stores/templates';
 import CategoryNav from './CategoryNav.vue';
 import TemplateCard from './TemplateCard.vue';
 import TemplateScreenSelector from './TemplateScreenSelector.vue';
@@ -45,7 +45,7 @@ interface TemplatesListEmits {
 const emit = defineEmits<TemplatesListEmits>();
 const templatesStore = useTemplatesStore();
 
-const selectedCategory = ref<Template['category'] | null>(null);
+const selectedCategory = ref<TemplateCategory | null>(null);
 const showScreenSelector = ref(false);
 const selectedTemplate = ref<Template | null>(null);
 
@@ -59,7 +59,7 @@ const filteredTemplates = computed(() => {
 });
 
 const getCategoryLabel = (category: string): string => {
-  return templatesStore.getCategoryLabel(category as Template['category']);
+  return templatesStore.getCategoryLabel(category as TemplateCategory);
 };
 
 const handleTemplateClick = (template: Template) => {

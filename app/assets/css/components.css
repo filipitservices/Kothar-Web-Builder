@@ -372,7 +372,7 @@
   font-size: 0.9375rem;
   font-family: inherit;
   color: var(--color-text);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.15s ease;
 }
 
 .form-input::placeholder,
@@ -391,7 +391,7 @@
 .form-textarea:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.08);
+  box-shadow: var(--focus-ring-primary);
 }
 
 .form-input:disabled,

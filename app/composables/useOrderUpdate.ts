@@ -20,7 +20,8 @@ import type {
   OrderAttachment,
   OrderBusinessInfo,
   OrderContactInfo,
-  OrderProjectDetails
+  OrderProjectDetails,
+  OrderLayout
 } from '~/types/order';
 import type { TemplateRequestFormData } from '~/types/templateRequest';
 import { sanitizeStorageFileName } from '~/utils/storage';
@@ -126,6 +127,8 @@ export interface OrderUpdateParams {
   existingAttachments: OrderAttachment[];
   /** New files to upload and append to attachments. */
   newFiles?: File[];
+  /** Page layout configuration to persist with the order. */
+  layout?: OrderLayout;
 }
 
 /**
@@ -139,7 +142,7 @@ export function useOrderUpdate(): UseOrderUpdateReturn {
       return Promise.reject(new OrderUpdateError('Firebase is not configured.'));
     }
 
-    const { userId, orderId, formData, existingAttachments, newFiles = [] } = params;
+    const { userId, orderId, formData, existingAttachments, newFiles = [], layout } = params;
     if (!userId.trim() || !orderId.trim()) {
       return Promise.reject(new OrderUpdateError('User ID and order ID are required.'));
     }
@@ -162,14 +165,20 @@ export function useOrderUpdate(): UseOrderUpdateReturn {
 
       const { businessInfo, contactInfo, projectDetails } = formDataToOrderUpdate(formData);
 
+      const updatePayload: Record<string, unknown> = {
+        businessInfo,
+        contactInfo,
+        projectDetails,
+        attachments,
+        updatedAt: serverTimestamp(),
+      };
+
+      if (layout) {
+        updatePayload.layout = layout;
+      }
+
       try {
-        await updateDoc(orderRef, {
-          businessInfo,
-          contactInfo,
-          projectDetails,
-          attachments,
-          updatedAt: serverTimestamp()
-        });
+        await updateDoc(orderRef, updatePayload);
       } catch (err) {
         throw new OrderUpdateError('Failed to update order. Please try again.', err);
       }
