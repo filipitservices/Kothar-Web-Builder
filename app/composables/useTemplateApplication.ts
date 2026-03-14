@@ -1,6 +1,8 @@
 import { useTemplatesStore } from '~/stores/templates';
 import type { Ref } from 'vue';
-import type { BlockItem } from '~/types/builder';
+import type { BlockItem, BlockType } from '~/types/builder';
+import type { TemplateBlock } from '~/stores/templates';
+import { logger } from '~/utils/logger';
 
 /**
  * Template Application Composable
@@ -19,18 +21,18 @@ export function useTemplateApplication(params: UseTemplateApplicationParams) {
   const templatesStore = useTemplatesStore();
 
   /**
-   * Generate a unique block ID for a given block type
+   * Generate a unique block ID for a given block type.
    * Format: {type}-{timestamp}-{uuid}
-   * This ensures no ID collisions even when applying same template multiple times
+   * This ensures no ID collisions even when applying the same template multiple times.
    */
-  const generateBlockId = (blockType: string): string => {
+  const generateBlockId = (blockType: BlockType): string => {
     return `${blockType}-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
   };
 
   /**
-   * Create a block item from a template block definition
+   * Create a block item from a template block definition.
    */
-  const createBlockItem = (templateBlock: { type: string; label: string }): BlockItem => {
+  const createBlockItem = (templateBlock: TemplateBlock): BlockItem => {
     return {
       id: generateBlockId(templateBlock.type),
       type: templateBlock.type,
@@ -49,7 +51,7 @@ export function useTemplateApplication(params: UseTemplateApplicationParams) {
     const template = templatesStore.getTemplateById(templateId);
     
     if (!template) {
-      console.error(`Template not found: ${templateId}`);
+      logger.error(`Template not found: ${templateId}`);
       return false;
     }
 
@@ -74,7 +76,7 @@ export function useTemplateApplication(params: UseTemplateApplicationParams) {
     const template = templatesStore.getTemplateById(templateId);
     
     if (!template) {
-      console.error(`Template not found: ${templateId}`);
+      logger.error(`Template not found: ${templateId}`);
       return false;
     }
 

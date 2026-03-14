@@ -1,0 +1,200 @@
+/**
+ * Create Request Composable
+ *
+ * Creates a draft request document in Firestore and enforces the daily
+ * creation limit (3 per user per day) via an atomic transaction that
+ * pairs the order document with a counter document.
+ *
+ * The counter lives at users/{userId}/requestLimits/daily and is
+ * validated by Firestore security rules so the limit cannot be bypassed.
+ */
+
+import {
+  getFirestore,
+  collection,
+  doc,
+  runTransaction,
+  getDoc,
+  updateDoc,
+  serverTimestamp,
+  type Firestore
+} from 'firebase/firestore';
+import { getFirebaseApp } from '~/plugins/firebase.client';
+import type { ShowcaseTemplate } from '~/stores/showcase';
+import type { OrderLayout, OrderLayoutBlock } from '~/types/order';
+import { ORDER_STATUS_DRAFT } from '~/types/order';
+import { showcaseSectionsToBlocks } from '~/stores/requestLayout';
+
+export class CreateRequestError extends Error {
+  public readonly limitExceeded: boolean;
+
+  constructor(message: string, options?: { limitExceeded?: boolean; cause?: unknown }) {
+    super(message);
+    this.name = 'CreateRequestError';
+    this.limitExceeded = options?.limitExceeded ?? false;
+    if (options?.cause) this.cause = options.cause;
+  }
+}
+
+export interface CreateRequestResult {
+  orderId: string;
+}
+
+function getTodayDateString(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function buildInitialLayout(template: ShowcaseTemplate): OrderLayout {
+  const blocks = showcaseSectionsToBlocks(template.sections);
+  return {
+    blocks: blocks.map((b): OrderLayoutBlock => ({
+      id: b.id,
+      type: b.type,
+      label: b.label,
+    })),
+    customized: false,
+  };
+}
+
+export interface UseCreateRequestReturn {
+  createDraftRequest: (userId: string, template: ShowcaseTemplate) => Promise<CreateRequestResult>;
+  saveLayout: (userId: string, orderId: string, layout: OrderLayout) => Promise<void>;
+}
+
+export function useCreateRequest(): UseCreateRequestReturn {
+  /**
+   * Create a draft request document paired with a daily-limit counter update.
+   * Both writes happen in a single transaction so Firestore rules can validate
+   * the counter atomically via getAfter().
+   */
+  async function createDraftRequest(
+    userId: string,
+    template: ShowcaseTemplate
+  ): Promise<CreateRequestResult> {
+    const app = getFirebaseApp();
+    if (!app) {
+      throw new CreateRequestError('Firebase is not configured.');
+    }
+    if (!userId.trim()) {
+      throw new CreateRequestError('User ID is required.');
+    }
+
+    const db = getFirestore(app) as Firestore;
+    const today = getTodayDateString();
+
+    const orderRef = doc(collection(db, 'users', userId, 'orders'));
+    const orderId = orderRef.id;
+
+    const counterRef = doc(db, 'users', userId, 'requestLimits', 'daily');
+
+    let newCount = 1;
+    try {
+      const counterSnap = await getDoc(counterRef);
+      if (counterSnap.exists()) {
+        const data = counterSnap.data();
+        if (data.date === today) {
+          newCount = (typeof data.count === 'number' ? data.count : 0) + 1;
+        }
+      }
+    } catch {
+      // If we can't read the counter, proceed — rules will enforce the limit
+    }
+
+    if (newCount > 3) {
+      throw new CreateRequestError(
+        "You've reached the daily limit of 3 requests. Please try again tomorrow.",
+        { limitExceeded: true }
+      );
+    }
+
+    const layout = buildInitialLayout(template);
+
+    const defaultColorCustomization = {
+      primary: template.colorScheme.primary,
+      secondary: template.colorScheme.secondary,
+      accent: template.colorScheme.accent,
+      background: template.colorScheme.background,
+      text: template.colorScheme.text,
+    };
+
+    const orderPayload = {
+      templateId: template.id,
+      templateName: template.name,
+      status: ORDER_STATUS_DRAFT,
+      layout,
+      businessInfo: {
+        businessName: '',
+        industry: '',
+        yearsInBusiness: '',
+        businessDescription: '',
+      },
+      contactInfo: {
+        contactName: '',
+        email: '',
+        phone: '',
+        website: '',
+        address: '',
+      },
+      projectDetails: {
+        goals: [] as string[],
+        targetAudience: '',
+        additionalNotes: '',
+        colorCustomization: defaultColorCustomization,
+      },
+      attachments: [],
+      modificationLocked: false,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    };
+
+    try {
+      await runTransaction(db, async (transaction) => {
+        transaction.set(orderRef, orderPayload);
+        transaction.set(counterRef, { date: today, count: newCount });
+      });
+    } catch (err: unknown) {
+      const code = (err as { code?: string }).code;
+      if (code === 'permission-denied') {
+        throw new CreateRequestError(
+          "You've reached the daily limit of 3 requests. Please try again tomorrow.",
+          { limitExceeded: true, cause: err }
+        );
+      }
+      throw new CreateRequestError(
+        'Failed to create request. Please try again.',
+        { cause: err }
+      );
+    }
+
+    return { orderId };
+  }
+
+  /**
+   * Persist the current layout to an existing request document.
+   */
+  async function saveLayout(
+    userId: string,
+    orderId: string,
+    layout: OrderLayout
+  ): Promise<void> {
+    const app = getFirebaseApp();
+    if (!app) {
+      throw new CreateRequestError('Firebase is not configured.');
+    }
+
+    const db = getFirestore(app) as Firestore;
+    const orderRef = doc(db, 'users', userId, 'orders', orderId);
+
+    try {
+      await updateDoc(orderRef, { layout, updatedAt: serverTimestamp() });
+    } catch (err) {
+      throw new CreateRequestError('Failed to save layout. Please try again.', { cause: err });
+    }
+  }
+
+  return { createDraftRequest, saveLayout };
+}

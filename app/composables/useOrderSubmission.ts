@@ -41,12 +41,15 @@ export interface OrderSubmissionResult {
 
 /** Thrown when Firebase is not configured or submission fails. */
 export class OrderSubmissionError extends Error {
+  public override readonly cause?: unknown;
+
   constructor(
     message: string,
-    public readonly cause?: unknown
+    cause?: unknown
   ) {
     super(message);
     this.name = 'OrderSubmissionError';
+    this.cause = cause;
   }
 }
 

@@ -9,6 +9,7 @@
  */
 
 import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
+import { logger } from '~/utils/logger';
 import { 
   getAuth, 
   setPersistence, 
@@ -47,7 +48,7 @@ export default defineNuxtPlugin({
     
     // Validate required configuration
     if (!config.public.firebaseApiKey || !config.public.firebaseAuthDomain || !config.public.firebaseProjectId) {
-      console.error('[Firebase] Missing required configuration');
+      logger.error('[Firebase] Missing required configuration');
       return;
     }
     
@@ -70,7 +71,7 @@ export default defineNuxtPlugin({
       nuxtApp.provide('firebaseApp', firebaseApp);
       nuxtApp.provide('firebaseAuth', firebaseAuth);
     } catch (error) {
-      console.error('[Firebase] Initialization failed:', error);
+      logger.error('[Firebase] Initialization failed:', error);
     }
   }
 });

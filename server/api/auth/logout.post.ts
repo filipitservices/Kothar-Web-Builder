@@ -8,6 +8,7 @@
  */
 
 import { getAdminAuth, getSessionConfig } from '../../utils/firebase-admin';
+import { logger } from '../../utils/logger';
 import type { LogoutResponse } from '~/types/auth';
 
 export default defineEventHandler(async (event): Promise<LogoutResponse> => {
@@ -43,12 +44,10 @@ export default defineEventHandler(async (event): Promise<LogoutResponse> => {
       // This forces re-authentication on all devices
       await adminAuth.revokeRefreshTokens(decodedClaims.uid);
       
-      console.log('[Auth] Session revoked for user:', decodedClaims.uid);
+      logger.log('[Auth] Session revoked for user:', decodedClaims.uid);
       
     } catch (error) {
-      // Log but don't fail - the cookie is already cleared
-      // The session might have been invalid or expired anyway
-      console.warn('[Auth] Could not revoke session:', error);
+      logger.warn('[Auth] Could not revoke session:', error);
     }
   }
   

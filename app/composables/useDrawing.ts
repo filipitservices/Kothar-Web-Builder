@@ -3,7 +3,7 @@ import { ref, reactive } from 'vue';
 type ScreenType = 'desktop' | 'mobile';
 type StrokeType = 'dash' | 'line' | 'circle' | 'square' | 'triangle' | 'half_triangle';
 
-interface DrawingState {
+export interface DrawingState {
   desktopEnabled: boolean;
   mobileEnabled: boolean;
   strokeType: StrokeType;
@@ -27,6 +27,15 @@ const defaultState: DrawingState = {
   textFontFamily: 'Arial',
 };
 
+interface DrawingCanvasRef {
+  getAllStrokes?: () => unknown[];
+  image?: string;
+  isEmpty?: () => boolean;
+  reset?: () => void;
+  undo?: () => void;
+  redo?: () => void;
+}
+
 /**
  * useDrawing Composable
  * Manages drawing state for both desktop and mobile canvases
@@ -38,8 +47,8 @@ export const useDrawing = () => {
   const mobileStrokes = ref<unknown[]>([]);
   const desktopDrawingImage = ref<string>('');
   const mobileDrawingImage = ref<string>('');
-  const desktopCanvasRef = ref<{ getAllStrokes?: () => unknown[]; image?: string; isEmpty?: () => boolean; reset?: () => void; undo?: () => void; redo?: () => void } | null>(null);
-  const mobileCanvasRef = ref<{ getAllStrokes?: () => unknown[]; image?: string; isEmpty?: () => boolean; reset?: () => void; undo?: () => void; redo?: () => void } | null>(null);
+  const desktopCanvasRef = ref<DrawingCanvasRef | null>(null);
+  const mobileCanvasRef = ref<DrawingCanvasRef | null>(null);
 
   // Helper to get state by screen type
   const getState = (screen: ScreenType): DrawingState => 
@@ -55,9 +64,10 @@ export const useDrawing = () => {
     screen === 'desktop' ? desktopDrawingImage : mobileDrawingImage;
 
   // Canvas refs
-  const setCanvasRef = (screen: ScreenType, canvasRef: typeof desktopCanvasRef.value) => {
-    if (screen === 'desktop') desktopCanvasRef.value = canvasRef;
-    else mobileCanvasRef.value = canvasRef;
+  const setCanvasRef = (screen: ScreenType, canvasRef: unknown) => {
+    const normalized = (canvasRef ?? null) as DrawingCanvasRef | null;
+    if (screen === 'desktop') desktopCanvasRef.value = normalized;
+    else mobileCanvasRef.value = normalized;
   };
 
   // Drawing state control
@@ -66,8 +76,12 @@ export const useDrawing = () => {
     const enabledKey = screen === 'desktop' ? 'desktopEnabled' : 'mobileEnabled';
     if (state[enabledKey]) {
       const canvas = getCanvasRef(screen);
-      getStrokes(screen).value = canvas?.getAllStrokes() || [];
-      getDrawingImage(screen).value = canvas?.image || '';
+      if (canvas?.getAllStrokes) {
+        getStrokes(screen).value = canvas.getAllStrokes();
+      } else {
+        getStrokes(screen).value = [];
+      }
+      getDrawingImage(screen).value = canvas?.image ?? '';
     }
     state[enabledKey] = !state[enabledKey];
   };
@@ -122,9 +136,17 @@ export const useDrawing = () => {
     Object.assign(desktopDrawingState, defaultState);
     Object.assign(mobileDrawingState, defaultState);
   };
+  type CanvasOperation = 'reset' | 'undo' | 'redo';
 
-  const canvasOperation = (screen: ScreenType | 'both', operation: string) => {
-    const perform = (s: ScreenType) => getCanvasRef(s)?.[operation]?.();
+  const canvasOperation = (screen: ScreenType | 'both', operation: CanvasOperation) => {
+    const perform = (s: ScreenType) => {
+      const canvas = getCanvasRef(s);
+      if (!canvas) return;
+      const op = canvas[operation];
+      if (typeof op === 'function') {
+        op.call(canvas);
+      }
+    };
     if (screen === 'both') {
       perform('desktop');
       perform('mobile');

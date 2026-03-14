@@ -8,20 +8,20 @@ import type { Ref } from 'vue';
 import { useElementConstraints } from './useElementConstraints';
 import type { ConstraintElement } from '~/config/elementConstraintUtils';
 
-interface ListSyncOptions {
-  desktopList: Ref<ConstraintElement[]>;
-  mobileList: Ref<ConstraintElement[]>;
+interface ListSyncOptions<T extends ConstraintElement = ConstraintElement> {
+  desktopList: Ref<T[]>;
+  mobileList: Ref<T[]>;
   syncEnabled: Ref<boolean>;
-  onDesktopListUpdate: (list: ConstraintElement[]) => void;
-  onMobileListUpdate: (list: ConstraintElement[]) => void;
+  onDesktopListUpdate: (list: T[]) => void;
+  onMobileListUpdate: (list: T[]) => void;
 }
 
-export function useListSyncing(options: ListSyncOptions) {
+export function useListSyncing<T extends ConstraintElement>(options: ListSyncOptions<T>): void {
   const { removeDuplicates, enforceElementPositions } = useElementConstraints();
 
-  const applyConstraints = (list: ConstraintElement[]) => {
-    const unique = removeDuplicates(list);
-    return enforceElementPositions(unique);
+  const applyConstraints = (list: T[]): T[] => {
+    const unique = removeDuplicates(list as ConstraintElement[]) as T[];
+    return enforceElementPositions(unique as ConstraintElement[]) as T[];
   };
 
   // Watch desktop list for changes

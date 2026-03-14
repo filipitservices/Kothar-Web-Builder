@@ -16,6 +16,7 @@
  */
 
 import type { MeResponse } from '~/types/auth';
+import { logger } from '~/utils/logger';
 
 export default defineNuxtRouteMiddleware(async (to, _from) => {
   // Check authentication status via server API
@@ -44,7 +45,7 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
     
   } catch (error) {
     // On error, allow access (user is likely not authenticated)
-    console.warn('[Guest Middleware] Session check failed:', error);
+    logger.warn('[Guest Middleware] Session check failed:', error);
     return;
   }
 });

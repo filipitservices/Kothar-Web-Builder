@@ -40,7 +40,7 @@ const SEGMENTS = [
   { value: '25', label: '20+ years' }
 ] as const;
 
-const segmentValues = SEGMENTS.map((s) => s.value);
+const segmentValues: readonly string[] = SEGMENTS.map((s) => s.value);
 function isSegmentValue(v: string): boolean {
   return segmentValues.includes(v);
 }

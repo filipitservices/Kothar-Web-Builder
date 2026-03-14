@@ -47,9 +47,18 @@ const props = defineProps({
 const { getField, setField, isLocalValue } = useBlockData(props.blockId, props.screenType);
 
 const stats = computed<Stat[]>(() => [
-  { number: getField('stat1Number') ?? '500+', label: getField('stat1Label') ?? 'Happy Customers' },
-  { number: getField('stat2Number') ?? '10+', label: getField('stat2Label') ?? 'Years Experience' },
-  { number: getField('stat3Number') ?? '99%', label: getField('stat3Label') ?? 'Satisfaction' }
+  {
+    number: (getField('stat1Number') as string | undefined) ?? '500+',
+    label: (getField('stat1Label') as string | undefined) ?? 'Happy Customers'
+  },
+  {
+    number: (getField('stat2Number') as string | undefined) ?? '10+',
+    label: (getField('stat2Label') as string | undefined) ?? 'Years Experience'
+  },
+  {
+    number: (getField('stat3Number') as string | undefined) ?? '99%',
+    label: (getField('stat3Label') as string | undefined) ?? 'Satisfaction'
+  }
 ]);
 
 const handleEnter = blurOnEnter;

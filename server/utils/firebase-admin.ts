@@ -13,14 +13,15 @@
  * environment. This utility handles both cases.
  */
 
-import { 
-  initializeApp, 
-  getApps, 
-  cert, 
+import {
+  initializeApp,
+  getApps,
+  cert,
   type App,
-  type ServiceAccount 
+  type ServiceAccount
 } from 'firebase-admin/app';
 import { getAuth, type Auth } from 'firebase-admin/auth';
+import { logger } from './logger';
 
 // Module-level singleton for Firebase Admin app
 let adminApp: App | null = null;
@@ -41,15 +42,21 @@ function initializeFirebaseAdmin(): App | null {
   
   // Return null if previous initialization failed
   if (initializationError) {
-    console.error('[Firebase Admin] Previous initialization failed:', initializationError.message);
+    logger.error('[Firebase Admin] Previous initialization failed:', initializationError.message);
     return null;
   }
   
   // Check if already initialized by another process
   const existingApps = getApps();
   if (existingApps.length > 0) {
-    adminApp = existingApps[0];
-    adminAuth = getAuth(adminApp);
+    const existing = existingApps[0];
+    if (!existing) {
+      initializationError = new Error('Firebase Admin app list is unexpectedly empty.');
+      logger.error('[Firebase Admin] Initialization failed:', initializationError.message);
+      return null;
+    }
+    adminApp = existing;
+    adminAuth = getAuth(existing);
     return adminApp;
   }
   
@@ -106,13 +113,13 @@ function initializeFirebaseAdmin(): App | null {
     // Initialize Auth service
     adminAuth = getAuth(adminApp);
     
-    console.log('[Firebase Admin] Initialized successfully');
+    logger.log('[Firebase Admin] Initialized successfully');
     
     return adminApp;
     
   } catch (error) {
     initializationError = error instanceof Error ? error : new Error(String(error));
-    console.error('[Firebase Admin] Initialization failed:', initializationError.message);
+    logger.error('[Firebase Admin] Initialization failed:', initializationError.message);
     return null;
   }
 }

@@ -75,6 +75,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useBusinessData } from '~/composables/useBusinessData';
+import { logger } from '~/utils/logger';
 
 // Get business data via composable (abstraction layer)
 const { companyName } = useBusinessData();
@@ -96,14 +97,14 @@ const workspaceTitle = computed(() => {
 // Event handlers
 const handleAccountClick = () => {
   // In future: open account settings modal or navigate to profile
-  console.log('Account settings clicked');
+  logger.log('Account settings clicked');
   // Emit event if parent component needs to handle this
   emit('account-click');
 };
 
 const handleHelpClick = () => {
   // In future: open help documentation or support panel
-  console.log('Help clicked');
+  logger.log('Help clicked');
   emit('help-click');
 };
 

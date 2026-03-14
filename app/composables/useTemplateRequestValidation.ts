@@ -22,8 +22,8 @@ const PHONE_DIGITS_MAX = 15;
 /** Email max length (RFC 5321) */
 const EMAIL_MAX_LENGTH = 254;
 
-const INDUSTRY_VALUES = new Set(INDUSTRY_OPTIONS.map((o) => o.value));
-const GOAL_VALUES = new Set(WEBSITE_GOALS.map((g) => g.value));
+const INDUSTRY_VALUES = new Set<string>(INDUSTRY_OPTIONS.map((o) => o.value));
+const GOAL_VALUES = new Set<string>(WEBSITE_GOALS.map((g) => g.value));
 
 /**
  * Allowed characters for business/contact names: letters, digits, space, hyphen, apostrophe, period.

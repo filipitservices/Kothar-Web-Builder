@@ -105,12 +105,15 @@ async function uploadFileAndGetMetadata(
 }
 
 export class OrderUpdateError extends Error {
+  public override readonly cause?: unknown;
+
   constructor(
     message: string,
-    public readonly cause?: unknown
+    cause?: unknown
   ) {
     super(message);
     this.name = 'OrderUpdateError';
+    this.cause = cause;
   }
 }
 
@@ -129,6 +132,8 @@ export interface OrderUpdateParams {
   newFiles?: File[];
   /** Page layout configuration to persist with the order. */
   layout?: OrderLayout;
+  /** Optional status transition (e.g. draft -> submitted). */
+  status?: import('~/types/order').OrderStatus;
 }
 
 /**
@@ -142,7 +147,7 @@ export function useOrderUpdate(): UseOrderUpdateReturn {
       return Promise.reject(new OrderUpdateError('Firebase is not configured.'));
     }
 
-    const { userId, orderId, formData, existingAttachments, newFiles = [], layout } = params;
+    const { userId, orderId, formData, existingAttachments, newFiles = [], layout, status } = params;
     if (!userId.trim() || !orderId.trim()) {
       return Promise.reject(new OrderUpdateError('User ID and order ID are required.'));
     }
@@ -175,6 +180,10 @@ export function useOrderUpdate(): UseOrderUpdateReturn {
 
       if (layout) {
         updatePayload.layout = layout;
+      }
+
+      if (status) {
+        updatePayload.status = status;
       }
 
       try {

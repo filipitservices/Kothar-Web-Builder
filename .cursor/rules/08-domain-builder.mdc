@@ -1,6 +1,6 @@
 ---
-description: Builder editor, blocks, and builder templates. Design and template composition only; no one-off logic. Apply when editing builder, BlockElements, or builder template flow.
-globs: app/components/BuilderEditor.vue, app/pages/gallery/request/*/builder.vue, app/pages/orders/*/builder.vue, app/components/BlockElements/**/*.vue, app/components/ItemsList.vue, app/composables/useBlockData.ts, app/composables/useTemplateApplication.ts, app/stores/blocks.ts, app/stores/templates.ts
+description: Builder page, blocks, and builder templates. Design and template composition only; no one-off logic. Apply when editing builder, BlockElements, or builder template flow.
+globs: app/pages/builder.vue, app/components/BlockElements/**/*.vue, app/components/ItemsList.vue, app/composables/useBlockData.ts, app/composables/useTemplateApplication.ts, app/stores/blocks.ts, app/stores/templates.ts
 alwaysApply: false
 ---
 
@@ -10,9 +10,8 @@ Per core invariants and state/styling rules. The **builder** is for design and t
 
 ## Builder Scope
 
-- **Builder** is not a standalone page. It exists only within request/order flows at `/gallery/request/[id]/builder` and `/orders/[id]/builder`. The core editor component is `BuilderEditor.vue`.
-- **Builder editor**: Drag-and-drop blocks, dual-screen (desktop/mobile) canvas, block customization via inline editing, drawing, template library, AI chat. Uses **builder** layout (no global navbar).
-- **Block data** lives in `stores/blocks.ts` keyed by screen and blockId. **Builder templates** (use-case categorized layout presets) live in `stores/templates.ts`. Template application uses `useTemplateApplication` and replaces list arrays (state transformation); no DOM manipulation.
+- **Builder page** (`/builder`): Drag-and-drop blocks, dual-screen (desktop/mobile) canvas, business info (InfoBar), block customization via inline editing, drawing, template library, AI chat. Uses **builder** layout (no global navbar).
+- **Block data** lives in `stores/blocks.ts` keyed by screen and blockId. **Builder templates** (starting points for DIY building) live in `stores/templates.ts`. Template application uses `useTemplateApplication` and replaces list arrays (state transformation); no DOM manipulation.
 
 ## No One-Off Logic
 

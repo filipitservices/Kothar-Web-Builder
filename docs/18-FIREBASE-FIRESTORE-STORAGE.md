@@ -6,13 +6,12 @@
 
 ## Overview
 
-When a user submits the template request form (`/gallery/request/[id]`), the application:
+Request orders follow a two-phase lifecycle in Firestore:
 
-1. Validates the form (via `useTemplateRequestValidation`).
-2. Uploads all selected files to **Firebase Storage** under a user- and order-scoped path.
-3. Writes a structured **Firestore** order document that references those files and the rest of the request data.
+1. **Draft creation** — When a user selects a template on the dashboard, a draft order document is created in Firestore (status `draft`) with the initial layout from the template and empty business/contact fields. A daily-limit counter is updated atomically in the same batch.
+2. **Form submission** — When the user fills out and submits the request form, the existing draft is updated to status `submitted` with all business info, contact info, project details, uploaded files, and layout.
 
-Only the **modular Firebase SDK** is used (no legacy namespace API). Firestore and Storage logic live in a dedicated composable; the UI layer stays thin.
+Only the **modular Firebase SDK** is used (no legacy namespace API). Firestore and Storage logic live in dedicated composables; the UI layer stays thin.
 
 ---
 
@@ -41,7 +40,8 @@ Each order document matches the **OrderRequest** type (see `app/types/order.ts`)
 | `contactInfo` | object | `contactName`, `email`, `phone`, `website`, `address`. |
 | `projectDetails` | object | `goals` (string[]), `targetAudience`, `additionalNotes`, `colorCustomization`. |
 | `attachments` | array | Metadata for each uploaded file (see below). |
-| `status` | string | Strict workflow stage: `submitted`, `under_review`, `in_production`, `awaiting_feedback`, `finalizing`, `completed`, `cancelled`. Admin-assignable only; client must not mutate. Default on create: `submitted`. Legacy values `in_review`, `in_progress`, `delivered` are supported for display. |
+| `layout` | object? | Page layout configuration: `{ blocks: OrderLayoutBlock[], customized: boolean }`. Set on draft creation from the template sections; updated when user saves from the builder. |
+| `status` | string | Lifecycle stage: `draft` (initial creation, form not yet submitted), `submitted`, `under_review`, `in_production`, `awaiting_feedback`, `finalizing`, `completed`, `cancelled`. `draft` → `submitted` transition happens on form submission; other transitions are admin-only. Legacy values `in_review`, `in_progress`, `delivered` are supported for display. |
 | `modificationLocked` | boolean | Optional. When `true`, order is locked (e.g. being processed). Admin-assignable only; client must not write. Edit UI is disabled when true. |
 | `createdAt` | server timestamp | Set via `serverTimestamp()` on create. |
 | `updatedAt` | server timestamp | Set via `serverTimestamp()` on create and on later updates. |
@@ -75,18 +75,47 @@ Files are uploaded **before** the Firestore write. If any upload fails, the orde
 
 ---
 
-## Submission Flow
+## Request Lifecycle
 
-1. **Page** (`pages/gallery/request/[id].vue`): On form submit, ensures user is authenticated and template exists; sets `isSubmitting`; calls `useOrderSubmission().submitOrder(...)` with `userId`, `templateId`, `templateName`, validated `formData`, and `files`.
-2. **Composable** (`composables/useOrderSubmission.ts`):
-   - Resolves Firebase app (client plugin); gets Firestore and Storage.
-   - Creates a new order document reference to obtain `orderId`.
-   - Uploads each file to `orders/{userId}/{orderId}/{sanitizedFilename}`; collects `OrderAttachment` metadata (including `getDownloadURL`). On any upload failure, throws and does **not** write Firestore.
-   - Maps form data into `OrderRequest` (businessInfo, contactInfo, projectDetails, attachments, status, `serverTimestamp()` for `createdAt`/`updatedAt`).
-   - Writes the order with `setDoc` to `users/{userId}/orders/{orderId}`.
-3. **Page**: On success, shows confirmation and navigates (e.g. to dashboard). On error, shows message and clears `isSubmitting`.
+### Phase 1: Draft Creation
 
-Validation is done in the form/composable layer before submission; the order layer does not re-validate, but only maps and persists.
+1. **Dashboard** (`pages/dashboard.vue`): User clicks "Choose This Design" on a showcase template.
+2. **Composable** (`composables/useCreateRequest.ts`): `createDraftRequest()` executes a Firestore batch write containing:
+   - A new order document at `users/{userId}/orders/{newId}` with `status: 'draft'`, initial layout from the template, and empty business/contact fields.
+   - A counter update at `users/{userId}/requestLimits/daily` with today's date and incremented count (max 3 per day).
+3. **Dashboard**: On success, navigates to `/gallery/request/{docId}`. On failure (limit exceeded or other), shows an inline error banner.
+
+### Phase 2: Form Submission
+
+1. **Page** (`pages/gallery/request/[id].vue`): Loads the draft document from Firestore by doc ID; resolves the showcase template for preview; renders the form.
+2. On form submit, calls `useOrderUpdate().updateOrder()` with `status: 'submitted'`, validated form data, uploaded files, and layout.
+3. **Composable** (`composables/useOrderUpdate.ts`): Uploads files to Storage, then calls `updateDoc` to transition the draft to submitted with all fields populated.
+4. **Page**: On success, shows inline confirmation and navigates to dashboard. On error, shows inline error message (no `alert()`).
+
+### Layout Persistence
+
+The builder's Save button is handled by **`useBuilderSave`** (`app/composables/useBuilderSave.ts`). It reads the canonical layout from the request layout store via `getLayoutForSubmission()`, then calls `saveLayout(userId, orderId, layout)` from `useCreateRequest()`, which writes the layout to the draft's `layout` field via `updateDoc`. **BuilderEditor** does not perform persistence inline; it only wires the composable. This ensures layout changes persist across page refresh, navigation, and browser close.
+
+**Builder URL and rehydration:** When the user clicks "Customize page layout" on the request page, the app navigates to `/gallery/request/{orderId}/builder`. The route param `orderId` allows the builder to rehydrate layout state after a page refresh or direct navigation while remaining structurally tied to that specific request. On mount, the builder pages use the route `:id` to fetch the order from Firestore and initialize from `order.layout` (or from the template if no layout is saved). If the store is already initialized (e.g. user navigated from the request page), the existing state is preserved to avoid overwriting unsaved changes.
+
+## Daily Request Limit
+
+**Collection path:** `users/{userId}/requestLimits/daily`
+
+A single counter document per user tracks daily request creation:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `date` | string | Date string in `YYYY-MM-DD` format. |
+| `count` | number | Number of requests created on that date (max 3). |
+
+The counter is written atomically with the order creation in a Firestore transaction. Security rules validate:
+- Counter can only be created with `count == 1`.
+- Counter can only be incremented by 1 on the same day, or reset to 1 on a new day.
+- Counter can never exceed 3.
+- Order creation requires the counter (via `getAfter()`) to show `count <= 3` after the transaction, or allows when the counter document does not yet exist (first request).
+
+This ensures the limit cannot be bypassed by manipulating frontend code.
 
 ---
 
@@ -100,6 +129,8 @@ users/{userId}/orders
 
 where `userId` is the authenticated user’s UID. The **orders store** (`stores/orders.ts`) subscribes to this collection with `onSnapshot` and `orderBy('createdAt', 'desc')`, exposing a reactive list and `getOrderById` / `fetchOrder` for single-document access. The dashboard (sites index) and order edit page consume this store. The document’s shape is **OrderRequest** (with Firestore timestamps for `createdAt`/`updatedAt`).
 
+**Runtime validation:** All order document reads (snapshot callbacks and `fetchOrder`) must use **`parseOrderDocument(data, documentId)`** from `app/utils/orderValidation.ts` before treating data as typed. Invalid payloads return `null` and are not pushed into store state; only valid `OrderWithId` shapes enter the app.
+
 ---
 
 ## Security Rules (in Repo)
@@ -110,7 +141,7 @@ Firestore and Storage rules are kept in the project under **`firebase/`** and ar
 
 | File | Purpose |
 |------|---------|
-| `firebase/firestore.rules` | Firestore security rules. Only `users/{userId}/orders/{orderId}` is allowed (owner-only); all other paths explicitly denied. |
+| `firebase/firestore.rules` | Firestore security rules. `users/{userId}/orders/{orderId}` (owner-only; creation requires valid daily counter via `getAfter()`), `users/{userId}/requestLimits/{limitId}` (owner-only; count validation); all other paths explicitly denied. |
 | `firebase/storage.rules` | Storage security rules. Only `orders/{userId}/{orderId}/{fileName}` is allowed (owner-only). |
 | `firebase.json` (root) | Firebase CLI config; references `firebase/firestore.rules` and `firebase/storage.rules` for deployment. |
 
@@ -134,10 +165,12 @@ The Cursor rule **15-firebase-rules.mdc** enforces this: when editing rules or F
 
 | File | Purpose |
 |------|---------|
-| `app/types/order.ts` | `OrderRequest`, `OrderWithId`, `OrderAttachment`, `OrderStatus`, `OrderBusinessInfo`, `OrderContactInfo`, `OrderProjectDetails`. |
-| `app/stores/orders.ts` | Subscribes to user orders; exposes list, `getOrderById`, `fetchOrder`, status/date helpers. |
-| `app/composables/useOrderSubmission.ts` | `submitOrder()`: upload files to Storage, then write order to Firestore. Uses modular Firebase only. |
-| `app/composables/useOrderUpdate.ts` | `updateOrder()`, `orderToFormData()`: update existing order (allowed fields only; never status or modificationLocked). |
+| `app/types/order.ts` | `OrderRequest`, `OrderWithId`, `OrderLayout`, `OrderLayoutBlock` (alias of `BlockItem`), `OrderAttachment`, `OrderStatus`, `OrderBusinessInfo`, `OrderContactInfo`, `OrderProjectDetails`. |
+| `app/utils/orderValidation.ts` | `validateOrderRequest()`, `parseOrderDocument()` — runtime guards at Firestore boundary; use before accepting order data into store. |
+| `app/stores/orders.ts` | Subscribes to user orders; uses `parseOrderDocument()` in snapshot and `fetchOrder`; exposes list, `getOrderById`, `fetchOrder`, status/date helpers. |
+| `app/composables/useCreateRequest.ts` | `createDraftRequest()`: batch write of draft order + daily counter. `saveLayout()`: persist layout to an existing order. |
+| `app/composables/useOrderSubmission.ts` | `submitOrder()`: upload files to Storage, then write order to Firestore (used for standalone submissions). |
+| `app/composables/useOrderUpdate.ts` | `updateOrder()`, `orderToFormData()`: update existing order (now supports `status` field for draft→submitted transition). |
 | `app/plugins/firebase.client.ts` | Initializes Firebase app (and Auth); composable uses `getFirebaseApp()` for Firestore and Storage. |
 | `firebase/firestore.rules` | Firestore security rules; deploy with `firebase deploy --only firestore`. |
 | `firebase/storage.rules` | Storage security rules; deploy with `firebase deploy --only storage`. |
@@ -158,5 +191,6 @@ The Cursor rule **15-firebase-rules.mdc** enforces this: when editing rules or F
 
 ## Summary
 
-- Orders: Firestore `users/{userId}/orders/{orderId}`; Storage `orders/{userId}/{orderId}/{fileName}`.
+- Orders: Firestore `users/{userId}/orders/{orderId}` (status lifecycle: `draft` → `submitted` → admin stages); Storage `orders/{userId}/{orderId}/{fileName}`.
+- Daily limit: Firestore `users/{userId}/requestLimits/daily` (counter with date; max 3 per day).
 - Rules: `firebase/firestore.rules` and `firebase/storage.rules`; update them and docs when usage changes (see Cursor rule 15-firebase-rules).

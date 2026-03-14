@@ -152,6 +152,11 @@ export const useRequestLayoutStore = defineStore('requestLayout', () => {
     blocks.value = [...newBlocks];
   }
 
+  /** Set the route to navigate back to when leaving the builder (e.g. when entry point differs). */
+  function setReturnRoute(returnTo: string): void {
+    returnRoute.value = returnTo;
+  }
+
   /** Produce the layout payload for order submission / update. */
   function getLayoutForSubmission(): OrderLayout {
     return {
@@ -186,6 +191,7 @@ export const useRequestLayoutStore = defineStore('requestLayout', () => {
     initFromOrderLayout,
     initFromTemplateForOrder,
     updateBlocks,
+    setReturnRoute,
     getLayoutForSubmission,
     reset,
   };

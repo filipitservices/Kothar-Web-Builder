@@ -34,3 +34,11 @@ export interface DrawingState {
 }
 
 export type ScreenId = 'desktop' | 'mobile' | 'both';
+
+/**
+ * Minimal shape for ScreenCard ref when forwarding drawing canvas to parent.
+ * Used to type ref access without reaching into component internals with untyped casts.
+ */
+export interface ScreenCardRefShape {
+  overlayRef?: { canvas?: unknown } | null;
+}

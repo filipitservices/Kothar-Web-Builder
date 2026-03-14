@@ -6,9 +6,34 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Template request orders: only the authenticated owner can read/write their orders.
+    // Template request orders: owner-only.
+    // Creation requires a valid daily-limit counter in the same transaction.
+    // When counter does not exist, allow (first request); otherwise getAfter validates post-transaction count.
     match /users/{userId}/orders/{orderId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId
+        && (
+          !exists(/databases/$(database)/documents/users/$(userId)/requestLimits/daily)
+          || getAfter(/databases/$(database)/documents/users/$(userId)/requestLimits/daily).data.count <= 3
+        );
+    }
+
+    // Daily request creation limit counter.
+    // Written atomically with order creation in a transaction.
+    // Count can only be 1 (new day or first request) or incremented by 1 (same day).
+    match /users/{userId}/requestLimits/{limitId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId
+        && request.resource.data.count == 1
+        && request.resource.data.date is string;
+      allow update: if request.auth != null && request.auth.uid == userId
+        && request.resource.data.count is int
+        && request.resource.data.count <= 3
+        && (
+          (request.resource.data.date != resource.data.date && request.resource.data.count == 1)
+          || (request.resource.data.date == resource.data.date && request.resource.data.count == resource.data.count + 1)
+        );
     }
 
     // Explicit deny for all other paths (no other collections used by the app).

@@ -10,16 +10,8 @@ Per core invariants and Nuxt structure. Before changing routes or auth, verify l
 
 ## Protected Routes
 
-- **auth middleware:** Applied to `/dashboard`, `/gallery/request/[id]`, `/gallery/request/[id]/builder`, `/orders/[id]/edit`, `/orders/[id]/builder`, `/sites`, `/sites/[id]`. Unauthenticated users redirect to `/login?redirect={path}`. Session verified via server API; no protected UI sent before redirect.
+- **auth middleware:** Applied to `/dashboard`, `/sites`, `/sites/[id]`, `/gallery/request/[id]`, `/gallery/request/[id]/builder`, `/orders/[id]/edit`, `/orders/[id]/builder`. Unauthenticated users redirect to `/login?redirect={path}`. Session verified via server API; no protected UI sent before redirect.
 - **guest middleware:** Applied to `/login`, `/reset-password`. Authenticated users redirect to `/dashboard`.
-
-## Builder Access Constraint
-
-The builder is **not** a standalone page. It can only be accessed within request or order flows:
-- `/gallery/request/[id]/builder` — layout editor for a new request
-- `/orders/[id]/builder` — layout editor for an existing order
-
-Both routes require a valid request/order ID and use the `builder` layout (no navbar).
 
 ## Verification Checklist for Routing Edits
 
@@ -34,11 +26,9 @@ Both routes require a valid request/order ID and use the `builder` layout (no na
 |-------|--------|------|
 | `/` | default | public |
 | `/dashboard` | default | auth |
-| `/gallery/request/[id]` | default | auth |
-| `/gallery/request/[id]/builder` | builder | auth |
-| `/orders/[id]/edit` | default | auth |
-| `/orders/[id]/builder` | builder | auth |
+| `/builder` | builder | auth |
 | `/sites`, `/sites/[id]` | default | auth |
+| `/gallery/request/[id]` | default | auth |
 | `/login`, `/reset-password` | default | guest |
 
 Do not add duplicate navbars or route-specific layout hacks; use the two existing layouts.

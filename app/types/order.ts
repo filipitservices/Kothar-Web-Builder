@@ -6,13 +6,16 @@
  */
 
 import type { ColorCustomization } from '~/types/templateRequest';
+import type { BlockItem } from '~/types/builder';
 
-/** A single block in the page layout (matches builder BlockItem shape). */
-export interface OrderLayoutBlock {
-  id: string;
-  type: string;
-  label: string;
-}
+/**
+ * A single block in the page layout.
+ *
+ * Canonical layout representation shared between the builder and persistence:
+ * this is intentionally aliasing the builder's `BlockItem` so the same shape is
+ * used end‑to‑end (builder UI ↔ layout store ↔ Firestore payloads).
+ */
+export type OrderLayoutBlock = BlockItem;
 
 /** Page layout configuration stored with the order. */
 export interface OrderLayout {
@@ -22,10 +25,13 @@ export interface OrderLayout {
 }
 
 /**
- * Order lifecycle status. Strict union — admin-assignable only; clients must not mutate.
- * Default on creation: 'submitted'.
+ * Order lifecycle status. Strict union.
+ * 'draft' is set on initial creation (before user submits the form).
+ * 'submitted' is set when the user completes and submits the request form.
+ * Other statuses are admin-assignable only; clients must not mutate them.
  */
 export type OrderStatus =
+  | 'draft'
   | 'submitted'
   | 'under_review'
   | 'in_production'
@@ -34,7 +40,10 @@ export type OrderStatus =
   | 'completed'
   | 'cancelled';
 
-/** First status in workflow; used as default when creating orders. */
+/** Status for newly created draft requests (before form submission). */
+export const ORDER_STATUS_DRAFT: OrderStatus = 'draft';
+
+/** Status after the user completes and submits the request form. */
 export const ORDER_STATUS_DEFAULT: OrderStatus = 'submitted';
 
 /** Metadata for a single file attachment stored in Firebase Storage. */

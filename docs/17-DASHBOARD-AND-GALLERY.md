@@ -94,7 +94,7 @@ The page is structured as a control surface: a compact **control strip** (greeti
 
 1. **Control strip** (`dashboard-strip`) — Header with personalized greeting and primary "Open Builder" CTA. White background, subtle left border accent. Single row on desktop; stacks on small screens.
 2. **Templates showcase** (`dashboard-showcase`) — Contrast block (primary-tint background) containing section heading, category pills (tablist), and a responsive grid of compact template cards. Cards use a small browser mockup preview, industry label, name, description clamp, and "Preview" action.
-3. **ShowcaseModal** — In-page preview modal (unchanged): desktop/mobile toggle, "Choose This Design" → `/gallery/request/[id]`.
+3. **ShowcaseModal** — In-page preview modal: desktop/mobile toggle, "Choose This Design" → creates a draft request in Firebase → navigates to `/gallery/request/{docId}` (Firebase document ID).
 4. **Footer** — Minimal copyright line; same container width as content.
 
 ### State Management
@@ -104,12 +104,19 @@ The page is structured as a control surface: a compact **control strip** (greeti
 const selectedCategory = ref<ShowcaseCategory | null>(null);
 const showModal = ref(false);
 const selectedTemplate = ref<ShowcaseTemplate | null>(null);
+const isCreating = ref(false);
+const errorBanner = ref<string | null>(null);
 
 // Methods
 const openShowcase = (template) => { ... };
 const closeShowcase = () => { ... };
-const handleChooseDesign = (templateId) => { ... };
+// handleChooseDesign creates a draft in Firebase, then navigates to /gallery/request/{docId}
+const handleChooseDesign = async (templateId) => { ... };
 ```
+
+### Daily Request Limit
+
+Users are limited to 3 request creations per day. This is enforced by Firestore security rules via a counter document at `users/{userId}/requestLimits/daily`. When the limit is exceeded, a toast notification is displayed (no `alert()`).
 
 ### Category Filtering
 
@@ -237,14 +244,26 @@ interface Props {
 **Form Component:** `app/components/TemplateRequestForm.vue`
 **CSS:** `app/assets/css/request-form.css`
 
-SMB onboarding form for requesting a website based on a selected showcase template. The form uses gamified, section-based interactions: industry selection via **IndustryCardGrid** (selectable cards), **GuidedBusinessDescription** (three optional blocks: what we do, who we serve, what sets us apart), **YearsInBusinessInput** (segmented options only; field is optional), and **GoalSelector** (multi-select goals; no order). All use design tokens and support a read-only state when the form is disabled.
+SMB onboarding form for requesting a website based on a selected showcase template. The `[id]` route param is a **Firebase document ID**, not a template slug. When the user clicks "Choose This Design" on the dashboard, a draft request is created in Firestore first, and the user is navigated to `/gallery/request/{docId}`.
+
+The form uses gamified, section-based interactions: industry selection via **IndustryCardGrid** (selectable cards), **GuidedBusinessDescription** (three optional blocks: what we do, who we serve, what sets us apart), **YearsInBusinessInput** (segmented options only; field is optional), and **GoalSelector** (multi-select goals; no order). All use design tokens and support a read-only state when the form is disabled.
 
 ### Architecture
 
 The page consists of two main pieces:
 
-1. **Page (`[id].vue`)** - Handles routing, template fetching, preview rendering, and progress display
+1. **Page (`[id].vue`)** - Loads the request document from Firestore by doc ID, resolves the associated showcase template, handles preview rendering, progress display, and error states
 2. **Form Component (`TemplateRequestForm.vue`)** - Contains all form logic, validation, color customization, and file uploads
+
+### Request Lifecycle
+
+1. **Draft creation** (dashboard): `useCreateRequest().createDraftRequest()` writes a draft order doc to `users/{uid}/orders/{newId}` with `status: 'draft'`, initial layout from the template, and empty business/contact fields.
+2. **Form filling** (request page): The page loads the draft by doc ID, resolves the template, and renders the form. The user fills in details and optionally customizes the layout via the builder.
+3. **Submission**: On form submit, the page calls `useOrderUpdate().updateOrder()` to transition the draft to `status: 'submitted'` with the full form data, attachments, and layout.
+
+### Error Handling
+
+If the route ID does not correspond to a valid request document (not found, inaccessible, or the user is not the owner), the page renders a styled error state with a link back to the dashboard. No crash, no raw error. All user-facing messages use inline styled feedback (no `alert()` calls).
 
 ### Data Flow
 
@@ -255,7 +274,7 @@ TemplateRequestForm
     │
     ├── @progress-update ───► [id].vue updates progress bar in left column
     │
-    └── @submit ────────────► [id].vue handles API submission
+    └── @submit ────────────► [id].vue calls updateOrder() to transition draft → submitted
 ```
 
 **State:** Form draft in `useTemplateRequestForm`; page seeds once via `initialFormData` → `hydrateFormData`. Updates via `updateField`. Children are controlled (`modelValue` / `update:modelValue`).
@@ -264,7 +283,8 @@ TemplateRequestForm
 
 - Back link: Returns to `/dashboard` (templates section)
 - "Choose a different design" link: Returns to `/dashboard`
-- "Build your own" link: Goes to `/builder`
+- "Build your own" link: Goes to the dashboard templates section (`/dashboard#templates`)
+- "Customize page layout" button: Goes to `/gallery/request/{orderId}/builder` so layout edits persist across refresh and are always tied to the current request
 
 ### Layout
 
@@ -363,15 +383,15 @@ The request form route remains at `/gallery/request/[id]` for URL stability.
 
 ## Order Persistence (Firestore & Storage)
 
-When the user submits the template request form, the application:
+Request orders follow a two-phase lifecycle:
 
-1. **Validates** the form (via `useTemplateRequestValidation`).
-2. **Uploads** all selected files to Firebase Storage at `orders/{userId}/{orderId}/{filename}`.
-3. **Writes** a structured order document to Firestore at `users/{userId}/orders/{orderId}`.
+1. **Draft creation** (on dashboard): When the user clicks "Choose This Design," a draft order document is created in Firestore at `users/{userId}/orders/{orderId}` with `status: 'draft'`, the initial layout from the template, and default empty fields. This is handled by `useCreateRequest().createDraftRequest()`.
 
-Order data is mapped from validated form data into a typed **OrderRequest** shape (businessInfo, contactInfo, projectDetails, attachments, status, timestamps). File metadata (originalName, storagePath, downloadURL, size, contentType) is stored in the order document; raw `File` objects and base64 are never persisted.
+2. **Form submission** (on request page): When the user fills out the form and submits, the existing draft is updated to `status: 'submitted'` with all form data, uploaded attachments, and the current layout. This is handled by `useOrderUpdate().updateOrder()` with a `status` parameter.
 
-Submission is handled by **`useOrderSubmission`** (`app/composables/useOrderSubmission.ts`). The request page calls `submitOrder()` with the authenticated user's ID, template id/name, form data, and files. If any file upload fails, the Firestore write is not performed.
+**Layout persistence:** The builder's Save button writes the current layout to the draft document in Firebase via `useCreateRequest().saveLayout()`. This ensures layout changes survive page refresh, navigation, and browser close. The request page loads the persisted layout from the document on mount. When opening the builder from the request page, the app navigates to `/builder?orderId={orderId}` so the builder can rehydrate from Firebase after a refresh.
+
+**Daily limit:** Each user can create at most 3 requests per day. This is enforced by Firestore security rules using a counter document at `users/{userId}/requestLimits/daily`, written atomically with the draft via a batch write.
 
 See **[18-FIREBASE-FIRESTORE-STORAGE.md](18-FIREBASE-FIRESTORE-STORAGE.md)** for the full Firestore/Storage data model, document shape, and security considerations.
 

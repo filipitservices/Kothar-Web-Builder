@@ -18,16 +18,9 @@ Per core invariants and domain-builder. Builder templates define **structure onl
 - **Templates are compositional.** Template definitions are data (id, name, description, category, blocks array). No special-case or one-off logic in the application flow for a single template; all templates go through the same apply path.
 - **Block items** are `{ id, type, label }`. No embedding of custom content in template definitions; content comes from blocks store after blocks are created.
 
-## Categorization
-
-- Templates are categorized by **design intent and structural pattern**, not by industry or business type.
-- Categories: `service-showcase`, `professional`, `creative`, `product-focused`, `appointment-based`, `experience`.
-- Template names and descriptions communicate layout strengths and use cases (e.g. "Service Authority", "Visual Portfolio").
-- Do not add industry-specific category labels or template names.
-
 ## Store and Components
 
-- **stores/templates.ts:** Holds template definitions with use-case categories and exposes getters (e.g. by id, by category). No duplicate list of templates elsewhere.
+- **stores/templates.ts:** Holds template definitions and exposes getters (e.g. by id, by category). No duplicate list of templates elsewhere.
 - **TemplatesList.vue:** Presents templates and emits apply with templateId and screen. Does not hold template state; reads from store via composable or store.
 
 Reference `docs/07-TEMPLATE-SYSTEM.md` for APIs and patterns.

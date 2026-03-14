@@ -23,6 +23,7 @@
           @undo="() => desktopScreenRef?.undo()"
           @redo="() => desktopScreenRef?.redo()"
           @clear="() => desktopScreenRef?.clear()"
+          @list-change="(list) => emit('update:desktopList', list)"
           @remove-item="removeDesktopItem"
         />
       </div>
@@ -48,6 +49,7 @@
           @undo="() => mobileScreenRef?.undo()"
           @redo="() => mobileScreenRef?.redo()"
           @clear="() => mobileScreenRef?.clear()"
+          @list-change="(list) => emit('update:mobileList', list)"
           @remove-item="removeMobileItem"
         />
       </div>
@@ -71,39 +73,41 @@
   </div>
 </template>
 
-<script setup>
-import { ref, watch, computed, onMounted, onUnmounted } from 'vue';
+<script setup lang="ts">
+import { ref, watch, computed, onMounted, onUnmounted, type ComputedRef } from 'vue';
 import { useScreenScaling } from '~/composables/useScreenScaling';
 import { useListSyncing } from '~/composables/useListSyncing';
 import ScreenCard from './ScreenCard.vue';
 import DrawingControlsPanel from './DrawingControlsPanel.vue';
 import AiChatPanel from './AiChatPanel.vue';
+import type { BlockItem, ScreenCardRefShape } from '~/types/builder';
+import type { DrawingState } from '~/composables/useDrawing';
 
-const props = defineProps({
-  desktopCanvasWidth: { type: Number, required: true },
-  desktopCanvasHeight: { type: Number, required: true },
-  mobileCanvasWidth: { type: Number, required: true },
-  mobileCanvasHeight: { type: Number, required: true },
-  desktopList: { type: Array, required: true },
-  mobileList: { type: Array, required: true },
-  desktopDrawingState: { type: Object, required: true },
-  mobileDrawingState: { type: Object, required: true },
-  desktopStrokes: { type: Array, required: true },
-  mobileStrokes: { type: Array, required: true }
-});
+const props = defineProps<{
+  desktopCanvasWidth: number;
+  desktopCanvasHeight: number;
+  mobileCanvasWidth: number;
+  mobileCanvasHeight: number;
+  desktopList: BlockItem[];
+  mobileList: BlockItem[];
+  desktopDrawingState: DrawingState;
+  mobileDrawingState: DrawingState;
+  desktopStrokes: unknown[];
+  mobileStrokes: unknown[];
+}>();
 
-const emit = defineEmits([
-  'toggle-desktop-drawing',
-  'toggle-mobile-drawing',
-  'toggle-desktop-text-mode',
-  'toggle-mobile-text-mode',
-  'update:desktopList',
-  'update:mobileList',
-  'update:desktopDrawingState',
-  'update:mobileDrawingState',
-  'set-desktop-canvas-ref',
-  'set-mobile-canvas-ref'
-]);
+const emit = defineEmits<{
+  (e: 'toggle-desktop-drawing'): void;
+  (e: 'toggle-mobile-drawing'): void;
+  (e: 'toggle-desktop-text-mode'): void;
+  (e: 'toggle-mobile-text-mode'): void;
+  (e: 'update:desktopList', value: BlockItem[]): void;
+  (e: 'update:mobileList', value: BlockItem[]): void;
+  (e: 'update:desktopDrawingState', value: Partial<DrawingState>): void;
+  (e: 'update:mobileDrawingState', value: Partial<DrawingState>): void;
+  (e: 'set-desktop-canvas-ref', el: unknown): void;
+  (e: 'set-mobile-canvas-ref', el: unknown): void;
+}>();
 
 // Composables
 const {
@@ -119,15 +123,15 @@ const {
 } = useScreenScaling();
 
 // Template refs
-const desktopScreenRef = ref(null);
-const mobileScreenRef = ref(null);
+const desktopScreenRef = ref<InstanceType<typeof ScreenCard> | null>(null);
+const mobileScreenRef = ref<InstanceType<typeof ScreenCard> | null>(null);
 const syncScreens = ref(false);
 
 // Local props mirroring
-const desktopCanvasWidth = ref(props.desktopCanvasWidth);
-const desktopCanvasHeight = ref(props.desktopCanvasHeight);
-const mobileCanvasWidth = ref(props.mobileCanvasWidth);
-const mobileCanvasHeight = ref(props.mobileCanvasHeight);
+const desktopCanvasWidth = ref<number>(props.desktopCanvasWidth);
+const desktopCanvasHeight = ref<number>(props.desktopCanvasHeight);
+const mobileCanvasWidth = ref<number>(props.mobileCanvasWidth);
+const mobileCanvasHeight = ref<number>(props.mobileCanvasHeight);
 
 // Sync canvas dimensions from props
 watch(() => props.desktopCanvasWidth, (val) => { desktopCanvasWidth.value = val; });
@@ -136,18 +140,18 @@ watch(() => props.mobileCanvasWidth, (val) => { mobileCanvasWidth.value = val; }
 watch(() => props.mobileCanvasHeight, (val) => { mobileCanvasHeight.value = val; });
 
 // Create proxy refs that sync with props (not snapshots)
-const desktopListRef = computed({
+const desktopListRef: ComputedRef<BlockItem[]> = computed({
   get: () => props.desktopList,
   set: (val) => emit('update:desktopList', val)
 });
 
-const mobileListRef = computed({
+const mobileListRef: ComputedRef<BlockItem[]> = computed({
   get: () => props.mobileList,
   set: (val) => emit('update:mobileList', val)
 });
 
-// Initialize list syncing with live prop references
-useListSyncing({
+// Initialize list syncing with live prop references (BlockItem extends ConstraintElement)
+useListSyncing<BlockItem>({
   desktopList: desktopListRef,
   mobileList: mobileListRef,
   syncEnabled: syncScreens,
@@ -156,23 +160,23 @@ useListSyncing({
 });
 
 // Handle drawing state updates properly
-const handleDesktopStateUpdate = (state) => {
-  // Forward to parent - never mutate props
-  emit('update:desktopDrawingState', state);
+const handleDesktopStateUpdate = (state: DrawingState) => {
+  // Forward to parent as a partial update - never mutate props
+  emit('update:desktopDrawingState', { ...state });
 };
 
-const handleMobileStateUpdate = (state) => {
-  // Forward to parent - never mutate props
-  emit('update:mobileDrawingState', state);
+const handleMobileStateUpdate = (state: DrawingState) => {
+  // Forward to parent as a partial update - never mutate props
+  emit('update:mobileDrawingState', { ...state });
 };
 
 // Delete handlers
-const removeDesktopItem = (id) => {
+const removeDesktopItem = (id: string) => {
   const next = props.desktopList.filter((el) => el.id !== id);
   emit('update:desktopList', next);
 };
 
-const removeMobileItem = (id) => {
+const removeMobileItem = (id: string) => {
   const next = props.mobileList.filter((el) => el.id !== id);
   emit('update:mobileList', next);
 };
@@ -207,11 +211,13 @@ const handleClear = () => {
 
 // Lifecycle
 onMounted(async () => {
-  if (desktopScreenRef.value?.overlayRef?.canvas) {
-    emit('set-desktop-canvas-ref', desktopScreenRef.value.overlayRef.canvas);
+  const desktopCanvas = (desktopScreenRef.value as ScreenCardRefShape | null)?.overlayRef?.canvas;
+  if (desktopCanvas) {
+    emit('set-desktop-canvas-ref', desktopCanvas);
   }
-  if (mobileScreenRef.value?.overlayRef?.canvas) {
-    emit('set-mobile-canvas-ref', mobileScreenRef.value.overlayRef.canvas);
+  const mobileCanvas = (mobileScreenRef.value as ScreenCardRefShape | null)?.overlayRef?.canvas;
+  if (mobileCanvas) {
+    emit('set-mobile-canvas-ref', mobileCanvas);
   }
   await initializeScaling();
 });
@@ -222,8 +228,9 @@ onUnmounted(() => cleanupScaling());
 watch(() => props.desktopDrawingState.desktopEnabled, (enabled) => {
   if (enabled) {
     setTimeout(() => {
-      if (desktopScreenRef.value?.overlayRef?.canvas) {
-        emit('set-desktop-canvas-ref', desktopScreenRef.value.overlayRef.canvas);
+      const desktopCanvas = (desktopScreenRef.value as ScreenCardRefShape | null)?.overlayRef?.canvas;
+      if (desktopCanvas) {
+        emit('set-desktop-canvas-ref', desktopCanvas);
       }
     }, 0);
   }
@@ -232,8 +239,9 @@ watch(() => props.desktopDrawingState.desktopEnabled, (enabled) => {
 watch(() => props.mobileDrawingState.mobileEnabled, (enabled) => {
   if (enabled) {
     setTimeout(() => {
-      if (mobileScreenRef.value?.overlayRef?.canvas) {
-        emit('set-mobile-canvas-ref', mobileScreenRef.value.overlayRef.canvas);
+      const mobileCanvas = (mobileScreenRef.value as ScreenCardRefShape | null)?.overlayRef?.canvas;
+      if (mobileCanvas) {
+        emit('set-mobile-canvas-ref', mobileCanvas);
       }
     }, 0);
   }
@@ -247,25 +255,25 @@ watch(() => props.mobileDrawingState.mobileEnabled, (enabled) => {
   flex-direction: column;
   overflow: hidden;
   min-height: 0;
-  gap: 12px;
+  gap: var(--space-md);
 }
 
 .screens-inner {
   display: flex;
-  gap: 40px;
+  gap: var(--space-2xl);
   justify-content: center;
   align-items: center;
   flex: 1;
   overflow: auto;
-  padding: 20px;
+  padding: var(--space-lg);
   width: 100%;
   min-height: 0;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .screens-inner::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none;
 }
 
 .screen-scale-wrapper {
@@ -273,19 +281,16 @@ watch(() => props.mobileDrawingState.mobileEnabled, (enabled) => {
   flex-shrink: 0;
 }
 
+/* Center absolute-positioned screen (no negative-margin hack) */
 .screen-scale-wrapper > .screen {
   position: absolute;
   top: 0;
   left: 50%;
-  margin-left: -350px; /* Half of desktop width (700px / 2) */
-}
-
-.screen-scale-wrapper > .screen.mobile-screen {
-  margin-left: -165px; /* Half of mobile width (330px / 2) */
+  transform: translateX(-50%);
 }
 
 /* Stack screens vertically on smaller viewports */
-@media (max-width: 1100px) {
+@media (max-width: 1024px) {
   .screens-inner {
     flex-direction: column;
     align-items: center;

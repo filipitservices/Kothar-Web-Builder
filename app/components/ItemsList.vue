@@ -1,9 +1,8 @@
 <template>
   <draggable
+    v-model="internalItems"
     :class="['list-group', renderMode === 'preview' ? 'list-group--preview' : 'list-group--canvas']"
-    :list="items"
     :group="group"
-    @change="handleDraggableChange"
     item-key="id"
     :disabled="disabled"
     :clone="cloneItem"
@@ -33,8 +32,9 @@
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, type Component } from 'vue';
+import { defineAsyncComponent, type Component, computed, type AsyncComponentLoader } from 'vue';
 import type { BlockItem, BlockType } from '~/types/builder';
+import { logger } from '~/utils/logger';
 
 type ScreenType = 'desktop' | 'mobile';
 
@@ -65,8 +65,17 @@ interface ItemsListEmits {
 
 const emit = defineEmits<ItemsListEmits>();
 
-// Async component imports for better code splitting
-const BLOCK_COMPONENTS = {
+// Bridge draggable's v-model to our parent-controlled items
+const internalItems = computed<BlockItem[]>({
+  get: () => props.items,
+  set: (val) => {
+    emit('change', val);
+  },
+});
+
+// Async component imports for better code splitting.
+// Each loader resolves to a Vue component that accepts the standard block props.
+const BLOCK_COMPONENTS: Record<BlockType, AsyncComponentLoader<Component>> = {
   hero: () => import('./BlockElements/HeroBlock.vue'),
   navbar: () => import('./BlockElements/NavBlock.vue'),
   footer: () => import('./BlockElements/FooterBlock.vue'),
@@ -85,24 +94,15 @@ const BLOCK_COMPONENTS = {
   stats: () => import('./BlockElements/StatsBlock.vue'),
   gallery: () => import('./BlockElements/GalleryBlock.vue'),
   text: () => import('./BlockElements/TextBlock.vue')
-} as const satisfies Record<BlockType, () => Promise<{ default: Component }>>;
+} as const;
 
 const getComponent = (type: BlockType): Component | null => {
   const loader = BLOCK_COMPONENTS[type];
   if (!loader) {
-    console.warn(`Unknown block type: ${type}`);
+    logger.warn(`Unknown block type: ${type}`);
     return null;
   }
   return defineAsyncComponent(loader);
-};
-
-/**
- * Handle draggable change event
- * Normalizes Sortable.js event to emit array of items
- */
-const handleDraggableChange = () => {
-  // When items change, emit the updated array
-  emit('change', props.items);
 };
 
 /**

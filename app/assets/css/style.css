@@ -20,6 +20,9 @@
   --color-text-muted-dark: #374151;
   --color-link: #0066cc;
   --color-error: #dc2626;
+  --color-error-tint: #fef2f2;
+  --color-success: #16a34a;
+  --color-success-tint: #f0fdf4;
   --color-placeholder: #9ca3af;
   /** Focus ring (primary) – used by form-option, form-section, focus-within surfaces */
   --focus-ring-primary: 0 0 0 3px rgba(30, 58, 138, 0.08);

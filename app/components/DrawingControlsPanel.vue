@@ -63,18 +63,7 @@
 import { ref, computed, watch } from 'vue';
 import DualSwitch from './DualSwitch.vue';
 import DrawingToolControls from './DrawingToolControls.vue';
-
-interface DrawingState {
-  desktopEnabled: boolean;
-  mobileEnabled: boolean;
-  strokeType: string;
-  color: string;
-  lineWidth: number;
-  isTextMode: boolean;
-  textFontSize: number;
-  textColor: string;
-  textFontFamily: string;
-}
+import type { DrawingState } from '~/composables/useDrawing';
 
 interface Props {
   desktopDrawingState: DrawingState;

@@ -1,27 +1,21 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
+import type { BlockType } from '~/types/builder';
 
 /**
  * Template Store
  * Manages pre-built website templates with block sequences
- *
- * Templates are categorized by design intent and structural pattern
- * rather than specific industries, making them flexible and scalable.
- *
+ * 
+ * Templates are designed for small and mid-size business use cases
+ * organized by industry and business type.
+ * 
  * When applied, templates create block instances with unique IDs
  * and add them to the target screen (desktop or mobile).
  */
 
-export type TemplateCategory =
-  | 'service-showcase'
-  | 'professional'
-  | 'creative'
-  | 'product-focused'
-  | 'appointment-based'
-  | 'experience';
-
 export interface TemplateBlock {
-  type: string;
+  /** Builder block type; constrained to the canonical BlockType union. */
+  type: BlockType;
   label: string;
 }
 
@@ -29,19 +23,20 @@ export interface Template {
   id: string;
   name: string;
   description: string;
-  category: TemplateCategory;
+  category: 'local-services' | 'professional' | 'creative' | 'retail' | 'healthcare' | 'hospitality';
   thumbnail?: string;
   blocks: TemplateBlock[];
 }
 
 export const useTemplatesStore = defineStore('templates', () => {
+  // Industry-specific templates for SMB
   const templates = ref<Template[]>([
-    // SERVICE SHOWCASE — Perfect for showcasing services
+    // LOCAL SERVICES (plumbers, electricians, contractors, handymen)
     {
-      id: 'service-authority',
-      name: 'Service Authority',
-      description: 'Perfect for showcasing services with credentials, reviews, and a strong call to action',
-      category: 'service-showcase',
+      id: 'local-contractor',
+      name: 'Local Contractor',
+      description: 'Perfect for plumbers, electricians, HVAC, and home service businesses',
+      category: 'local-services',
       blocks: [
         { type: 'navbar', label: 'Navigation' },
         { type: 'hero', label: 'Hero Section' },
@@ -55,10 +50,10 @@ export const useTemplatesStore = defineStore('templates', () => {
       ]
     },
     {
-      id: 'service-pricing',
-      name: 'Service & Pricing',
-      description: 'Ideal for service businesses with clear pricing, process steps, and quote requests',
-      category: 'service-showcase',
+      id: 'home-services',
+      name: 'Home Services',
+      description: 'Ideal for cleaning, landscaping, and maintenance services',
+      category: 'local-services',
       blocks: [
         { type: 'navbar', label: 'Navigation' },
         { type: 'hero', label: 'Hero Section' },
@@ -71,35 +66,35 @@ export const useTemplatesStore = defineStore('templates', () => {
       ]
     },
 
-    // PROFESSIONAL — Designed for professional portfolios & expert authority
+    // PROFESSIONAL SERVICES (lawyers, accountants, consultants)
     {
-      id: 'expert-authority',
-      name: 'Expert Authority',
-      description: 'Designed for professionals who need to showcase expertise, credentials, and build trust',
+      id: 'law-firm',
+      name: 'Law Firm',
+      description: 'Professional template for attorneys and legal practices',
       category: 'professional',
       blocks: [
         { type: 'navbar', label: 'Navigation' },
         { type: 'hero', label: 'Hero Section' },
         { type: 'services', label: 'Practice Areas' },
-        { type: 'team', label: 'Our Experts' },
-        { type: 'credentials', label: 'Credentials & Awards' },
+        { type: 'team', label: 'Our Attorneys' },
+        { type: 'credentials', label: 'Bar Admissions & Awards' },
         { type: 'testimonial', label: 'Client Testimonials' },
-        { type: 'faq', label: 'Common Questions' },
+        { type: 'faq', label: 'Common Legal Questions' },
         { type: 'form', label: 'Free Consultation' },
         { type: 'footer', label: 'Footer' }
       ]
     },
     {
-      id: 'strategic-consultancy',
-      name: 'Strategic Consultancy',
-      description: 'Great for consultants and advisors showcasing approach, results, and social proof',
+      id: 'consulting-firm',
+      name: 'Consulting Firm',
+      description: 'For business consultants, advisors, and professional services',
       category: 'professional',
       blocks: [
         { type: 'navbar', label: 'Navigation' },
         { type: 'hero', label: 'Hero Section' },
         { type: 'services', label: 'Our Expertise' },
         { type: 'process', label: 'Our Approach' },
-        { type: 'logos', label: 'Trusted By' },
+        { type: 'logos', label: 'Clients We\'ve Served' },
         { type: 'team', label: 'Meet The Team' },
         { type: 'stats', label: 'Results & Impact' },
         { type: 'cta', label: 'Schedule Consultation' },
@@ -107,9 +102,9 @@ export const useTemplatesStore = defineStore('templates', () => {
       ]
     },
     {
-      id: 'trusted-professional',
-      name: 'Trusted Professional',
-      description: 'Perfect for credentialed professionals building client trust with team and reviews',
+      id: 'accounting-firm',
+      name: 'Accounting Firm',
+      description: 'For CPAs, bookkeepers, and accounting professionals',
       category: 'professional',
       blocks: [
         { type: 'navbar', label: 'Navigation' },
@@ -123,17 +118,17 @@ export const useTemplatesStore = defineStore('templates', () => {
       ]
     },
 
-    // CREATIVE — Great for visual portfolios & creative work
+    // CREATIVE & AGENCY (designers, photographers, marketing agencies)
     {
-      id: 'visual-portfolio',
-      name: 'Visual Portfolio',
-      description: 'Showcase your work with galleries, testimonials, and booking capabilities',
+      id: 'photography-portfolio',
+      name: 'Photography Portfolio',
+      description: 'Showcase your work with galleries and testimonials',
       category: 'creative',
       blocks: [
         { type: 'navbar', label: 'Navigation' },
         { type: 'hero', label: 'Hero Section' },
         { type: 'gallery', label: 'Portfolio' },
-        { type: 'services', label: 'Services Offered' },
+        { type: 'services', label: 'Photography Services' },
         { type: 'text', label: 'About Me' },
         { type: 'testimonial', label: 'Client Reviews' },
         { type: 'form', label: 'Book Session' },
@@ -141,9 +136,9 @@ export const useTemplatesStore = defineStore('templates', () => {
       ]
     },
     {
-      id: 'creative-showcase',
-      name: 'Creative Showcase',
-      description: 'Best for creative teams showcasing process, portfolio, and client roster',
+      id: 'design-agency',
+      name: 'Design Agency',
+      description: 'For creative agencies, design studios, and marketing firms',
       category: 'creative',
       blocks: [
         { type: 'navbar', label: 'Navigation' },
@@ -158,16 +153,16 @@ export const useTemplatesStore = defineStore('templates', () => {
       ]
     },
 
-    // PRODUCT FOCUSED — Best for product-focused businesses
+    // RETAIL & E-COMMERCE (local shops, online stores)
     {
-      id: 'product-spotlight',
-      name: 'Product Spotlight',
-      description: 'Great for highlighting products with location details, reviews, and promotions',
-      category: 'product-focused',
+      id: 'retail-store',
+      name: 'Retail Store',
+      description: 'For local shops, boutiques, and specialty stores',
+      category: 'retail',
       blocks: [
         { type: 'navbar', label: 'Navigation' },
         { type: 'hero', label: 'Hero Section' },
-        { type: 'features', label: 'Why Choose Us' },
+        { type: 'features', label: 'Why Shop With Us' },
         { type: 'gallery', label: 'Products' },
         { type: 'location', label: 'Visit Our Store' },
         { type: 'testimonial', label: 'Customer Reviews' },
@@ -176,10 +171,10 @@ export const useTemplatesStore = defineStore('templates', () => {
       ]
     },
     {
-      id: 'product-catalog',
-      name: 'Product Catalog',
-      description: 'Optimized for product showcase with pricing, reviews, and detailed FAQ',
-      category: 'product-focused',
+      id: 'online-shop',
+      name: 'Online Shop',
+      description: 'E-commerce focused template with pricing and features',
+      category: 'retail',
       blocks: [
         { type: 'navbar', label: 'Navigation' },
         { type: 'hero', label: 'Hero Section' },
@@ -192,12 +187,12 @@ export const useTemplatesStore = defineStore('templates', () => {
       ]
     },
 
-    // APPOINTMENT BASED — Great for appointment-based businesses
+    // HEALTHCARE (dentists, therapists, clinics, medical practices)
     {
-      id: 'practice-booking',
-      name: 'Practice & Booking',
-      description: 'Great for appointment-based businesses with team, credentials, and scheduling',
-      category: 'appointment-based',
+      id: 'medical-practice',
+      name: 'Medical Practice',
+      description: 'For dentists, doctors, and healthcare providers',
+      category: 'healthcare',
       blocks: [
         { type: 'navbar', label: 'Navigation' },
         { type: 'hero', label: 'Hero Section' },
@@ -205,16 +200,16 @@ export const useTemplatesStore = defineStore('templates', () => {
         { type: 'team', label: 'Our Providers' },
         { type: 'credentials', label: 'Credentials' },
         { type: 'location', label: 'Location & Hours' },
-        { type: 'faq', label: 'FAQ' },
+        { type: 'faq', label: 'Patient FAQ' },
         { type: 'form', label: 'Schedule Appointment' },
         { type: 'footer', label: 'Footer' }
       ]
     },
     {
-      id: 'wellness-booking',
-      name: 'Wellness & Booking',
-      description: 'Designed for wellness and care professionals with consultations and team display',
-      category: 'appointment-based',
+      id: 'wellness-center',
+      name: 'Wellness Center',
+      description: 'For therapists, counselors, and wellness professionals',
+      category: 'healthcare',
       blocks: [
         { type: 'navbar', label: 'Navigation' },
         { type: 'hero', label: 'Hero Section' },
@@ -228,16 +223,16 @@ export const useTemplatesStore = defineStore('templates', () => {
       ]
     },
 
-    // EXPERIENCE — Optimized for showcasing experiences & venues
+    // HOSPITALITY (restaurants, cafes, hotels, catering)
     {
-      id: 'venue-experience',
-      name: 'Venue & Experience',
-      description: 'Perfect for venue-based businesses showcasing atmosphere, menu, and reservations',
-      category: 'experience',
+      id: 'restaurant',
+      name: 'Restaurant',
+      description: 'Perfect for restaurants, cafes, and food businesses',
+      category: 'hospitality',
       blocks: [
         { type: 'navbar', label: 'Navigation' },
         { type: 'hero', label: 'Hero Section' },
-        { type: 'gallery', label: 'Gallery' },
+        { type: 'gallery', label: 'Our Menu' },
         { type: 'text', label: 'About Us' },
         { type: 'location', label: 'Visit Us' },
         { type: 'testimonial', label: 'Customer Reviews' },
@@ -246,15 +241,15 @@ export const useTemplatesStore = defineStore('templates', () => {
       ]
     },
     {
-      id: 'event-services',
-      name: 'Event Services',
-      description: 'Ideal for event-focused businesses with packages, process steps, and quotes',
-      category: 'experience',
+      id: 'catering-service',
+      name: 'Catering Service',
+      description: 'For catering companies and event food services',
+      category: 'hospitality',
       blocks: [
         { type: 'navbar', label: 'Navigation' },
         { type: 'hero', label: 'Hero Section' },
-        { type: 'services', label: 'Packages' },
-        { type: 'gallery', label: 'Our Work' },
+        { type: 'services', label: 'Catering Packages' },
+        { type: 'gallery', label: 'Our Dishes' },
         { type: 'process', label: 'How It Works' },
         { type: 'testimonial', label: 'Client Reviews' },
         { type: 'form', label: 'Request Quote' },
@@ -263,37 +258,57 @@ export const useTemplatesStore = defineStore('templates', () => {
     }
   ]);
 
+  /**
+   * Get all templates
+   */
   const getAllTemplates = computed(() => templates.value);
 
-  const getTemplatesByCategory = (category: TemplateCategory) => {
+  /**
+   * Get templates by category
+   */
+  const getTemplatesByCategory = (category: Template['category']) => {
     return templates.value.filter(t => t.category === category);
   };
 
+  /**
+   * Get a specific template by ID
+   */
   const getTemplateById = (id: string) => {
     return templates.value.find(t => t.id === id);
   };
 
+  /**
+   * Get all unique categories
+   */
   const categories = computed(() => {
     const cats = new Set(templates.value.map(t => t.category));
     return Array.from(cats);
   });
 
-  const getCategoryLabel = (category: TemplateCategory): string => {
-    const labels: Record<TemplateCategory, string> = {
-      'service-showcase': 'Service Showcase',
-      'professional': 'Professional & Expert',
-      'creative': 'Portfolio & Creative',
-      'product-focused': 'Product Focused',
-      'appointment-based': 'Appointment Based',
-      'experience': 'Experience & Venue',
+  /**
+   * Get category display names
+   */
+  const getCategoryLabel = (category: Template['category']): string => {
+    const labels: Record<Template['category'], string> = {
+      'local-services': 'Local Services',
+      'professional': 'Professional Services',
+      'creative': 'Creative & Agency',
+      'retail': 'Retail & E-commerce',
+      'healthcare': 'Healthcare',
+      'hospitality': 'Hospitality'
     };
     return labels[category];
   };
 
   return {
+    // State
     templates,
+    
+    // Getters
     getAllTemplates,
     categories,
+    
+    // Methods
     getTemplatesByCategory,
     getTemplateById,
     getCategoryLabel

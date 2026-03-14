@@ -2,10 +2,21 @@
   <div class="req">
     <main class="req__main">
       <div class="req__content">
+        <!-- Inline feedback messages -->
+        <Transition name="req-banner">
+          <div v-if="feedbackMessage" class="req-feedback" :class="feedbackClass" role="alert">
+            <span>{{ feedbackMessage }}</span>
+            <button type="button" class="req-feedback__close" @click="feedbackMessage = null" aria-label="Dismiss">
+              <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+            </button>
+          </div>
+        </Transition>
+
         <div class="req__grid">
           <aside class="req-preview">
             <div class="req-preview-card">
               <div class="req-preview-label">Live Preview</div>
+              <p class="req-welcome">Edit your request</p>
               <div
                 class="req-preview-device"
                 ref="previewContainerRef"
@@ -117,6 +128,11 @@ const previewTemplate = ref<ShowcaseTemplate | undefined>(undefined);
 const initialFormData = ref<TemplateRequestFormData | null>(null);
 const orderRef = ref<OrderWithId | null>(null);
 const isSubmitting = ref(false);
+const feedbackMessage = ref<string | null>(null);
+const feedbackType = ref<'success' | 'error'>('error');
+const feedbackClass = computed(() =>
+  feedbackType.value === 'success' ? 'req-feedback--success' : 'req-feedback--error'
+);
 const formProgress = ref({ completed: 1, total: 14 });
 const progressPercentage = computed(() => {
   if (formProgress.value.total === 0) return 0;
@@ -231,7 +247,9 @@ onUnmounted(() => {
 });
 
 function openBuilder(): void {
-  router.push(`/orders/${orderId.value}/builder`);
+  const id = orderId.value;
+  if (!id) return;
+  router.push({ path: `/orders/${id}/builder` });
 }
 
 async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
@@ -240,6 +258,8 @@ async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
   if (!uid || !order) return;
 
   isSubmitting.value = true;
+  feedbackMessage.value = null;
+
   try {
     const layout = requestLayoutStore.active
       ? requestLayoutStore.getLayoutForSubmission()
@@ -255,11 +275,12 @@ async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
     });
 
     requestLayoutStore.reset();
-    alert('Your request has been updated.');
-    await router.push('/sites');
+    feedbackType.value = 'success';
+    feedbackMessage.value = 'Your request has been updated.';
+    await router.push('/dashboard');
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to update. Please try again.';
-    alert(message);
+    feedbackType.value = 'error';
+    feedbackMessage.value = err instanceof Error ? err.message : 'Failed to update. Please try again.';
   } finally {
     isSubmitting.value = false;
   }

@@ -9,6 +9,7 @@
  */
 
 import { getAdminAuth, getSessionConfig } from '../../utils/firebase-admin';
+import { logger } from '../../utils/logger';
 import type { AuthUser, MeResponse, SessionClaims } from '~/types/auth';
 
 export default defineEventHandler(async (event): Promise<MeResponse> => {
@@ -46,7 +47,7 @@ export default defineEventHandler(async (event): Promise<MeResponse> => {
   } catch (error: unknown) {
     // Log the error for debugging
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.warn('[Auth] Session verification failed:', errorMessage);
+    logger.warn('[Auth] Session verification failed:', errorMessage);
     
     // If the session is invalid or revoked, clear the cookie
     if (errorMessage.includes('revoked') || 

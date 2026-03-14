@@ -1,5 +1,14 @@
 {
   // https://nuxt.com/docs/guide/concepts/typescript
+  "compilerOptions": {
+    // Rely on Nuxt-generated configs for paths/module, but enforce a strict posture here.
+    "strict": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictNullChecks": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true
+  },
   "files": [],
   "references": [
     {

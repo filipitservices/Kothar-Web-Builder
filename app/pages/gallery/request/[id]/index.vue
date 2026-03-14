@@ -1,20 +1,56 @@
 <template>
   <div class="req">
-    <!-- Main Content -->
-    <main class="req__main">
+    <!-- Error state: request not found or inaccessible -->
+    <main v-if="loadError" class="req__main">
       <div class="req__content">
+        <div class="req-error">
+          <div class="req-error__card">
+            <svg class="req-error__icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="24" cy="24" r="20" />
+              <line x1="24" y1="16" x2="24" y2="26" />
+              <circle cx="24" cy="33" r="1.5" fill="currentColor" stroke="none" />
+            </svg>
+            <h1 class="req-error__title">Request not found</h1>
+            <p class="req-error__text">
+              This request doesn't exist or you don't have access to it.
+              It may have been removed, or the link may be incorrect.
+            </p>
+            <NuxtLink to="/dashboard" class="btn btn--primary">
+              Back to dashboard
+            </NuxtLink>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Main Content -->
+    <main v-else class="req__main">
+      <div class="req__content">
+        <!-- Inline feedback messages -->
+        <Transition name="req-banner">
+          <div v-if="feedbackMessage" class="req-feedback" :class="feedbackClass" role="alert">
+            <span>{{ feedbackMessage }}</span>
+            <button type="button" class="req-feedback__close" @click="feedbackMessage = null" aria-label="Dismiss">
+              <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+            </button>
+          </div>
+        </Transition>
+
         <!-- Two Column Layout -->
         <div class="req__grid">
           <!-- Left: Template Preview -->
           <aside class="req-preview">
             <div class="req-preview-card">
               <div class="req-preview-label">Live Preview</div>
-              <div 
-                class="req-preview-device" 
+              <p class="req-welcome">
+                Great choice{{ userName ? `, ${userName}` : '' }}!
+              </p>
+              <div
+                class="req-preview-device"
                 ref="previewContainerRef"
                 :style="containerStyle"
               >
-                <div 
+                <div
                   class="req-preview-viewport"
                   :style="viewportStyle"
                 >
@@ -62,9 +98,7 @@
 
           <section class="req-form">
             <div class="req-form__header">
-              <h1 class="req-form__title">
-                Great choice{{ userName ? `, ${userName}` : '' }}! Tell Us About Your Business.
-              </h1>
+              <h1 class="req-form__title">Tell Us About Your Business</h1>
               <p class="req-form__subtitle">
                 We'll use this information to customize your website. The more details you provide, the better we can tailor the design to your needs.
               </p>
@@ -87,11 +121,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useShowcaseStore, type ShowcaseTemplate } from '~/stores/showcase';
 import { useAuthStore } from '~/stores/auth';
+import { useOrdersStore } from '~/stores/orders';
 import { useRequestLayoutStore } from '~/stores/requestLayout';
+import { useOrderUpdate } from '~/composables/useOrderUpdate';
+import { ORDER_STATUS_DEFAULT } from '~/types/order';
+import type { OrderWithId } from '~/types/order';
 import ShowcaseRenderer from '~/components/showcase/ShowcaseRenderer.vue';
 import TemplateRequestForm from '~/components/TemplateRequestForm.vue';
 import type { TemplateRequestFormData, ColorCustomization } from '~/types/templateRequest';
@@ -106,7 +144,12 @@ const route = useRoute();
 const router = useRouter();
 const showcaseStore = useShowcaseStore();
 const authStore = useAuthStore();
+const ordersStore = useOrdersStore();
 const requestLayoutStore = useRequestLayoutStore();
+const { updateOrder } = useOrderUpdate();
+
+const requestId = computed(() => route.params.id as string);
+const userId = computed(() => authStore.uid ?? authStore.currentUser?.uid ?? '');
 
 const userName = computed(() => {
   const user = authStore.currentUser;
@@ -116,12 +159,18 @@ const userName = computed(() => {
   return '';
 });
 
-const templateId = computed(() => route.params.id as string);
-
+const orderDoc = ref<OrderWithId | null>(null);
 const originalTemplate = ref<ShowcaseTemplate | undefined>(undefined);
 const previewTemplate = ref<ShowcaseTemplate | undefined>(undefined);
+const loadError = ref(false);
+const hasLoaded = ref(false);
 
 const isSubmitting = ref(false);
+const feedbackMessage = ref<string | null>(null);
+const feedbackType = ref<'success' | 'error'>('error');
+const feedbackClass = computed(() =>
+  feedbackType.value === 'success' ? 'req-feedback--success' : 'req-feedback--error'
+);
 
 const formProgress = ref({ completed: 1, total: 14 });
 const progressPercentage = computed(() => {
@@ -156,25 +205,59 @@ function calculateViewportScale(): void {
 
 let resizeObserver: ResizeObserver | null = null;
 
-onMounted(async () => {
-  const template = showcaseStore.getTemplateById(templateId.value);
+async function loadRequestFromFirebase(): Promise<void> {
+  const uid = userId.value;
+  if (!uid) {
+    return;
+  }
+
+  let order: OrderWithId | null = ordersStore.getOrderById(requestId.value) ?? null;
+  if (!order) {
+    order = await ordersStore.fetchOrder(uid, requestId.value);
+  }
+
+  if (!order) {
+    loadError.value = true;
+    return;
+  }
+
+  orderDoc.value = order;
+
+  const template = showcaseStore.getTemplateById(order.templateId);
   if (!template) {
-    router.push('/dashboard');
+    loadError.value = true;
     return;
   }
 
   originalTemplate.value = template;
-  previewTemplate.value = createPreviewTemplate(template, template.colorScheme);
 
-  if (
-    !requestLayoutStore.active ||
-    requestLayoutStore.sourceTemplateId !== template.id
-  ) {
-    requestLayoutStore.initFromTemplate(
-      template,
-      `/gallery/request/${templateId.value}`
-    );
+  const colors = order.projectDetails?.colorCustomization ?? template.colorScheme;
+  previewTemplate.value = createPreviewTemplate(template, colors);
+
+  const returnTo = `/gallery/request/${requestId.value}`;
+  if (!requestLayoutStore.active || requestLayoutStore.sourceOrderId !== order.id) {
+    if (order.layout) {
+      requestLayoutStore.initFromOrderLayout(
+        order.layout,
+        order.id,
+        template.sections,
+        returnTo
+      );
+    } else {
+      requestLayoutStore.initFromTemplateForOrder(template, order.id, returnTo);
+    }
   }
+
+  hasLoaded.value = true;
+}
+
+onMounted(async () => {
+  const uid = userId.value;
+  if (uid) ordersStore.subscribe(uid);
+
+  await loadRequestFromFirebase();
+
+  if (loadError.value) return;
 
   await nextTick();
   calculateViewportScale();
@@ -186,6 +269,15 @@ onMounted(async () => {
     resizeObserver.observe(previewContainerRef.value);
   }
 });
+
+watch(
+  userId,
+  async (uid) => {
+    if (!uid || hasLoaded.value || loadError.value) return;
+    ordersStore.subscribe(uid);
+    await loadRequestFromFirebase();
+  }
+);
 
 onUnmounted(() => {
   resizeObserver?.disconnect();
@@ -217,45 +309,47 @@ function handleProgressUpdate(progress: { completed: number; total: number }): v
 }
 
 function openBuilder(): void {
-  router.push(`/gallery/request/${templateId.value}/builder`);
+  const id = requestId.value;
+  if (!id) return;
+  router.push({ path: `/gallery/request/${id}/builder` });
 }
 
 async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
-  const uid = authStore.uid ?? authStore.currentUser?.uid;
-  if (!uid) {
-    alert('You must be signed in to submit a request.');
-    return;
-  }
-
-  const template = originalTemplate.value;
-  if (!template) {
-    alert('Template not found. Please go back and choose a design.');
+  const uid = userId.value;
+  const order = orderDoc.value;
+  if (!uid || !order) {
+    feedbackType.value = 'error';
+    feedbackMessage.value = 'You must be signed in to submit a request.';
     return;
   }
 
   isSubmitting.value = true;
+  feedbackMessage.value = null;
 
   try {
-    const { submitOrder } = useOrderSubmission();
     const layout = requestLayoutStore.active
       ? requestLayoutStore.getLayoutForSubmission()
       : undefined;
 
-    await submitOrder({
+    await updateOrder({
       userId: uid,
-      templateId: templateId.value,
-      templateName: template.name,
+      orderId: order.id,
       formData,
-      files: formData.files ?? [],
+      existingAttachments: order.attachments ?? [],
+      newFiles: formData.files?.length ? [...formData.files] : undefined,
       layout,
+      status: ORDER_STATUS_DEFAULT,
     });
 
     requestLayoutStore.reset();
-    alert('Thank you! Your request has been submitted. We\'ll be in touch soon.');
+    feedbackType.value = 'success';
+    feedbackMessage.value = "Thank you! Your request has been submitted. We'll be in touch soon.";
     await router.push('/dashboard');
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'There was an error submitting your request. Please try again.';
-    alert(message);
+    feedbackType.value = 'error';
+    feedbackMessage.value = err instanceof Error
+      ? err.message
+      : 'There was an error submitting your request. Please try again.';
   } finally {
     isSubmitting.value = false;
   }
@@ -264,3 +358,4 @@ async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
 
 <style src="~/assets/css/components.css"></style>
 <style scoped src="~/assets/css/request-form.css"></style>
+

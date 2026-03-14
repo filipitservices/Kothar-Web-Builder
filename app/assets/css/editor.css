@@ -2,8 +2,8 @@
 
 .main-container {
   display: flex;
-  gap: 1.25rem;
-  padding: 1.25rem;
+  gap: var(--space-lg);
+  padding: var(--space-lg);
   height: 100vh;
   overflow: hidden;
 }
@@ -59,11 +59,7 @@
   flex: 0 0 auto;
 }
 
-.left-sidebar > .sidebar-list {
-  flex: 1;
-  overflow-y: auto;
-  min-height: 0;
-}
+/* .sidebar-list already has flex: 1, overflow-y: auto, min-height: 0 */
 
 .left-sidebar > .sidebar-branding {
   flex: 0 0 auto;
@@ -74,7 +70,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-lg);
   overflow: hidden;
 }
 
@@ -149,25 +145,56 @@
   font-weight: 500;
 }
 
-/* Editable content styles */
+.builder-context-save {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease;
+  white-space: nowrap;
+}
+
+.builder-context-save:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.builder-context-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.builder-context-save svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* Editable content styles (contenteditable in blocks). Uses design tokens. */
 .editable {
   position: relative;
-  padding: 2px 4px;
-  margin: -2px -4px;
-  border-radius: 3px;
+  padding: var(--space-xs);
+  border-radius: var(--radius-sm);
   cursor: text;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
   outline: none;
   display: block;
 }
 
 .editable:hover {
-  background: rgba(30, 58, 138, 0.03);
+  background: var(--color-primary-tint);
 }
 
 .editable:focus {
-  background: rgba(30, 58, 138, 0.08);
-  outline: 1px solid rgba(30, 58, 138, 0.2);
+  background: var(--color-primary-tint);
+  box-shadow: var(--focus-ring-primary);
 }
 
 .editable.has-local-value {

@@ -219,12 +219,57 @@ The app uses Nuxt 4 layouts for global structure:
 - **layouts/default.vue**: Used by landing, dashboard, gallery request, login, and reset-password. Renders the shared **AppNavbar** and a slot for the page.
 - **layouts/builder.vue**: Used only by the builder page. Renders only the slot (no navbar), so the editor has full viewport for the 3-column layout.
 
+**Request layout and builder save:** The page layout being edited for a request/order lives in the request layout store; a single canonical type (`OrderLayoutBlock` is an alias of `BlockItem`) is used from builder UI through to Firestore. Save is performed only via the **`useBuilderSave`** composable; the BuilderEditor component wires it and does not persist directly. Order documents read from Firestore are validated at the boundary with **`parseOrderDocument`** before entering store state (see `docs/18-FIREBASE-FIRESTORE-STORAGE.md`).
+
 **AppNavbar** (`components/AppNavbar.vue`) is the single source of global navigation:
 - Logo (Kothar) links to `/`.
 - On `/gallery/request/*`, a "Back to Dashboard" link is shown.
 - **UserMenu** is always shown (Sign In when guest; avatar and dropdown when authenticated). When authenticated: Dashboard, **My Live Sites** (`/sites`), Sign Out.
 - On the landing page (`/`), an auth-aware CTA is shown: "Start Building" → `/login` when guest, "Dashboard" → `/dashboard` when authenticated.
 - Navbar styles live in `assets/css/navbar.css` and use global design tokens from `style.css`.
+
+---
+
+## Domain Models and Layering
+
+Canonical domain models live in `app/types` and are shared across UI, composables, and persistence:
+
+- **Orders & Requests**: `OrderRequest`, `OrderWithId`, `OrderLayout`, `OrderLayoutBlock` (alias of `BlockItem`) in `app/types/order.ts`.
+- **Builder/Layout**: `BlockType`, `BlockItem`, `DrawingState`, `ScreenId`, `ScreenCardRefShape` in `app/types/builder.ts`.
+- **Templates**: `ShowcaseTemplate` and related types in `app/stores/showcase.ts`.
+- **Auth & Sessions**: `AuthUser`, `SessionClaims`, and related types in `app/types/auth.ts`.
+
+Layering is enforced end-to-end:
+
+- **UI components** render and emit events; they never talk to Firestore directly.
+- **Composables** (e.g. `useBuilderSave`, `useDrawing`, `useTemplateApplication`, `useOrderSubmission`, `useOrderUpdate`) orchestrate behavior and operate on the canonical types.
+- **Stores and persistence** (Pinia stores and Firebase composables/server utilities) own state and I/O, including immutable updates and runtime validation.
+
+All shared state (layouts, orders, templates, requests) is updated immutably by replacing arrays/objects via store/composable APIs rather than mutating nested properties.
+
+Logging is centralized:
+
+- Client code uses `logger` from `app/utils/logger.ts` instead of `console.*`.
+- Server code uses `logger` from `server/utils/logger.ts` for `[server]`-prefixed diagnostics.
+
+---
+
+## Developer Workflow and Verification
+
+Recommended checks when working on this codebase:
+
+- **Typecheck**: Run `npm run typecheck` to ensure the project passes strict TypeScript checks.
+- **Builder layout round-trip**:
+  - Open a request (gallery or order), navigate to the builder, add/move/remove blocks, and click Save.
+  - Reload the page and re-open the builder; the layout should exactly match the last save and produce no console errors.
+- **Request creation and submission**:
+  - Create a draft request from the dashboard, fill out the form, and submit.
+  - Verify a new order appears in the dashboard with the expected status and layout.
+- **Order edit**:
+  - Open an existing order in edit mode, change form fields and/or layout, and save.
+  - Confirm the changes persist and the layout round-trip behavior remains correct.
+
+These flows exercise the canonical models (orders, layouts, templates), the `useBuilderSave` composable, immutable store updates, and runtime Firestore validation via `parseOrderDocument`.
 
 **Live Sites** (`/sites`, `/sites/:id`): Delivered websites are managed here, not in the builder. The builder is for design selection and the request flow only. Live sites have their own Pinia store (`stores/sites.ts`) and control-panel UI for content updates, business hours, seasonal announcements, and change requests. No pathway from live sites back into the builder to "rebuild."
 

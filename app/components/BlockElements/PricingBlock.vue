@@ -125,11 +125,13 @@ const props = defineProps({
 
 const { getField, setField, isLocalValue } = useBlockData(props.blockId, props.screenType);
 
-const title = computed<string>(() => getField('title') ?? 'Pricing Plans');
-const subtitle = computed<string>(() => getField('subtitle') ?? 'Choose the plan that fits your needs.');
+const title = computed<string>(() => (getField('title') as string | undefined) ?? 'Pricing Plans');
+const subtitle = computed<string>(
+  () => (getField('subtitle') as string | undefined) ?? 'Choose the plan that fits your needs.'
+);
 
 const plans = computed<PricingPlan[]>(() => {
-  const stored = getField('plans');
+  const stored = getField('plans') as PricingPlan[] | unknown;
   if (Array.isArray(stored) && stored.length > 0) return stored;
   
   return [

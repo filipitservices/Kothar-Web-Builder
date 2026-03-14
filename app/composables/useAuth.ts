@@ -20,6 +20,7 @@
  */
 
 import { computed, onMounted, onUnmounted, type Ref, type ComputedRef } from 'vue';
+import { logger } from '~/utils/logger';
 import { 
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -156,7 +157,7 @@ export function useAuth(): UseAuthReturn {
       }
       
     } catch (error) {
-      console.warn('[Auth] Failed to check session:', error);
+      logger.warn('[Auth] Failed to check session:', error);
     }
     
     // Set up client-side auth state listener (only on client)
@@ -174,7 +175,7 @@ export function useAuth(): UseAuthReturn {
                 const user = await exchangeTokenForSession(idToken);
                 authStore.setUser(user);
               } catch (error) {
-                console.warn('[Auth] Failed to sync session:', error);
+                logger.warn('[Auth] Failed to sync session:', error);
                 // Keep client-side state for now
                 authStore.setUser(firebaseUserToAuthUser(firebaseUser));
               }
@@ -348,7 +349,7 @@ export function useAuth(): UseAuthReturn {
       // Even if server logout fails, clear local state
       authStore.clearUser();
       authStore.setLoading(false);
-      console.warn('[Auth] Sign out error:', error);
+      logger.warn('[Auth] Sign out error:', error);
     }
   }
   
@@ -422,7 +423,7 @@ export function useAuth(): UseAuthReturn {
         authStore.clearUser();
       }
     } catch (error) {
-      console.warn('[Auth] Failed to refresh user:', error);
+      logger.warn('[Auth] Failed to refresh user:', error);
     }
   }
   

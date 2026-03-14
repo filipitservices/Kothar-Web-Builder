@@ -10,6 +10,7 @@
  */
 
 import { getAdminAuth, getSessionConfig } from '../../utils/firebase-admin';
+import { logger } from '../../utils/logger';
 import type { AuthUser, SessionCreateRequest, SessionCreateResponse } from '~/types/auth';
 
 export default defineEventHandler(async (event): Promise<SessionCreateResponse> => {
@@ -51,7 +52,7 @@ export default defineEventHandler(async (event): Promise<SessionCreateResponse> 
       // This is a security choice - you may want to allow older tokens
       // For this implementation, we'll be lenient and allow it
       // but log a warning
-      console.warn('[Auth] Session created from non-recent sign-in');
+      logger.warn('[Auth] Session created from non-recent sign-in');
     }
     
     // Create the session cookie
@@ -85,7 +86,7 @@ export default defineEventHandler(async (event): Promise<SessionCreateResponse> 
     
   } catch (error: unknown) {
     // Log the error for debugging
-    console.error('[Auth] Session creation failed:', error);
+    logger.error('[Auth] Session creation failed:', error);
     
     // Determine the error type and return appropriate response
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';

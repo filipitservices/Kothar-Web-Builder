@@ -28,13 +28,3 @@ export function blurOnEnter(event: KeyboardEvent): void {
     target.blur();
   }
 }
-
-/**
- * Type guard to check if an element is contenteditable
- * @param element - The element to check
- * @returns True if the element is contenteditable
- */
-export function isContentEditable(element: unknown): element is HTMLElement {
-  return element instanceof HTMLElement && 
-         element.isContentEditable;
-}

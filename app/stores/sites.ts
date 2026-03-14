@@ -114,12 +114,29 @@ export const useSitesStore = defineStore('sites', () => {
     return sites.value.find((s) => s.id === id);
   }
 
-  function updateSite(id: string, updates: Partial<SiteDetails>): void {
+  function updateSite(id: string, updates: Omit<Partial<SiteDetails>, 'id'>): void {
     const index = sites.value.findIndex((s) => s.id === id);
     if (index === -1) return;
+    const current = sites.value[index] as SiteDetails | undefined;
+    if (!current) return;
+    const next: SiteDetails = {
+      id: current.id,
+      businessName: updates.businessName ?? current.businessName,
+      domainLabel: updates.domainLabel ?? current.domainLabel,
+      status: updates.status ?? current.status,
+      industry: updates.industry ?? current.industry,
+      hero: updates.hero ? { ...current.hero, ...updates.hero } : current.hero,
+      services: updates.services ? [...updates.services] : current.services,
+      contact: updates.contact ? { ...current.contact, ...updates.contact } : current.contact,
+      businessHours: updates.businessHours ? [...updates.businessHours] : current.businessHours,
+      seasonalAnnouncement: updates.seasonalAnnouncement
+        ? { ...current.seasonalAnnouncement, ...updates.seasonalAnnouncement }
+        : current.seasonalAnnouncement,
+      lastUpdatedAt: new Date().toISOString(),
+    };
     sites.value = [
       ...sites.value.slice(0, index),
-      { ...sites.value[index], ...updates, lastUpdatedAt: new Date().toISOString() },
+      next,
       ...sites.value.slice(index + 1),
     ];
   }

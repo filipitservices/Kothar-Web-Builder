@@ -20,22 +20,9 @@ import {
   type Firestore
 } from 'firebase/firestore';
 import { getFirebaseApp } from '~/plugins/firebase.client';
-import type { OrderRequest } from '~/types/order';
 import type { OrderWithId } from '~/types/order';
-
-function isOrderRequest(doc: unknown): doc is OrderRequest {
-  if (!doc || typeof doc !== 'object') return false;
-  const d = doc as Record<string, unknown>;
-  return (
-    typeof d.templateId === 'string' &&
-    typeof d.templateName === 'string' &&
-    d.businessInfo != null &&
-    d.contactInfo != null &&
-    d.projectDetails != null &&
-    Array.isArray(d.attachments) &&
-    typeof d.status === 'string'
-  );
-}
+import { parseOrderDocument } from '~/utils/orderValidation';
+import { logger } from '~/utils/logger';
 
 export const useOrdersStore = defineStore('orders', () => {
   const orders = ref<OrderWithId[]>([]);
@@ -62,19 +49,15 @@ export const useOrdersStore = defineStore('orders', () => {
       q,
       (snapshot) => {
         const list: OrderWithId[] = [];
-        snapshot.forEach((doc) => {
-          const data = doc.data();
-          if (!isOrderRequest(data)) return;
-          list.push({
-            ...data,
-            id: doc.id,
-            modificationLocked: data.modificationLocked === true
-          } as OrderWithId);
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          const order = parseOrderDocument(data, docSnap.id);
+          if (order) list.push(order);
         });
         orders.value = list;
       },
       (err) => {
-        console.error('[orders store] snapshot error:', err);
+        logger.error('[orders store] snapshot error:', err);
         orders.value = [];
       }
     );
@@ -106,13 +89,7 @@ export const useOrdersStore = defineStore('orders', () => {
     if (!snap.exists()) return null;
 
     const data = snap.data();
-    if (!isOrderRequest(data)) return null;
-
-    return {
-      ...data,
-      id: snap.id,
-      modificationLocked: data.modificationLocked === true
-    } as OrderWithId;
+    return parseOrderDocument(data, snap.id);
   }
 
   /** Whether the user has at least one order. */
@@ -121,6 +98,7 @@ export const useOrdersStore = defineStore('orders', () => {
   /** User-facing label for order status. Includes legacy Firestore values. */
   function getOrderStatusLabel(status: string): string {
     const labels: Record<string, string> = {
+      draft: 'Draft',
       submitted: 'Submitted',
       under_review: 'Under review',
       in_production: 'In production',
@@ -138,6 +116,7 @@ export const useOrdersStore = defineStore('orders', () => {
   /** Semantic class suffix for status badge. Includes legacy status values. */
   function getOrderStatusClass(status: string): string {
     const map: Record<string, string> = {
+      draft: 'neutral',
       submitted: 'neutral',
       under_review: 'info',
       in_production: 'info',
