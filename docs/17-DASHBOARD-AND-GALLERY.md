@@ -1,7 +1,7 @@
 # Dashboard & Template System
 
-> **Document Version:** 2.0
-> **Last Updated:** February 2026
+> **Document Version:** 2.1
+> **Last Updated:** March 2026
 > **Status:** Production
 
 ## Overview
@@ -94,7 +94,7 @@ The page is structured as a control surface: a compact **control strip** (greeti
 
 1. **Control strip** (`dashboard-strip`) — Header with personalized greeting and primary "Open Builder" CTA. White background, subtle left border accent. Single row on desktop; stacks on small screens.
 2. **Templates showcase** (`dashboard-showcase`) — Contrast block (primary-tint background) containing section heading, category pills (tablist), and a responsive grid of compact template cards. Cards use a small browser mockup preview, industry label, name, description clamp, and "Preview" action.
-3. **ShowcaseModal** — In-page preview modal: desktop/mobile toggle, "Choose This Design" → creates a draft request in Firebase → navigates to `/gallery/request/{docId}` (Firebase document ID).
+3. **ShowcaseModal** — In-page preview modal: desktop/mobile toggle, optional loading state (spinner) while the request is created, "Choose This Design" → creates a draft request in Firestore → navigates to `/gallery/request/{docId}` (Firebase document ID).
 4. **Footer** — Minimal copyright line; same container width as content.
 
 ### State Management
@@ -191,7 +191,12 @@ Modal overlay for previewing complete showcase templates with device simulation.
 - Full-height scrollable preview
 - Template info in header
 - "Close Preview" secondary action
-- "Choose This Design" CTA → navigates to request form
+- "Choose This Design" CTA → creates draft then navigates to request form
+- **Loading state:** When `loading` is true (request creation in progress), an in-modal overlay shows a spinner and "Preparing your request…"; all actions (Choose This Design, Close, overlay click, Escape) are disabled so only one request can be created at a time. The modal restores `document.body.style.overflow` on unmount so the next page (e.g. request form) is not left unscrollable.
+
+### Accessibility
+
+- When loading: `aria-busy="true"` on the modal container, `aria-live="polite"` and `role="status"` on the loading message. Buttons are disabled. Animation respects `prefers-reduced-motion: reduce` (spinner becomes static).
 
 ### Device Frames
 
@@ -257,8 +262,8 @@ The page consists of two main pieces:
 
 ### Request Lifecycle
 
-1. **Draft creation** (dashboard): `useCreateRequest().createDraftRequest()` writes a draft order doc to `users/{uid}/orders/{newId}` with `status: 'draft'`, initial layout from the template, and empty business/contact fields.
-2. **Form filling** (request page): The page loads the draft by doc ID, resolves the template, and renders the form. The user fills in details and optionally customizes the layout via the builder.
+1. **Draft creation** (dashboard): `useCreateRequest().createDraftRequest()` runs a single Firestore transaction that writes the draft order doc to `users/{uid}/orders/{newId}` (with `status: 'draft'`, initial layout from the template, empty business/contact fields) and updates the daily-limit counter. The modal shows a loading state until navigation completes. See **Template selection flow and performance** below.
+2. **Form filling** (request page): The page loads the draft by doc ID (or, when coming from the dashboard, may use navigation state for immediate paint; Firestore remains the canonical source). It resolves the template, initializes the request layout store, and renders the form. The user fills in details and optionally customizes the layout via the builder.
 3. **Submission**: On form submit, the page calls `useOrderUpdate().updateOrder()` to transition the draft to `status: 'submitted'` with the full form data, attachments, and layout.
 
 ### Error Handling
@@ -391,9 +396,58 @@ Request orders follow a two-phase lifecycle:
 
 **Layout persistence:** The builder's Save button writes the current layout to the draft document in Firebase via `useCreateRequest().saveLayout()`. This ensures layout changes survive page refresh, navigation, and browser close. The request page loads the persisted layout from the document on mount. When opening the builder from the request page, the app navigates to `/builder?orderId={orderId}` so the builder can rehydrate from Firebase after a refresh.
 
-**Daily limit:** Each user can create at most 3 requests per day. This is enforced by Firestore security rules using a counter document at `users/{userId}/requestLimits/daily`, written atomically with the draft via a batch write.
+**Daily limit:** Each user can create at most 3 requests per day. This is enforced by Firestore security rules using a counter document at `users/{userId}/requestLimits/daily`. The counter is read and written inside the same transaction as the order document (single round-trip).
 
 See **[18-FIREBASE-FIRESTORE-STORAGE.md](18-FIREBASE-FIRESTORE-STORAGE.md)** for the full Firestore/Storage data model, document shape, and security considerations.
+
+---
+
+## Template selection flow and performance
+
+This section describes the sequence from "Choose This Design" to the request page, the causes of perceived lag that were addressed, and the optimizations and loading UI applied.
+
+### Reproduction (lag before fix)
+
+1. User is on the dashboard and clicks a template card → ShowcaseModal opens.
+2. User clicks "Choose This Design".
+3. **Before the fix:** The modal closed immediately; the dashboard was visible with no loading indicator. The user then waited while: a separate Firestore read for the daily counter, then a transaction writing the order and counter, then client-side navigation, then the request page mounting and fetching the same order again. On slow connections this produced a noticeable delay with no feedback.
+
+### Root causes
+
+1. **Modal closed before async work** — The dashboard called `closeShowcase()` at the start of the handler, so the modal disappeared before the Firestore transaction and navigation. The user had no indication that request creation was in progress.
+2. **Two Firestore round-trips** — The composable first called `getDoc(counterRef)` to read the daily counter, then ran `runTransaction` to write the order and counter. That was two sequential round-trips; the counter read was moved inside the transaction so a single transaction performs read + write.
+3. **Redundant fetch** — After navigation, the request page always called `fetchOrder()` to load the document that had just been created. Navigation state hydration was added as an optional fast-path so the page can render immediately when the order is passed in state; the page still loads from Firestore when state is absent (reload, direct URL, history restore).
+
+### Optimizations applied
+
+1. **Loading UI before async work** — The handler sets `isCreating = true`, then `await nextTick()`, so Vue paints the modal’s loading state (spinner + "Preparing your request…") before the Firestore transaction runs. The modal is not closed until navigation occurs or an error is shown.
+2. **Single Firestore transaction** — In `useCreateRequest.createDraftRequest()`, the counter is read with `transaction.get(counterRef)` inside `runTransaction`; the new count is computed and both the order document and the counter are written in the same transaction. One round-trip instead of two.
+3. **Optional hydration from navigation state** — After a successful create, the dashboard passes the created order (as an `OrderWithId`-compatible object) in `router.push(..., state: { orderFromCreate } )`. The request page checks `history.state?.orderFromCreate`; if present and the id matches the route param, it uses that for immediate render and initializes the request layout store. Hydration is a performance optimization only; the canonical source of truth is Firestore. The request page always supports loading purely from the route id (e.g. direct URL or reload).
+4. **No concurrent request creation** — While `isCreating` is true, the dashboard does not open another template (`openShowcase` returns early), and the modal’s actions (Choose This Design, Close, overlay click, Escape) are disabled or no-op. Only one creation runs at a time.
+5. **Cleanup on modal unmount** — ShowcaseModal’s `onUnmounted` sets `document.body.style.overflow = ''` so that when the user navigates to the request page (or closes the modal), the body is not left with `overflow: hidden`, which would make the request page unscrollable.
+
+### Loading UI
+
+- The loading indicator is an overlay inside the modal body (no new layout structure). It uses a CSS-only spinner and the copy "Preparing your request…", with design tokens (`--color-primary`, `--color-text-muted`, `--space-*`, `--radius-*`). It does not resize the modal or cause layout shift.
+- Accessibility: `aria-busy="true"` on the modal, `aria-live="polite"` and `role="status"` on the message; buttons disabled; animation reduced or disabled when `prefers-reduced-motion: reduce`.
+
+### Validation checklist
+
+- **Immediate spinner:** On "Choose This Design", the loading indicator appears before any visible delay (verified with throttled network).
+- **Modal remains visible:** Modal stays open with loading state until navigation or error.
+- **No concurrent creation:** With loading visible, clicking another template or "Choose This Design" again does not start a second request.
+- **Navigation and request page:** After the transaction, navigation to `/gallery/request/:id` occurs. If hydration was passed, the request page can render immediately; if not (direct URL or reload), it loads from Firestore. Reloading the request page always loads from Firestore.
+- **No UI bugs:** Request page is scrollable; no `overflow: hidden` left on body. No layout shift when the spinner appears. No modal-specific state affecting the request page.
+- **Errors:** On network or server error during create, a toast is shown, `isCreating` is set to false, and the modal stays open for retry or close.
+
+### Code summary (modified files)
+
+| File | Purpose |
+|------|--------|
+| `app/pages/dashboard.vue` | Set `isCreating = true`, `await nextTick()`, then run create + push; do not close modal before async work. Guard `openShowcase` and `closeShowcase` when `isCreating`. Pass `loading` to modal and optional `state.orderFromCreate` on push. |
+| `app/composables/useCreateRequest.ts` | Single transaction with `transaction.get(counterRef)`; return `orderForHydration` for the request page fast-path. |
+| `app/components/ShowcaseModal.vue` | `loading` prop; in-modal loading overlay (spinner + message); disable actions when loading; `aria-busy`, `aria-live`; restore `document.body.style.overflow` in `onUnmounted`. |
+| `app/pages/gallery/request/[id]/index.vue` | In `loadRequestFromFirebase`, use `history.state?.orderFromCreate` when present and id matches for immediate render; otherwise load from Firestore. Page remains fully functional without hydration. |
 
 ---
 

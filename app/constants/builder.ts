@@ -38,9 +38,10 @@ export const INFO_BAR_FIELDS: InfoField[] = [
   { name: 'taxId', label: 'Tax ID', type: 'text', placeholder: 'Enter tax ID' }
 ];
 
+/** Matches ScreenCard .desktop-screen / .mobile-screen and useScreenScaling natural dimensions. */
 export const CANVAS_DIMENSIONS = {
-  desktop: { width: 650, height: 380 },
-  mobile: { width: 306, height: 520 }
+  desktop: { width: 700, height: 550 },
+  mobile: { width: 330, height: 600 }
 };
 
 export const INITIAL_FIELD_ERRORS = {

@@ -64,31 +64,19 @@ async function initialiseLayoutFromOrder(orderId: string, uid: string): Promise<
       requestLayoutStore.initFromTemplateForOrder(template, order.id, returnTo);
     }
   } else if (requestLayoutStore.returnRoute !== returnTo) {
-    logOrd('before_setReturnRoute', { returnTo }, 'H1');
     requestLayoutStore.setReturnRoute(returnTo);
   }
 }
 
-// #region agent log
-const logOrd = (msg: string, data: Record<string, unknown>, hypothesisId: string) => {
-  fetch('http://127.0.0.1:7676/ingest/056ffe36-1885-4d94-b82c-e70f502f51ae', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'e556b6' }, body: JSON.stringify({ sessionId: 'e556b6', location: 'app/pages/orders/[id]/builder.vue', message: msg, data, timestamp: Date.now(), hypothesisId }) }).catch(() => {});
-};
-// #endregion
-
 async function ensureOrderContext(): Promise<void> {
   const orderId = getOrderIdFromRoute();
-  logOrd('ensureOrderContext', { orderId: orderId ?? null, paramsId: route.params.id }, 'H4');
   if (!orderId) {
-    logOrd('redirect', { reason: 'no_orderId' }, 'H4');
     await router.replace('/sites');
     return;
   }
 
   const uid = authStore.uid ?? authStore.currentUser?.uid ?? null;
-  if (!uid) {
-    logOrd('bail_no_uid', { orderId }, 'H3');
-    return;
-  }
+  if (!uid) return;
 
   await initialiseLayoutFromOrder(orderId, uid);
 }

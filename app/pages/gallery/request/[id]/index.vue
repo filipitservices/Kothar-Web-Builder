@@ -205,15 +205,27 @@ function calculateViewportScale(): void {
 
 let resizeObserver: ResizeObserver | null = null;
 
+function getOrderFromNavigationState(): OrderWithId | null {
+  if (typeof window === 'undefined') return null;
+  const state = window.history.state as { orderFromCreate?: OrderWithId } | undefined;
+  const order = state?.orderFromCreate ?? null;
+  if (!order || order.id !== requestId.value) return null;
+  return order;
+}
+
 async function loadRequestFromFirebase(): Promise<void> {
   const uid = userId.value;
   if (!uid) {
     return;
   }
 
-  let order: OrderWithId | null = ordersStore.getOrderById(requestId.value) ?? null;
+  const id = requestId.value;
+  let order: OrderWithId | null = getOrderFromNavigationState();
   if (!order) {
-    order = await ordersStore.fetchOrder(uid, requestId.value);
+    order = ordersStore.getOrderById(id) ?? null;
+  }
+  if (!order) {
+    order = await ordersStore.fetchOrder(uid, id);
   }
 
   if (!order) {
@@ -234,7 +246,7 @@ async function loadRequestFromFirebase(): Promise<void> {
   const colors = order.projectDetails?.colorCustomization ?? template.colorScheme;
   previewTemplate.value = createPreviewTemplate(template, colors);
 
-  const returnTo = `/gallery/request/${requestId.value}`;
+  const returnTo = `/gallery/request/${id}`;
   if (!requestLayoutStore.active || requestLayoutStore.sourceOrderId !== order.id) {
     if (order.layout) {
       requestLayoutStore.initFromOrderLayout(

@@ -101,6 +101,7 @@
     <ShowcaseModal
       v-if="showModal"
       :template="selectedTemplate"
+      :loading="isCreating"
       @close="closeShowcase"
       @choose="handleChooseDesign"
     />
@@ -114,7 +115,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, nextTick } from 'vue';
 import { useAuth } from '~/composables/useAuth';
 import { useShowcaseStore, type ShowcaseTemplate, type ShowcaseCategory } from '~/stores/showcase';
 import { useCreateRequest, CreateRequestError } from '~/composables/useCreateRequest';
@@ -163,32 +164,40 @@ const getPreviewStyle = (template: ShowcaseTemplate) => ({
 });
 
 const openShowcase = (template: ShowcaseTemplate) => {
+  if (isCreating.value) return;
   selectedTemplate.value = template;
   showModal.value = true;
   document.body.style.overflow = 'hidden';
 };
 
 const closeShowcase = () => {
+  if (isCreating.value) return;
   showModal.value = false;
   selectedTemplate.value = null;
   document.body.style.overflow = '';
 };
 
 async function handleChooseDesign(templateId: string): Promise<void> {
+  if (isCreating.value) return;
+
   const uid = currentUser.value?.uid;
   if (!uid) return;
 
   const template = showcaseStore.getTemplateById(templateId);
   if (!template) return;
 
-  if (isCreating.value) return;
   isCreating.value = true;
-
-  closeShowcase();
+  await nextTick();
 
   try {
-    const { orderId } = await createDraftRequest(uid, template);
-    await router.push(`/gallery/request/${orderId}`);
+    const result = await createDraftRequest(uid, template);
+    type HistoryState = import('vue-router').HistoryState;
+    await router.push({
+      path: `/gallery/request/${result.orderId}`,
+      ...(result.orderForHydration && {
+        state: { orderFromCreate: result.orderForHydration } as unknown as HistoryState
+      })
+    });
   } catch (err) {
     if (err instanceof CreateRequestError) {
       toast.showError(err.message);

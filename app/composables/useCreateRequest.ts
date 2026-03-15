@@ -14,14 +14,13 @@ import {
   collection,
   doc,
   runTransaction,
-  getDoc,
   updateDoc,
   serverTimestamp,
   type Firestore
 } from 'firebase/firestore';
 import { getFirebaseApp } from '~/plugins/firebase.client';
 import type { ShowcaseTemplate } from '~/stores/showcase';
-import type { OrderLayout, OrderLayoutBlock } from '~/types/order';
+import type { OrderLayout, OrderLayoutBlock, OrderWithId } from '~/types/order';
 import { ORDER_STATUS_DRAFT } from '~/types/order';
 import { showcaseSectionsToBlocks } from '~/stores/requestLayout';
 
@@ -38,6 +37,8 @@ export class CreateRequestError extends Error {
 
 export interface CreateRequestResult {
   orderId: string;
+  /** Optional hydration object for the request page fast-path; not the canonical source of truth. */
+  orderForHydration?: OrderWithId;
 }
 
 function getTodayDateString(): string {
@@ -65,6 +66,51 @@ export interface UseCreateRequestReturn {
   saveLayout: (userId: string, orderId: string, layout: OrderLayout) => Promise<void>;
 }
 
+/** Build OrderWithId-compatible object for request page hydration (createdAt/updatedAt left null). */
+function buildOrderForHydration(
+  orderId: string,
+  template: ShowcaseTemplate,
+  layout: OrderLayout
+): OrderWithId {
+  const defaultColorCustomization = {
+    primary: template.colorScheme.primary,
+    secondary: template.colorScheme.secondary,
+    accent: template.colorScheme.accent,
+    background: template.colorScheme.background,
+    text: template.colorScheme.text,
+  };
+  return {
+    id: orderId,
+    templateId: template.id,
+    templateName: template.name,
+    status: ORDER_STATUS_DRAFT,
+    layout,
+    businessInfo: {
+      businessName: '',
+      industry: '',
+      yearsInBusiness: '',
+      businessDescription: '',
+    },
+    contactInfo: {
+      contactName: '',
+      email: '',
+      phone: '',
+      website: '',
+      address: '',
+    },
+    projectDetails: {
+      goals: [],
+      targetAudience: '',
+      additionalNotes: '',
+      colorCustomization: defaultColorCustomization,
+    },
+    attachments: [],
+    modificationLocked: false,
+    createdAt: null,
+    updatedAt: null,
+  };
+}
+
 export function useCreateRequest(): UseCreateRequestReturn {
   /**
    * Create a draft request document paired with a daily-limit counter update.
@@ -88,31 +134,9 @@ export function useCreateRequest(): UseCreateRequestReturn {
 
     const orderRef = doc(collection(db, 'users', userId, 'orders'));
     const orderId = orderRef.id;
-
     const counterRef = doc(db, 'users', userId, 'requestLimits', 'daily');
 
-    let newCount = 1;
-    try {
-      const counterSnap = await getDoc(counterRef);
-      if (counterSnap.exists()) {
-        const data = counterSnap.data();
-        if (data.date === today) {
-          newCount = (typeof data.count === 'number' ? data.count : 0) + 1;
-        }
-      }
-    } catch {
-      // If we can't read the counter, proceed — rules will enforce the limit
-    }
-
-    if (newCount > 3) {
-      throw new CreateRequestError(
-        "You've reached the daily limit of 3 requests. Please try again tomorrow.",
-        { limitExceeded: true }
-      );
-    }
-
     const layout = buildInitialLayout(template);
-
     const defaultColorCustomization = {
       primary: template.colorScheme.primary,
       secondary: template.colorScheme.secondary,
@@ -153,10 +177,27 @@ export function useCreateRequest(): UseCreateRequestReturn {
 
     try {
       await runTransaction(db, async (transaction) => {
+        const counterSnap = await transaction.get(counterRef);
+        let newCount = 1;
+        if (counterSnap.exists()) {
+          const data = counterSnap.data();
+          if (data.date === today) {
+            newCount = (typeof data.count === 'number' ? data.count : 0) + 1;
+          }
+        }
+        if (newCount > 3) {
+          throw new CreateRequestError(
+            "You've reached the daily limit of 3 requests. Please try again tomorrow.",
+            { limitExceeded: true }
+          );
+        }
         transaction.set(orderRef, orderPayload);
         transaction.set(counterRef, { date: today, count: newCount });
       });
     } catch (err: unknown) {
+      if (err instanceof CreateRequestError) {
+        throw err;
+      }
       const code = (err as { code?: string }).code;
       if (code === 'permission-denied') {
         throw new CreateRequestError(
@@ -170,7 +211,8 @@ export function useCreateRequest(): UseCreateRequestReturn {
       );
     }
 
-    return { orderId };
+    const orderForHydration = buildOrderForHydration(orderId, template, layout);
+    return { orderId, orderForHydration };
   }
 
   /**

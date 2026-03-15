@@ -74,18 +74,19 @@
   overflow: hidden;
 }
 
-/* Responsive adjustments */
+/* Responsive adjustments: keep definite height so flex chain gives .screens-inner usable space. */
 @media (max-width: 1200px) {
   .main-container {
     flex-direction: column;
     gap: var(--space-md);
     padding: var(--space-md);
-    height: auto;
+    height: 100vh;
     min-height: 100vh;
+    overflow: auto;
   }
 
   .screens-container {
-    flex: 1;
+    flex: 1 1 0;
     min-height: 0;
   }
 

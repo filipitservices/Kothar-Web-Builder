@@ -19,7 +19,7 @@
           :is-drawing-enabled="props.desktopDrawingState.desktopEnabled"
           :drawing-state="props.desktopDrawingState"
           :strokes="props.desktopStrokes"
-          :style="{ transform: `scale(${desktopScale})`, transformOrigin: 'top center' }"
+          :style="{ transform: `translateX(-50%) scale(${desktopScale})`, transformOrigin: 'top center' }"
           @undo="() => desktopScreenRef?.undo()"
           @redo="() => desktopScreenRef?.redo()"
           @clear="() => desktopScreenRef?.clear()"
@@ -45,7 +45,7 @@
           :is-drawing-enabled="props.mobileDrawingState.mobileEnabled"
           :drawing-state="props.mobileDrawingState"
           :strokes="props.mobileStrokes"
-          :style="{ transform: `scale(${mobileScale})`, transformOrigin: 'top center' }"
+          :style="{ transform: `translateX(-50%) scale(${mobileScale})`, transformOrigin: 'top center' }"
           @undo="() => mobileScreenRef?.undo()"
           @redo="() => mobileScreenRef?.redo()"
           @clear="() => mobileScreenRef?.clear()"
@@ -281,12 +281,11 @@ watch(() => props.mobileDrawingState.mobileEnabled, (enabled) => {
   flex-shrink: 0;
 }
 
-/* Center absolute-positioned screen (no negative-margin hack) */
-.screen-scale-wrapper > .screen {
+/* Position screen inside wrapper; centering + scale applied via inline transform so both apply. */
+.screen-scale-wrapper > :deep(.screen) {
   position: absolute;
   top: 0;
   left: 50%;
-  transform: translateX(-50%);
 }
 
 /* Stack screens vertically on smaller viewports */

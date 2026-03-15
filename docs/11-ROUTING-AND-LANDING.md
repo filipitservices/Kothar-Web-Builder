@@ -261,6 +261,34 @@ Builder-specific CSS preserved exactly:
 
 **Critical**: No layout changes to builder. Simply relocated from `/` to `/builder`.
 
+### Builder screens display (layout recovery)
+
+**Root cause (three issues):**
+
+1. **Screen centering lost:** `ScreensPanel` applies an inline `transform: scale(...)` on each `ScreenCard`. Scoped CSS had `.screen-scale-wrapper > .screen { transform: translateX(-50%); }` to center the screen in the wrapper. Inline style overrides the stylesheet, so the horizontal centering was lost and screens could appear off-center or misaligned.
+
+2. **Responsive collapse:** In `editor.css`, at `max-width: 1200px`, `.main-container` was set to `height: auto`. With `height: auto`, the flex container no longer has a definite height, so the flex chain (`.screens-container` → `.screens-panel` → `.screens-inner`) could not allocate space correctly. The screens area could collapse or get minimal height on smaller viewports.
+
+3. **Canvas dimension mismatch:** `CANVAS_DIMENSIONS` in `constants/builder.ts` (650×380, 306×520) did not match `ScreenCard` CSS (700×550, 330×600) or `useScreenScaling` natural dimensions. That could cause wrong initial layout or drawing overlay mismatch.
+
+**Changes made:**
+
+- **ScreensPanel.vue:** Combined transform so centering is preserved: inline style now uses `transform: translateX(-50%) scale(...)` for both desktop and mobile. Kept `.screen-scale-wrapper > :deep(.screen)` with `position: absolute; top: 0; left: 50%;` so the wrapper still positions the screen; centering is done in the inline transform.
+- **editor.css:** In the `@media (max-width: 1200px)` block, set `.main-container` to `height: 100vh` and `min-height: 100vh`, and `overflow: auto`, so the flex chain has a definite height. Set `.screens-container` to `flex: 1 1 0` so it receives a share of the viewport.
+- **constants/builder.ts:** Set `CANVAS_DIMENSIONS` to `desktop: { width: 700, height: 550 }`, `mobile: { width: 330, height: 600 }` to match `ScreenCard` and `useScreenScaling`.
+
+**Verification:** Open the builder from a request (`/gallery/request/[id]/builder`) or order (`/orders/[id]/builder`). Confirm: (1) Desktop and mobile screens are centered in the center column. (2) At viewport width ≤1200px, the screens area has usable height and scrolls if needed; no collapsed center column. (3) Layout from request/order state loads correctly; no clipping of screens. (4) Resize the window and toggle mobile/desktop; scaling and centering remain correct.
+
+**Revert:** To revert: restore `.main-container { height: auto }` in the 1200px media block; restore previous `CANVAS_DIMENSIONS`; in ScreensPanel remove `translateX(-50%)` from the inline transforms and restore the original `.screen-scale-wrapper > .screen` rule with `transform: translateX(-50%)` only in CSS (centering will again be overridden by inline scale; for full revert, also remove the scale from inline and apply scale via a wrapper or separate element if needed).
+
+**Code summary:**
+
+| File | Change |
+|------|--------|
+| `app/components/ScreensPanel.vue` | Inline transform now includes `translateX(-50%)` with scale so centering is not overridden; use `:deep(.screen)` for positioning. |
+| `app/assets/css/editor.css` | At 1200px breakpoint: `height: 100vh`, `min-height: 100vh`, `overflow: auto` on `.main-container`; `flex: 1 1 0` on `.screens-container`. |
+| `app/constants/builder.ts` | `CANVAS_DIMENSIONS` set to 700×550 (desktop) and 330×600 (mobile) to match ScreenCard and useScreenScaling. |
+
 ---
 
 ## App Root and Layouts
