@@ -314,6 +314,9 @@ index.vue (Main Page)  [uses default layout → AppNavbar + slot]
 ├── InfoBar
 │   └── (Business form fields)
 ├── ScreensPanel
+│   ├── .screens-area (flex: 1, position: relative)
+│   │   ├── .screens-inner — ScreenCard (Desktop), ScreenCard (Mobile)
+│   │   └── AiChatPanel (overlay, does not affect layout)
 │   ├── ScreenCard (Desktop)
 │   │   ├── ScreenHeader
 │   │   ├── ItemsList (render-mode="canvas")
@@ -324,8 +327,9 @@ index.vue (Main Page)  [uses default layout → AppNavbar + slot]
 │   │   └── DrawingOverlay
 │   │       ├── VueDrawingCanvas
 │   │       └── DrawingToolControls
-│   └── ScreenCard (Mobile)
-│       └── (Same structure)
+│   ├── ScreenCard (Mobile)
+│   │   └── (Same structure)
+│   └── DrawingControlsPanel
 ├── ItemsList (sidebar - "available")
 │   └── (render-mode="preview")
 └── ItemsList (sidebar - "unused")

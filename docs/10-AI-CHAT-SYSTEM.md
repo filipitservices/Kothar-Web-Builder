@@ -13,7 +13,7 @@ The AI Chat System provides an integrated conversational assistant within the Ko
 - **Real-time messaging interface** with user/assistant message distinction
 - **Minimizable panel** that collapses to header-only (44px) when not in use
 - **Smooth transitions** with 0.3s ease animation between states
-- **Non-intrusive layout placement** below drawing controls
+- **Floating overlay** — does not affect layout; overlays the screens area only
 - **State persistence** via Pinia store architecture
 - **Type-safe implementation** following project TypeScript conventions
 - **Reactive UI** with auto-scrolling and visual feedback
@@ -86,58 +86,44 @@ interface AiMessage {
 ### Layout Hierarchy
 
 ```
-index.vue (Main Page)
-  └─ ScreensPanel.vue
-       ├─ ScreensInner (flex: 1, scrollable)
-       │    ├─ DesktopScreen
-       │    └─ MobileScreen
-       ├─ DrawingControlsPanel (fixed height)
-       └─ AiChatPanel (fixed height: 160px)
+ScreensPanel.vue (.screens-panel)
+  ├─ .screens-area (flex: 1, position: relative)
+  │    ├─ .screens-inner (flex: 1, scrollable) — device frames
+  │    └─ AiChatPanel (position: absolute, bottom: 0) — overlay
+  └─ DrawingControlsPanel (fixed height)
 ```
+
+The AI Chat Panel is a **floating overlay** that does not participate in the flex layout. It is positioned at the bottom of `.screens-area`, overlaying the device frames only. DrawingControlsPanel remains fully visible and accessible. Opening or closing the chat does not affect the dimensions of screens or other controls.
 
 ### Scaling System Integration
 
-The AI Chat Panel integrates with the existing `useScreenScaling` composable:
+The `useScreenScaling` composable does **not** include the AI chat in its layout calculations. The chat is an overlay and consumes no vertical space.
 
-**Enhanced Scaling Logic**:
-- Original: Calculated scale based on width constraints only
-- Updated: Calculates scale based on BOTH width and height constraints
-- Height calculation: Measures panel height, subtracts DrawingControls + AiChat heights + gaps
-- Scale selection: Uses minimum of width scale and height scale (most restrictive wins)
-- Result: Screens never get cut off vertically, always fit in available space
+**Scaling Logic**:
+- Measures total panel height
+- Subtracts consumed height from **DrawingControlsPanel only** (and gaps)
+- Calculates scale factors based on width and height constraints
+- Result: Screens never get cut off vertically; layout remains stable when chat is opened or closed
 
 **Dynamic Recalculation**:
-- ResizeObserver monitors panel, DrawingControls, and AiChat dimensions
-- MutationObserver detects when panels are added/removed
+- ResizeObserver monitors panel and DrawingControlsPanel
+- MutationObserver detects structural changes
 - Debounced resize handler prevents excessive recalculations
-- Automatic scaling on window resize and element dimension changes
 
 **Layout Modes**:
 - Side-by-side (≥1100px): Shared scale based on combined width and max height
 - Stacked (<1100px): Independent width scales, shared height scale for both screens
 
-The AI Chat Panel is positioned:
-- **Vertically**: Below `DrawingControlsPanel`, at the bottom of `ScreensPanel`
-- **Horizontally**: Full width of the screens container
-- **Z-index**: Standard stacking (no overlay)
-- **Flex behavior**: Fixed height (160px), does not compress screens
-
 ### Layout Safety
 
-The implementation preserves proper vertical space distribution through intelligent scaling:
+1. **ScreensPanel** uses `flex-direction: column` with `gap: var(--space-md)`
+2. **.screens-area** wraps screens and overlay; `flex: 1`, `position: relative`, `overflow: hidden`
+3. **.screens-inner** has `flex: 1` and `overflow: auto` for scrollable screen area
+4. **DrawingControlsPanel** has fixed height (`flex-shrink: 0`)
+5. **AiChatPanel** is `position: absolute` at bottom of `.screens-area`; does not affect layout
+6. **useScreenScaling** considers only DrawingControlsPanel when computing usable height
 
-1. **ScreensPanel** uses `flex-direction: column` with `gap: 12px`
-2. **ScreensInner** has `flex: 1` and `overflow: auto` for scrollable screen area
-3. **DrawingControlsPanel** and **AiChatPanel** have fixed heights (`flex-shrink: 0`)
-4. Container uses `min-height: 0` to enable proper flex overflow behavior
-5. **useScreenScaling composable** dynamically calculates available vertical space:
-   - Measures total panel height
-   - Subtracts consumed height from fixed panels (DrawingControls + AiChat)
-   - Accounts for gaps between elements
-   - Calculates scale factors based on BOTH width AND height constraints
-   - Uses the more restrictive constraint to prevent visual cutoff
-
-**Result**: Adding the chat panel reduces available screen space proportionally without clipping or breaking the simulation screens. The screens automatically scale down to fit the remaining vertical space while maintaining proper aspect ratios. The screens container remains scrollable if needed.
+**Result**: The chat overlays the screens area without compressing or clipping content. Layout stability is preserved regardless of chat visibility.
 
 ---
 

@@ -20,8 +20,8 @@ export function useScreenScaling() {
 
     const { clientWidth: availableWidth, clientHeight: availableHeight } = panel;
     
-    // Measure fixed-height panels
-    const fixedPanels = panel.querySelectorAll('.drawing-controls-panel, .ai-chat-panel');
+    // Measure fixed-height panels (AI chat is overlay, does not consume layout space)
+    const fixedPanels = panel.querySelectorAll('.drawing-controls-panel');
     const consumedHeight = Array.from(fixedPanels).reduce((sum, el) => sum + (el as HTMLElement).offsetHeight, 0);
     const gaps = fixedPanels.length * 12;
     const usableHeight = availableHeight - consumedHeight - gaps - 40;
@@ -78,7 +78,7 @@ export function useScreenScaling() {
       resizeObserver = new ResizeObserver(handlePanelResize);
       resizeObserver.observe(screensPanelRef.value);
 
-      const fixedPanels = screensPanelRef.value.querySelectorAll('.drawing-controls-panel, .ai-chat-panel');
+      const fixedPanels = screensPanelRef.value.querySelectorAll('.drawing-controls-panel');
       fixedPanels.forEach(el => resizeObserver!.observe(el as HTMLElement));
 
       mutationObserver = new MutationObserver(handlePanelResize);

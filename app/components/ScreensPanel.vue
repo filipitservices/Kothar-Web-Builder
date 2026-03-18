@@ -1,7 +1,8 @@
 <template>
   <div class="screens-panel" ref="screensPanelRef">
-    <!-- Screens -->
-    <div class="screens-inner" ref="screensContainerRef">
+    <!-- Screens area (screens + overlay) -->
+    <div class="screens-area">
+      <div class="screens-inner" ref="screensContainerRef">
       <div class="screen-scale-wrapper"
         :style="{ 
           width: desktopScaledWidth + 'px', 
@@ -55,6 +56,10 @@
       </div>
     </div>
 
+      <!-- AI Chat Panel (overlay) -->
+      <AiChatPanel />
+    </div>
+
     <!-- Drawing Controls Panel -->
     <DrawingControlsPanel
       :desktop-drawing-state="props.desktopDrawingState"
@@ -67,9 +72,6 @@
       @redo="handleRedo"
       @clear="handleClear"
     />
-
-    <!-- AI Chat Panel -->
-    <AiChatPanel />
   </div>
 </template>
 
@@ -256,6 +258,15 @@ watch(() => props.mobileDrawingState.mobileEnabled, (enabled) => {
   overflow: hidden;
   min-height: 0;
   gap: var(--space-md);
+}
+
+.screens-area {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .screens-inner {

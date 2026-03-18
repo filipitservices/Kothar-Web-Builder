@@ -1,5 +1,10 @@
 <template>
-  <div class="ai-chat-panel" :class="{ 'minimized': isMinimized }">
+  <div
+    class="ai-chat-panel"
+    :class="{ 'minimized': isMinimized }"
+    role="complementary"
+    aria-label="Website Builder AI Assistant"
+  >
     <div class="chat-header" @click="toggleMinimized">
       <span class="chat-icon">🤖</span>
       <span class="chat-title">AI Assistant</span>
@@ -135,6 +140,12 @@ watch(messages, async () => {
 
 <style scoped>
 .ai-chat-panel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  pointer-events: auto;
   background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
