@@ -17,7 +17,8 @@ The AI Chat System provides an integrated conversational assistant within the Ko
 - **State persistence** via Pinia store architecture
 - **Type-safe implementation** following project TypeScript conventions
 - **Reactive UI** with auto-scrolling and visual feedback
-- **Extensible design** ready for AI service integration
+- **Firebase AI Logic integration** — Real Gemini responses via streaming
+- **Cancel support** — Abort in-flight requests
 
 ---
 
@@ -30,16 +31,16 @@ The AI Chat System follows the established three-layer architecture pattern used
 │              PRESENTATION LAYER                 │
 │           AiChatPanel.vue Component             │
 │  - Message list rendering                       │
-│  - Input field and send button                  │
+│  - Input field, send and cancel buttons          │
 │  - Visual state indicators                      │
 └────────────────┬────────────────────────────────┘
                  │
 ┌────────────────▼────────────────────────────────┐
 │                LOGIC LAYER                      │
-│          useAiChat() Composable                 │
+│     useAiChat() + useFirebaseAi() Composables   │
 │  - Store abstraction                            │
-│  - Computed reactive properties                 │
-│  - Action wrappers                              │
+│  - Firebase AI init, model, chat session        │
+│  - Streaming and cancel support                 │
 └────────────────┬────────────────────────────────┘
                  │
 ┌────────────────▼────────────────────────────────┐
@@ -47,9 +48,11 @@ The AI Chat System follows the established three-layer architecture pattern used
 │            useAiChatStore (Pinia)               │
 │  - Message state management                     │
 │  - Processing state tracking                    │
-│  - Message persistence                          │
+│  - Immutable updates for streaming              │
 └─────────────────────────────────────────────────┘
 ```
+
+See [Firebase AI Logic Chat](19-FIREBASE-AI-LOGIC-CHAT.md) for SDK initialization and configuration.
 
 ---
 
@@ -200,6 +203,7 @@ interface UseAiChatReturn {
   hasMessages: ComputedRef<boolean>;
   messageCount: ComputedRef<number>;
   sendMessage: (content: string) => Promise<void>;
+  cancelSend: () => void;
   clearMessages: () => void;
   setInputText: (text: string) => void;
 }
@@ -247,18 +251,21 @@ clearMessages();
 
 **Actions**:
 
-**`addMessage(role: 'user' | 'assistant', content: string): void`**
+**`addMessage(role: 'user' | 'assistant', content: string): string`**
 
-Adds a new message to the chat history.
+Adds a new message to the chat history. Returns the message id.
 
-```typescript
-const store = useAiChatStore();
-store.addMessage('user', 'Hello!');
-```
+**`updateAssistantMessage(messageId: string, content: string): void`**
+
+Updates an assistant message content (used for streaming). Immutable update.
 
 **`clearMessages(): void`**
 
-Removes all messages from history.
+Removes all messages from history and resets the Firebase chat session.
+
+**`cancelSend(): void`**
+
+Cancels the in-flight AI request and clears processing state.
 
 **`setProcessing(processing: boolean): void`**
 
@@ -270,7 +277,7 @@ Updates the input field value.
 
 **`sendMessage(content: string): Promise<void>`**
 
-Complete flow: validates input, adds user message, triggers AI response, updates state.
+Complete flow: validates input, adds user message, streams AI response via Firebase AI Logic, updates state.
 
 ```typescript
 await store.sendMessage('Help me with my hero section');
@@ -295,17 +302,20 @@ Input field cleared
       ↓
 Processing state set to true
       ↓
-Typing indicator appears
+Assistant message placeholder added (empty content)
       ↓
-AI response generated (currently simulated, 1s delay)
+Firebase AI streamMessage() streams response chunks
       ↓
-Assistant message added to chat (role: 'assistant')
+Store updates assistant message incrementally (immutable)
       ↓
-Processing state set to false
+Typing indicator shown until first chunk arrives
+      ↓
+Processing state set to false when stream completes
       ↓
 Chat scrolls to bottom
       ↓
-Use
+User can send next message (or cancel during processing)
+```
 
 ### Minimize/Expand Flow
 
@@ -337,14 +347,14 @@ v-if adds chat-body back to DOM
 useScreenScaling detects height change
       ↓
 Screens recalculate and scale down proportionally
-```r can send next message
 ```
 
 ### Visual Feedback
 
-- **User messages**: Right-aligned, blue background (`#1e3a8a`), white text
-- **Assistant messages**: Left-aligned, white background, bordered
-- **Processing state**: Gray bubble with animated typing dots
+- **User messages**: Right-aligned, `var(--color-primary)` background, white text
+- **Assistant messages**: Left-aligned, `var(--color-bg)` background, bordered
+- **Processing state**: Typing indicator when waiting for first chunk; streaming content as it arrives
+- **Cancel button**: Shown during processing; subtle secondary style
 - **Empty state**: Centered italic prompt text
 - **Disabled input**: Opacity reduced, cursor not-allowed
 
@@ -354,17 +364,13 @@ Screens recalculate and scale down proportionally
 
 ### Design Tokens (Consistent with Project)
 
-**Colors**:
-- Primary blue: `#1e3a8a` (brand color, header, user messages)
-- Light gray: `#f8fafc` (backgrounds, disabled states)
-- Border gray: `#e2e8f0` (borders, dividers)
-- Text dark: `#0f172a` (primary text)
-- Text muted: `#64748b` (placeholder, empty state)
+All styling uses tokens from `app/assets/css/style.css`. No hardcoded hex values.
 
-**Spacing**:
-- Panel padding: `12px` (header), `10px` (input area)
-- Gap between elements: `8px` (standard), `12px` (panel-level)
-- Border radius: `12px` (panel), `8px` (inputs), `10px` (messages)
+**Colors**: `--color-primary`, `--color-bg`, `--color-border`, `--color-text`, `--color-text-muted`, `--color-placeholder`, etc.
+
+**Spacing**: `--space-xs` through `--space-3xl` (rem scale)
+
+**Radius**: `--radius-sm`, `--radius-md`, `--radius-lg`
 
 **Typography**:
 - Title: `13px`, `font-weight: 600`
@@ -398,51 +404,14 @@ The chat panel maintains fixed height across all viewports:
 
 ## Extensibility
 
-### Connecting to Real AI Services
+### Firebase AI Logic Integration
 
-The current implementation uses a placeholder response system. To integrate a real AI service:
+The chat uses **Firebase AI Logic** (Gemini) via `useFirebaseAi` composable. See [Firebase AI Logic Chat](19-FIREBASE-AI-LOGIC-CHAT.md) for:
 
-1. **Update `sendMessage()` in [stores/aiChat.ts](../app/stores/aiChat.ts)**:
-
-```typescript
-const sendMessage = async (content: string): Promise<void> => {
-  if (!content.trim() || isProcessing.value) return;
-
-  addMessage('user', content.trim());
-  setInputText('');
-  setProcessing(true);
-
-  try {
-    // Replace with actual API call
-    const response = await fetch('/api/ai-chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: content })
-    });
-    
-    const data = await response.json();
-    addMessage('assistant', data.reply);
-  } catch (error) {
-    console.error('AI chat error:', error);
-    addMessage('assistant', 'Sorry, I encountered an error. Please try again.');
-  } finally {
-    setProcessing(false);
-  }
-};
-```
-
-2. **Create API endpoint** (e.g., `server/api/ai-chat.ts`):
-
-```typescript
-export default defineEventHandler(async (event) => {
-  const { message } = await readBody(event);
-  
-  // Call OpenAI, Claude, or other AI service
-  const reply = await callAiService(message);
-  
-  return { reply };
-});
-```
+- SDK initialization and model configuration
+- App Check setup (recommended before production)
+- Function calling (planned)
+- Rollback procedure
 
 ### Adding Context Awareness
 
@@ -470,43 +439,7 @@ const sendMessage = async (content: string): Promise<void> => {
 
 ### Streaming Responses
 
-For real-time AI responses (token-by-token):
-
-```typescript
-const sendMessage = async (content: string): Promise<void> => {
-  // ... add user message ...
-  
-  const assistantMessageId = `msg-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
-  const assistantMessage: AiMessage = {
-    id: assistantMessageId,
-    role: 'assistant',
-    content: '',
-    timestamp: Date.now()
-  };
-  
-  messages.value = [...messages.value, assistantMessage];
-  
-  const response = await fetch('/api/ai-chat-stream', {
-    method: 'POST',
-    body: JSON.stringify({ message: content })
-  });
-  
-  const reader = response.body?.getReader();
-  const decoder = new TextDecoder();
-  
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    
-    const chunk = decoder.decode(value);
-    // Update message content incrementally
-    const index = messages.value.findIndex(m => m.id === assistantMessageId);
-    messages.value[index].content += chunk;
-  }
-  
-  setProcessing(false);
-};
-```
+Streaming is implemented via `useFirebaseAi().streamMessage()`. The store adds an empty assistant message, then calls `streamMessage` with an `onChunk` callback that updates the message content via `updateAssistantMessage`. See `app/stores/aiChat.ts` and `app/composables/useFirebaseAi.ts`.
 
 ### Adding Message Actions
 

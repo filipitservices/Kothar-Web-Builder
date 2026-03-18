@@ -8,6 +8,7 @@ export interface UseAiChatReturn {
   hasMessages: ComputedRef<boolean>;
   messageCount: ComputedRef<number>;
   sendMessage: (content: string) => Promise<void>;
+  cancelSend: () => void;
   clearMessages: () => void;
   setInputText: (text: string) => void;
 }
@@ -32,6 +33,10 @@ export function useAiChat(): UseAiChatReturn {
     await store.sendMessage(content);
   };
 
+  const cancelSend = (): void => {
+    store.cancelSend();
+  };
+
   const clearMessages = (): void => {
     store.clearMessages();
   };
@@ -47,6 +52,7 @@ export function useAiChat(): UseAiChatReturn {
     hasMessages,
     messageCount,
     sendMessage,
+    cancelSend,
     clearMessages,
     setInputText
   };

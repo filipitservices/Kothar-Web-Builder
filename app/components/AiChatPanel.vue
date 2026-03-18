@@ -36,14 +36,13 @@
           class="message"
           :class="`message-${message.role}`"
         >
-          <div class="message-content">{{ message.content }}</div>
-        </div>
-        
-        <div v-if="isProcessing" class="message message-assistant processing">
           <div class="message-content">
-            <span class="typing-indicator">
-              <span></span><span></span><span></span>
-            </span>
+            <template v-if="message.role === 'assistant' && !message.content && isProcessing">
+              <span class="typing-indicator">
+                <span></span><span></span><span></span>
+              </span>
+            </template>
+            <template v-else>{{ message.content }}</template>
           </div>
         </div>
       </div>
@@ -57,6 +56,14 @@
           @keydown.enter="handleSend"
           :disabled="isProcessing"
         />
+        <button
+          v-if="isProcessing"
+          class="cancel-btn"
+          @click="cancelSend"
+          title="Cancel"
+        >
+          ✕
+        </button>
         <button 
           class="send-btn" 
           @click="handleSend"
@@ -80,6 +87,7 @@ const {
   inputText,
   hasMessages,
   sendMessage,
+  cancelSend,
   clearMessages,
   setInputText
 } = useAiChat();
@@ -127,9 +135,9 @@ watch(messages, async () => {
 
 <style scoped>
 .ai-chat-panel {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
   height: 160px;
@@ -145,11 +153,11 @@ watch(messages, async () => {
 .chat-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
-  color: #ffffff;
-  border-bottom: 1px solid #1e3a8a;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-primary);
+  color: var(--color-white);
+  border-bottom: 1px solid var(--color-primary);
   flex-shrink: 0;
   cursor: pointer;
   user-select: none;
@@ -168,19 +176,19 @@ watch(messages, async () => {
 
 .header-actions {
   display: flex;
-  gap: 6px;
+  gap: var(--radius-sm);
   align-items: center;
 }
 
 .header-btn {
   background: rgba(255, 255, 255, 0.2);
   border: none;
-  border-radius: 6px;
-  color: #ffffff;
+  border-radius: var(--radius-sm);
+  color: var(--color-white);
   cursor: pointer;
   font-size: 14px;
   font-weight: 700;
-  padding: 4px 8px;
+  padding: var(--space-xs) var(--space-sm);
   transition: all 0.2s ease;
   line-height: 1;
   min-width: 28px;
@@ -208,16 +216,16 @@ watch(messages, async () => {
 .chat-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 12px;
+  padding: var(--space-md);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-sm);
   min-height: 0;
-  background: #f8fafc;
+  background: var(--color-bg-muted);
 }
 
 .chat-messages::-webkit-scrollbar {
-  width: 6px;
+  width: var(--radius-sm);
 }
 
 .chat-messages::-webkit-scrollbar-track {
@@ -225,12 +233,12 @@ watch(messages, async () => {
 }
 
 .chat-messages::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 3px;
+  background: var(--color-border-hover);
+  border-radius: var(--radius-sm);
 }
 
 .chat-messages::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: var(--color-text-muted);
 }
 
 .empty-state {
@@ -238,7 +246,7 @@ watch(messages, async () => {
   align-items: center;
   justify-content: center;
   flex: 1;
-  color: #64748b;
+  color: var(--color-text-muted);
   font-size: 12px;
   text-align: center;
   font-style: italic;
@@ -275,7 +283,7 @@ watch(messages, async () => {
 }
 
 .message-content {
-  padding: 8px 12px;
+  padding: var(--space-sm) var(--space-md);
   border-radius: 10px;
   font-size: 12px;
   line-height: 1.5;
@@ -283,35 +291,35 @@ watch(messages, async () => {
 }
 
 .message-user .message-content {
-  background: #1e3a8a;
-  color: #ffffff;
-  border-bottom-right-radius: 3px;
+  background: var(--color-primary);
+  color: var(--color-white);
+  border-bottom-right-radius: var(--radius-sm);
 }
 
 .message-assistant .message-content {
-  background: #ffffff;
-  color: #0f172a;
-  border: 1px solid #e2e8f0;
-  border-bottom-left-radius: 3px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-bottom-left-radius: var(--radius-sm);
 }
 
 .message.processing .message-content {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
+  background: var(--color-bg-subtle);
+  border-color: var(--color-border-hover);
 }
 
 .typing-indicator {
   display: inline-flex;
-  gap: 4px;
+  gap: var(--space-xs);
   align-items: center;
   padding: 2px 0;
 }
 
 .typing-indicator span {
-  width: 6px;
-  height: 6px;
+  width: var(--radius-sm);
+  height: var(--radius-sm);
   border-radius: 50%;
-  background: #64748b;
+  background: var(--color-text-muted);
   animation: typing 1.4s infinite;
 }
 
@@ -336,30 +344,30 @@ watch(messages, async () => {
 
 .chat-input-wrapper {
   display: flex;
-  gap: 8px;
-  padding: 10px 12px;
-  background: #ffffff;
-  border-top: 1px solid #e2e8f0;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border);
   flex-shrink: 0;
 }
 
 .chat-input {
   flex: 1;
-  padding: 8px 12px;
-  border: 1px solid #d6dee9;
-  border-radius: 8px;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   font-size: 12px;
-  color: #0f172a;
-  background: #f8fafc;
+  color: var(--color-text);
+  background: var(--color-bg-muted);
   transition: all 0.2s ease;
   outline: none;
   min-width: 0;
 }
 
 .chat-input:focus {
-  border-color: #1e3a8a;
-  background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+  border-color: var(--color-primary);
+  background: var(--color-bg);
+  box-shadow: var(--focus-ring-primary);
 }
 
 .chat-input:disabled {
@@ -368,15 +376,37 @@ watch(messages, async () => {
 }
 
 .chat-input::placeholder {
-  color: #94a3b8;
+  color: var(--color-placeholder);
+}
+
+.cancel-btn {
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+}
+
+.cancel-btn:hover {
+  background: var(--color-border-hover);
+  color: var(--color-text);
 }
 
 .send-btn {
-  padding: 8px 14px;
-  background: #1e3a8a;
-  color: #ffffff;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-primary);
+  color: var(--color-white);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -389,14 +419,14 @@ watch(messages, async () => {
 }
 
 .send-btn:hover:not(:disabled) {
-  background: #1e40af;
-  box-shadow: 0 2px 8px rgba(30, 58, 138, 0.3);
+  background: var(--color-primary-dark);
+  box-shadow: var(--focus-ring-primary);
 }
 
 .send-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
-  background: #94a3b8;
+  background: var(--color-text-muted);
 }
 
 /* Responsive adjustments */
@@ -404,18 +434,18 @@ watch(messages, async () => {
   .ai-chat-panel {
     height: 140px;
   }
-  
+
   .ai-chat-panel.minimized {
     height: 44px;
   }
-  
+
   .chat-messages {
-    padding: 8px;
+    padding: var(--space-sm);
   }
-  
+
   .message-content {
     font-size: 11px;
-    padding: 6px 10px;
+    padding: var(--radius-sm) var(--space-sm);
   }
 }
 </style>
