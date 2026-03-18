@@ -216,16 +216,16 @@ export const useBlocksStore = defineStore('blocks', () => {
 The app uses Nuxt 4 layouts for global structure:
 
 - **app.vue**: Root entry; wraps content in `<NuxtLayout><NuxtPage /></NuxtLayout>`.
-- **layouts/default.vue**: Used by landing, dashboard, gallery request, login, and reset-password. Renders the shared **AppNavbar** and a slot for the page.
+- **layouts/default.vue**: Used by landing, gallery, gallery request, login, and reset-password. Renders the shared **AppNavbar** and a slot for the page.
 - **layouts/builder.vue**: Used only by the builder page. Renders only the slot (no navbar), so the editor has full viewport for the 3-column layout.
 
 **Request layout and builder save:** The page layout being edited for a request/order lives in the request layout store; a single canonical type (`OrderLayoutBlock` is an alias of `BlockItem`) is used from builder UI through to Firestore. Save is performed only via the **`useBuilderSave`** composable; the BuilderEditor component wires it and does not persist directly. Order documents read from Firestore are validated at the boundary with **`parseOrderDocument`** before entering store state (see `docs/18-FIREBASE-FIRESTORE-STORAGE.md`).
 
 **AppNavbar** (`components/AppNavbar.vue`) is the single source of global navigation:
 - Logo (Kothar) links to `/`.
-- On `/gallery/request/*`, a "Back to Dashboard" link is shown.
-- **UserMenu** is always shown (Sign In when guest; avatar and dropdown when authenticated). When authenticated: Dashboard, **My Live Sites** (`/sites`), Sign Out.
-- On the landing page (`/`), an auth-aware CTA is shown: "Start Building" → `/login` when guest, "Dashboard" → `/dashboard` when authenticated.
+- On `/gallery/request/*`, a "Back to Gallery" link is shown.
+- **UserMenu** is always shown (Sign In when guest; avatar and dropdown when authenticated). When authenticated: Gallery, **My Live Sites** (`/sites`), Sign Out.
+- On the landing page (`/`), an auth-aware CTA is shown: "Start Building" → `/login` when guest, "Gallery" → `/gallery` when authenticated.
 - Navbar styles live in `assets/css/navbar.css` and use global design tokens from `style.css`.
 
 ---
@@ -263,8 +263,8 @@ Recommended checks when working on this codebase:
   - Open a request (gallery or order), navigate to the builder, add/move/remove blocks, and click Save.
   - Reload the page and re-open the builder; the layout should exactly match the last save and produce no console errors.
 - **Request creation and submission**:
-  - Create a draft request from the dashboard, fill out the form, and submit.
-  - Verify a new order appears in the dashboard with the expected status and layout.
+  - Create a draft request from the Gallery, fill out the form, and submit.
+  - Verify a new order appears in the Gallery/sites with the expected status and layout.
 - **Order edit**:
   - Open an existing order in edit mode, change form fields and/or layout, and save.
   - Confirm the changes persist and the layout round-trip behavior remains correct.
@@ -289,11 +289,11 @@ No page implements its own navbar; all use the default layout and shared AppNavb
 - **Focus**: `--focus-ring-primary` for focus-within box-shadow on form sections and selectable options.
 - **Spacing**: `--space-xs` through `--space-3xl` (rem scale).
 - **Radius**: `--radius-sm`, `--radius-md`, `--radius-lg`, `--radius-xl`.
-- **Layout**: `--container-max: 1200px` for all main content containers (navbar, landing, dashboard, request-form footer).
+- **Layout**: `--container-max: 1200px` for all main content containers (navbar, landing, gallery, request-form footer).
 
 **Page-scoped CSS** (loaded per page via `<style scoped src="...">`; do not re-import `style.css`):
 - Landing: `landing.css` (extends with `--landing-*` on `.landing-container`).
-- Dashboard: `dashboard.css`.
+- Gallery: `gallery.css`.
 - Builder: `editor.css`.
 - Sites (list and detail): `sites.css`.
 - Gallery request: `request-form.css`.

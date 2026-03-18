@@ -12,7 +12,7 @@ Per core invariants. After **architectural or structural refactors**, documentat
 - **Routing or layout changes:** Update route tables, layout assignment, and navigation flow in `docs/11-ROUTING-AND-LANDING.md` and any doc that references pages/layouts.
 - **Data flow or store changes:** Update `docs/04-DATA-FLOW.md`, `docs/05-API-REFERENCE.md`, and store/composable sections in architecture docs.
 - **New or removed features:** Update overview, architecture, and feature-specific docs (e.g. block system, template system, dashboard, Firebase auth). Update `docs/README.md` index if structure changes.
-- **Builder or domain changes:** Update `docs/02-ARCHITECTURE.md`, `docs/03-BLOCK-SYSTEM.md`, `docs/07-TEMPLATE-SYSTEM.md`, `docs/13-BUILDER-CODE-ORGANIZATION.md`, `docs/17-DASHBOARD-AND-GALLERY.md` as relevant.
+- **Builder or domain changes:** Update `docs/02-ARCHITECTURE.md`, `docs/03-BLOCK-SYSTEM.md`, `docs/07-TEMPLATE-SYSTEM.md`, `docs/13-BUILDER-CODE-ORGANIZATION.md`, `docs/17-DASHBOARD-AND-GALLERY.md` (Gallery & Templates) as relevant.
 
 ## How to Update
 

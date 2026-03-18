@@ -15,8 +15,8 @@
               This request doesn't exist or you don't have access to it.
               It may have been removed, or the link may be incorrect.
             </p>
-            <NuxtLink to="/dashboard" class="btn btn--primary">
-              Back to dashboard
+            <NuxtLink to="/gallery" class="btn btn--primary">
+              Back to gallery
             </NuxtLink>
           </div>
         </div>
@@ -82,7 +82,7 @@
                   Customize page layout
                   <span v-if="layoutCustomized" class="req-layout-badge">Modified</span>
                 </button>
-                <NuxtLink to="/dashboard" class="change-template-link">
+                <NuxtLink to="/gallery" class="change-template-link">
                   Choose a different design →
                 </NuxtLink>
               </div>
@@ -356,7 +356,7 @@ async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
     requestLayoutStore.reset();
     feedbackType.value = 'success';
     feedbackMessage.value = "Thank you! Your request has been submitted. We'll be in touch soon.";
-    await router.push('/dashboard');
+    await router.push('/gallery');
   } catch (err) {
     feedbackType.value = 'error';
     feedbackMessage.value = err instanceof Error

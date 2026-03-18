@@ -10,22 +10,22 @@ Per core invariants and Nuxt structure. Before changing routes or auth, verify l
 
 ## Protected Routes
 
-- **auth middleware:** Applied to `/dashboard`, `/sites`, `/sites/[id]`, `/gallery/request/[id]`, `/gallery/request/[id]/builder`, `/orders/[id]/edit`, `/orders/[id]/builder`. Unauthenticated users redirect to `/login?redirect={path}`. Session verified via server API; no protected UI sent before redirect.
-- **guest middleware:** Applied to `/login`, `/reset-password`. Authenticated users redirect to `/dashboard`.
+- **auth middleware:** Applied to `/gallery`, `/sites`, `/sites/[id]`, `/gallery/request/[id]`, `/gallery/request/[id]/builder`, `/orders/[id]/edit`, `/orders/[id]/builder`. Unauthenticated users redirect to `/login?redirect={path}`. Session verified via server API; no protected UI sent before redirect.
+- **guest middleware:** Applied to `/login`, `/reset-password`. Authenticated users redirect to landing destination (`/sites` or `/gallery`).
 
 ## Verification Checklist for Routing Edits
 
 1. **Layout:** Which layout does the page use? Default (navbar) vs builder (no navbar). Set via `definePageMeta({ layout: '...' })`.
 2. **Middleware:** Add `middleware: 'auth'` or `middleware: 'guest'` in `definePageMeta` for new or changed pages as appropriate.
 3. **SSR:** Middleware runs on server and client. Use `useRequestFetch` in middleware for SSR-safe API calls that need cookies. Do not rely on client-only checks for protecting content.
-4. **Navigation:** Use `<NuxtLink>` or `navigateTo()` for in-app navigation. Redirect after login to `route.query.redirect` or `/dashboard`.
+4. **Navigation:** Use `<NuxtLink>` or `navigateTo()` for in-app navigation. Redirect after login to `route.query.redirect` or landing destination (`/sites` or `/gallery`).
 
 ## Route Map (Reference)
 
 | Route | Layout | Auth |
 |-------|--------|------|
 | `/` | default | public |
-| `/dashboard` | default | auth |
+| `/gallery` | default | auth |
 | `/builder` | builder | auth |
 | `/sites`, `/sites/[id]` | default | auth |
 | `/gallery/request/[id]` | default | auth |

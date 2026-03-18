@@ -3,10 +3,24 @@
     <main class="sites-main">
       <div class="sites-content">
         <section class="sites-welcome">
-          <h1 class="sites-welcome-title">Dashboard</h1>
-          <p class="sites-welcome-subtitle">
-            Manage your live websites and track template requests. Make updates, adjust content, or request changes from our team.
-          </p>
+          <div class="sites-welcome__top">
+            <div class="sites-welcome__text">
+              <h1 class="sites-welcome-title">My Sites</h1>
+              <p class="sites-welcome-subtitle">
+                Manage your live websites and track template requests. Make updates, adjust content, or request changes from our team.
+              </p>
+            </div>
+            <div class="sites-gallery-cta">
+              <p class="sites-gallery-cta__headline">Discover layout templates</p>
+              <NuxtLink
+                to="/gallery"
+                class="sites-gallery-cta__btn"
+                aria-label="Open Gallery — browse professional website templates"
+              >
+                Open Gallery
+              </NuxtLink>
+            </div>
+          </div>
         </section>
 
         <div class="sites-tabs">
@@ -150,7 +164,7 @@
             </table>
           </div>
           <p v-if="ordersStore.orders.length === 0" class="sites-empty">
-            You don't have any orders yet. Submit a template request from the dashboard to get started.
+            You don't have any orders yet. Submit a template request from the Gallery to get started.
           </p>
         </section>
       </div>

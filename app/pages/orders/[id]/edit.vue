@@ -51,8 +51,8 @@
                   Customize page layout
                   <span v-if="layoutCustomized" class="req-layout-badge">Modified</span>
                 </button>
-                <NuxtLink to="/sites" class="change-template-link">
-                  Back to dashboard →
+                <NuxtLink to="/gallery" class="change-template-link">
+                  Back to gallery →
                 </NuxtLink>
               </div>
             </div>
@@ -277,7 +277,7 @@ async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
     requestLayoutStore.reset();
     feedbackType.value = 'success';
     feedbackMessage.value = 'Your request has been updated.';
-    await router.push('/dashboard');
+    await router.push('/gallery');
   } catch (err) {
     feedbackType.value = 'error';
     feedbackMessage.value = err instanceof Error ? err.message : 'Failed to update. Please try again.';

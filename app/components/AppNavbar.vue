@@ -53,17 +53,17 @@ const appConfig = useAppConfig();
 
 const showUserName = computed(() => {
   const path = route.path;
-  return path === '/dashboard' || path.startsWith('/gallery/request');
+  return path === '/gallery' || path.startsWith('/gallery/request');
 });
 
 const showCta = computed(() => route.path === '/');
 
 const ctaTo = computed(() =>
-  isAuthenticated.value ? '/dashboard' : '/login'
+  isAuthenticated.value ? '/gallery' : '/login'
 );
 
 const ctaLabel = computed(() =>
-  isAuthenticated.value ? 'Dashboard' : 'Start Building'
+  isAuthenticated.value ? 'Gallery' : 'Start Building'
 );
 
 /** SPA navigation for logo link; preserves SSR/client markup consistency (avoids NuxtLink hydration mismatch). */

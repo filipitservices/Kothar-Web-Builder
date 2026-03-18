@@ -160,12 +160,12 @@ pnpm dev
 | File | Purpose |
 |------|---------|
 | `app/pages/index.vue` | Landing page (public) |
-| `app/pages/dashboard.vue` | Central hub with builder + templates (protected) |
+| `app/pages/gallery.vue` | Central hub with builder + templates (protected) |
 | `app/pages/builder.vue` | Main editor page (protected, requires auth) |
-| `app/pages/sites/index.vue` | Dashboard: Live Sites + Orders tabs (protected) |
+| `app/pages/sites/index.vue` | My Sites: Live Sites + Orders tabs (protected) |
 | `app/pages/sites/[id].vue` | Site control panel (protected) |
 | `app/pages/gallery/request/[id].vue` | Template request form (protected) |
-| `app/pages/orders/[id]/edit.vue` | Order edit form (protected; locked orders redirect to dashboard) |
+| `app/pages/orders/[id]/edit.vue` | Order edit form (protected; locked orders redirect to /sites) |
 | `app/pages/login.vue` | Authentication page |
 | `app/middleware/auth.ts` | Route protection middleware |
 | `app/middleware/guest.ts` | Guest-only route middleware |

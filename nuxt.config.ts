@@ -31,6 +31,12 @@ export default defineNuxtConfig({
     }
   },
   
+  // Redirect /dashboard to /gallery (Dashboard → Gallery migration)
+  routeRules: {
+    '/dashboard': { redirect: { to: '/gallery', statusCode: 301 } },
+    '/dashboard/**': { redirect: { to: '/gallery', statusCode: 301 } }
+  },
+
   // Nitro configuration for server-side
   nitro: {
     // Ensure firebase-admin is not bundled for client

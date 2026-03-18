@@ -33,11 +33,30 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
     }
     
     if (response.user) {
-      // User is authenticated - redirect to dashboard or specified redirect URL
+      // User is authenticated - redirect to specified URL or landing destination
       const redirect = to.query.redirect;
-      const redirectPath = typeof redirect === 'string' ? redirect : '/dashboard';
-      
-      return navigateTo(redirectPath);
+      if (typeof redirect === 'string') {
+        return navigateTo(redirect);
+      }
+      try {
+        let destResponse: { destination?: string; error?: string };
+        if (import.meta.server) {
+          const requestFetch = useRequestFetch();
+          destResponse = await requestFetch<{ destination?: string; error?: string }>(
+            '/api/user/landing-destination'
+          );
+        } else {
+          destResponse = await $fetch<{ destination?: string; error?: string }>(
+            '/api/user/landing-destination'
+          );
+        }
+        if (destResponse?.destination) {
+          return navigateTo(destResponse.destination);
+        }
+      } catch {
+        // Fallback on error
+      }
+      return navigateTo('/gallery');
     }
     
     // User is not authenticated - allow access to guest page

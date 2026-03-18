@@ -7,7 +7,7 @@
           <h1 class="dash-strip__title">Welcome back{{ userName ? `, ${userName}` : '' }}</h1>
           <p class="dash-strip__subtitle">Choose a path below to get started.</p>
         </div>
-        <NuxtLink to="/dashboard#templates" class="dash-strip__cta">
+        <NuxtLink to="/gallery#templates" class="dash-strip__cta">
           <span class="dash-strip__cta-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
@@ -126,7 +126,7 @@ definePageMeta({
   middleware: 'auth'
 });
 
-defineOptions({ name: 'DashboardPage', display: 'Dashboard' });
+defineOptions({ name: 'GalleryPage', display: 'Gallery' });
 
 const { currentUser } = useAuth();
 const showcaseStore = useShowcaseStore();
@@ -210,4 +210,4 @@ async function handleChooseDesign(templateId: string): Promise<void> {
 }
 </script>
 
-<style scoped src="~/assets/css/dashboard.css"></style>
+<style scoped src="~/assets/css/gallery.css"></style>

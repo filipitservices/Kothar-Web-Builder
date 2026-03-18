@@ -7,8 +7,8 @@
 ## Overview
 
 Kothar follows a clear page separation pattern:
-- **Landing Page** (`/`) - Marketing experience, product introduction, entry point
-- **Dashboard** (`/dashboard`) - Central hub with templates showcase and request entry (protected)
+- **Landing Page** (`/`) - Marketing experience, product introduction, entry point (authenticated users are redirected)
+- **Gallery** (`/gallery`) - Central hub with templates showcase and request entry (protected)
 - **Builder Pages** (`/gallery/request/[id]/builder`, `/orders/[id]/builder`) - Website layout editor in the context of a specific request/order (protected, requires authentication)
 - **Login Page** (`/login`) - Authentication page (guest-only)
 - **Reset Password** (`/reset-password`) - Password recovery (guest-only)
@@ -23,10 +23,10 @@ Kothar follows a clear page separation pattern:
 
 | Route | Page File | Purpose | Layout | Auth |
 |-------|-----------|---------|--------|------|
-| `/` | `pages/index.vue` | Landing page with marketing messaging | Full-height, centered | Public |
-| `/dashboard` | `pages/dashboard.vue` | Central hub with templates and request flow | Full-page, sections | **Protected** |
+| `/` | `pages/index.vue` | Landing page with marketing messaging (auth users redirected) | Full-height, centered | Public |
+| `/gallery` | `pages/gallery.vue` | Central hub with templates and request flow | Full-page, sections | **Protected** |
 | `/builder` | `pages/builder.vue` | Legacy redirect; routes to ID-scoped builder pages | Default | **Protected** |
-| `/sites` | `pages/sites/index.vue` | Dashboard: Live Sites + Orders tabs | Full-page, table dashboard | **Protected** |
+| `/sites` | `pages/sites/index.vue` | My Sites: Live Sites + Orders tabs | Full-page, table dashboard | **Protected** |
 | `/sites/[id]` | `pages/sites/[id].vue` | Site control panel — manage one live site | Full-page, sections | **Protected** |
 | `/gallery/request/[id]` | `pages/gallery/request/[id].vue` | Template request form (`[id]` = Firebase document ID) | 2-column layout | **Protected** |
 | `/gallery/request/[id]/builder` | `pages/gallery/request/[id]/builder.vue` | Builder for the layout of a specific request | Builder | **Protected** |
@@ -40,11 +40,12 @@ Kothar follows a clear page separation pattern:
 Routes are protected using Nuxt 4 route middleware:
 
 - **`auth` middleware**: Protects routes requiring authentication. Redirects unauthenticated users to `/login?redirect={path}`.
-- **`guest` middleware**: Protects guest-only routes. Redirects authenticated users to `/dashboard`.
+- **`guest` middleware**: Protects guest-only routes. Redirects authenticated users to landing destination (`/sites` or `/gallery`).
+- **`landing` middleware**: Runs on `/`. Authenticated users are redirected to `/sites` or `/gallery` based on account state (see Post-Login Landing below).
 
 **Protected Routes:**
-- `/dashboard` - Central hub (requires authentication via `auth` middleware)
-- `/builder` - Legacy entry point that immediately redirects to an ID-scoped builder route or dashboard
+- `/gallery` - Central hub with templates (requires authentication via `auth` middleware)
+- `/builder` - Legacy entry point that immediately redirects to an ID-scoped builder route or gallery
 - `/sites` - My Live Sites list (requires authentication via `auth` middleware)
 - `/sites/[id]` - Site control panel (requires authentication via `auth` middleware)
 - `/gallery/request/[id]` - Template request form (requires authentication via `auth` middleware)
@@ -70,8 +71,8 @@ Route middleware runs on **both server and client**:
 
 ```
 app/pages/
-├── index.vue               # / route - landing page (public)
-├── dashboard.vue           # /dashboard route - central hub (protected)
+├── index.vue               # / route - landing page (public; auth users redirected)
+├── gallery.vue             # /gallery route - central hub with templates (protected)
 ├── builder.vue             # /builder route - legacy redirect to ID-scoped builder
 ├── sites/
 │   ├── index.vue           # /sites - My Live Sites list (protected)
@@ -92,8 +93,8 @@ app/pages/
 
 Routes are implicitly defined by file structure. No manual `vue-router` config required.
 
-- `/` → renders `pages/index.vue`
-- `/dashboard` → renders `pages/dashboard.vue` (requires auth)
+- `/` → renders `pages/index.vue` (authenticated users redirected via `landing` middleware)
+- `/gallery` → renders `pages/gallery.vue` (requires auth)
 - `/builder` → renders `pages/builder.vue` (requires auth)
 - `/sites` → renders `pages/sites/index.vue` (requires auth)
 - `/sites/:id` → renders `pages/sites/[id].vue` (requires auth)
@@ -103,13 +104,13 @@ Routes are implicitly defined by file structure. No manual `vue-router` config r
 
 **Navigation**
 
-- **Landing → Dashboard**: Call-to-action with `<NuxtLink to="/dashboard">` (redirects to login if unauthenticated)
-- **Dashboard → Builder**: Builder hero card with `<NuxtLink to="/builder">`
-- **Dashboard → Template Preview**: Click template card → ShowcaseModal opens in-page
+- **Landing → Gallery**: Call-to-action with `<NuxtLink to="/gallery">` (redirects to login if unauthenticated)
+- **Gallery → Builder**: Builder hero card with `<NuxtLink to="/builder">`
+- **Gallery → Template Preview**: Click template card → ShowcaseModal opens in-page
 - **Template Preview → Request**: "Choose This Design" → creates a draft request in Firebase → navigates to `/gallery/request/:id` (Firebase doc ID)
 - **Request → Builder**: "Customize page layout" → navigates to `/builder?orderId=:id` (enables layout rehydration after refresh)
-- **Request → Dashboard**: Back link or "Choose different design" link
-- **UserMenu (authenticated)**: Dashboard, **My Live Sites** (`/sites`), Sign Out
+- **Request → Gallery**: Back link or "Choose different design" link
+- **UserMenu (authenticated)**: Gallery, **My Live Sites** (`/sites`), Sign Out
 - **Sites list → Site control panel**: "Manage site" → `/sites/:id`
 - **Site control panel → Sites list**: "Back to your sites" → `/sites`
 - **Any page → Landing**: Logo link with `<NuxtLink to="/">`
@@ -171,7 +172,7 @@ The landing page serves as the public-facing entry point to Kothar. It communica
 ### Component Composition
 
 **Landing Page** (`pages/index.vue`), under default layout:
-- **AppNavbar** (from layout) – logo, UserMenu, CTA (Start Building / Dashboard)
+- **AppNavbar** (from layout) – logo, UserMenu, CTA (Start Building / Gallery)
 - Hero section with main CTA
 - Features grid
 - CTA section
@@ -321,7 +322,7 @@ Builder-specific CSS preserved exactly:
 
 ### Layouts
 
-- **default** (`layouts/default.vue`): Renders the global **AppNavbar** and `<slot />` for the page. Used by `/`, `/dashboard`, `/gallery/request/[id]`, `/login`, `/reset-password`.
+- **default** (`layouts/default.vue`): Renders the global **AppNavbar** and `<slot />` for the page. Used by `/`, `/gallery`, `/gallery/request/[id]`, `/login`, `/reset-password`.
 - **builder** (`layouts/builder.vue`): Renders only `<slot />` (no navbar). Used by `/builder` so the editor has the full viewport and no top bar.
 
 **Page assignment**:
@@ -331,7 +332,7 @@ Builder-specific CSS preserved exactly:
 ### Global Navbar (AppNavbar)
 
 - **Single component**: `components/AppNavbar.vue`; styles in `assets/css/navbar.css`.
-- **Content**: Logo (Kothar → `/`), optional "Back to Dashboard" on request page, **UserMenu**, and on landing only an auth-aware CTA (Start Building / Dashboard).
+- **Content**: Logo (Kothar → `/`), optional "Back to Gallery" on request page, **UserMenu**, and on landing only an auth-aware CTA (Start Building / Gallery).
 - **Auth**: Uses `useAuth()`; CTA is wrapped in `<ClientOnly>` with a placeholder to avoid hydration mismatch.
 
 ---
@@ -490,7 +491,7 @@ To add new pages in the future:
 ### Sharing Layout Components
 
 Navigation is centralized:
-- **AppNavbar** is used only inside **layouts/default.vue**. Pages that use the default layout (landing, dashboard, gallery request, login, reset-password) automatically get the same navbar.
+- **AppNavbar** is used only inside **layouts/default.vue**. Pages that use the default layout (landing, gallery, gallery request, login, reset-password) automatically get the same navbar.
 - The builder does not use the global navbar; it uses **layout: 'builder'**, which has no header.
 - Do not add per-page navbars; extend or configure AppNavbar if behaviour must differ by route.
 
@@ -541,14 +542,15 @@ To extend state management:
 - [ ] Client navigation to `/builder` while logged out → redirects to `/login`
 - [ ] Refresh on `/builder` while logged in → stays on builder
 - [ ] Refresh on `/builder` while logged out → redirects to `/login`
-- [ ] `/login` while logged in → redirects to `/builder`
-- [ ] `/reset-password` while logged in → redirects to `/builder`
+- [ ] `/login` while logged in → redirects to landing destination (`/sites` or `/gallery`)
+- [ ] `/reset-password` while logged in → redirects to landing destination
 - [ ] Login with redirect query → returns to original destination
 - [ ] No SSR leak of protected content
 
 ### Route Navigation Verification
-- [ ] Landing → Builder navigation works (when authenticated)
-- [ ] Builder → Landing navigation works
+- [ ] Landing → Gallery navigation works (when authenticated)
+- [ ] Gallery → Builder navigation works
+- [ ] Direct `/dashboard` → 301 redirect to `/gallery`
 - [ ] Back button (browser) works correctly
 - [ ] Query parameters preserved (redirect URL on login)
 - [ ] State persists across route changes
@@ -562,12 +564,45 @@ To extend state management:
 
 ---
 
+## Post-Login Landing
+
+Authenticated users never land on the public landing page. The post-login destination is determined by account state:
+
+- **If user has at least one order** (pending request) → redirect to `/sites`
+- **Else** → redirect to `/gallery`
+
+This logic is implemented by:
+- **`GET /api/user/landing-destination`** — Server API that counts orders in Firestore and returns `{ destination: '/sites' | '/gallery' }`
+- **`landing` middleware** — Runs on `/`; redirects authenticated users using the API
+- **`guest` middleware** — When redirecting from `/login` or `/reset-password`, uses the API when no explicit `?redirect` is present
+- **`login.vue`** — After successful sign-in, uses the API when no explicit `?redirect` is present
+
+**Redirect for `/dashboard`:** The route `/dashboard` is permanently redirected (301) to `/gallery` via Nitro routeRules.
+
+---
+
+## Migration Reference (Dashboard → Gallery)
+
+Route and page mapping applied in March 2026:
+
+| Before | After |
+|--------|-------|
+| `pages/dashboard.vue` | `pages/gallery.vue` |
+| `/dashboard` | `/gallery` |
+| `assets/css/dashboard.css` | `assets/css/gallery.css` |
+
+**Component and file references updated:** UserMenu, AppNavbar, index, login, builder, orders/edit, gallery/request pages, guest middleware — all now use `/gallery` and "Gallery" terminology.
+
+**Verification (when adding tests):** Cover route redirect `/dashboard` → `/gallery`; landing middleware (auth user on `/` → `/sites` or `/gallery`); guest middleware uses landing-destination API; CTA on `/sites` navigates to `/gallery` and is keyboard accessible. Project has no test infrastructure yet; manual verification per checklist above.
+
+---
+
 ## Summary
 
 Kothar has a proper multi-page architecture with authentication:
 
-1. **Landing Page** (`/`) - Public-facing entry point with marketing messaging
-2. **Dashboard** (`/dashboard`) - Central hub with builder access and integrated templates showcase
+1. **Landing Page** (`/`) - Public-facing entry point (authenticated users redirected)
+2. **Gallery** (`/gallery`) - Central hub with builder access and integrated templates showcase
 3. **Builder Page** (`/builder`) - Protected editor interface (requires authentication)
 4. **Template Request** (`/gallery/request/[id]`) - SMB onboarding form for template requests
 5. **Login Page** (`/login`) - Authentication page (guest-only, redirects auth users)
@@ -580,14 +615,16 @@ Kothar has a proper multi-page architecture with authentication:
 
 **Authentication Flow:**
 - Unauthenticated users clicking "Start Building" → redirected to `/login`
-- After login → redirected to `/dashboard` (or original destination if specified)
-- Authenticated users visiting `/login` → redirected to `/dashboard`
-- Direct URL access to `/dashboard` while logged out → redirected to `/login`
+- After login → redirected to `/sites` or `/gallery` (based on account state) or original destination if `?redirect` specified
+- Authenticated users visiting `/login` → redirected to landing destination
+- Authenticated users visiting `/` → redirected to landing destination via `landing` middleware
+- Direct URL access to `/gallery` while logged out → redirected to `/login`
+- Direct URL access to `/dashboard` → 301 redirect to `/gallery`
 - No UI flicker, no SSR leak, no race conditions
 
 **Removed Routes:**
-- ~~`/gallery`~~ - Templates are now integrated directly into the dashboard
+- ~~`/dashboard`~~ - Replaced by `/gallery`; 301 redirect in place
 
-**Last Updated**: March 9, 2026
+**Last Updated**: March 2026
 
 ````

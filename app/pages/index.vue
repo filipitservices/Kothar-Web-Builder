@@ -16,8 +16,8 @@
         <p class="hero-subtitle">
           Choose or layout a professional design yourself, tell us what your business needs — <b>get a polished website delivered fast</b>.
         </p>
-        <NuxtLink :to="isAuthenticated ? '/dashboard' : '/login'" class="hero-cta">
-          {{ isAuthenticated ? 'Go to Dashboard' : 'Get Started Free' }}
+        <NuxtLink :to="isAuthenticated ? '/gallery' : '/login'" class="hero-cta">
+          {{ isAuthenticated ? 'Open Gallery' : 'Get Started Free' }}
         </NuxtLink>
       </div>
     </section>
@@ -34,8 +34,8 @@
       <div class="cta-content">
         <h2 class="cta-title">Ready to Build Your Website?</h2>
         <p class="cta-subtitle">Create a professional site without code. Start now.</p>
-        <NuxtLink :to="isAuthenticated ? '/dashboard' : '/login'" class="cta-button">
-          {{ isAuthenticated ? 'Go to Dashboard' : 'Launch Builder' }}
+        <NuxtLink :to="isAuthenticated ? '/gallery' : '/login'" class="cta-button">
+          {{ isAuthenticated ? 'Open Gallery' : 'Launch Builder' }}
         </NuxtLink>
       </div>
     </section>
@@ -56,6 +56,10 @@
 
 <script setup lang="ts">
 import { useAuth } from '~/composables/useAuth';
+
+definePageMeta({
+  middleware: 'landing'
+});
 
 const { isAuthenticated } = useAuth();
 const appConfig = useAppConfig();

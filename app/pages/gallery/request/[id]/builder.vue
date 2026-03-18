@@ -40,13 +40,13 @@ async function initialiseLayoutFromOrder(orderId: string, uid: string): Promise<
   }
 
   if (!order) {
-    await router.replace('/dashboard');
+    await router.replace('/gallery');
     return;
   }
 
   const template = showcaseStore.getTemplateById(order.templateId);
   if (!template) {
-    await router.replace('/dashboard');
+    await router.replace('/gallery');
     return;
   }
 
@@ -71,7 +71,7 @@ async function initialiseLayoutFromOrder(orderId: string, uid: string): Promise<
 async function ensureRequestContext(): Promise<void> {
   const orderId = getOrderIdFromRoute();
   if (!orderId) {
-    await router.replace('/dashboard');
+    await router.replace('/gallery');
     return;
   }
 
@@ -84,7 +84,7 @@ async function ensureRequestContext(): Promise<void> {
 onMounted(async () => {
   const orderId = getOrderIdFromRoute();
   if (!orderId) {
-    await router.replace('/dashboard');
+    await router.replace('/gallery');
     return;
   }
 

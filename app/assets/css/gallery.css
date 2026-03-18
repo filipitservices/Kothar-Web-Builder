@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Dashboard Page — Design tokens from style.css :root only.
+   Gallery Page — Design tokens from style.css :root only.
    Page-scoped vars on .dash for section contrast.
    ========================================================================== */
 
@@ -454,4 +454,3 @@
     grid-template-columns: repeat(4, 1fr);
   }
 }
-

@@ -32,7 +32,7 @@ if (typeof orderIdQuery === 'string' && orderIdQuery.trim()) {
   router.replace(target);
 } else {
   logLegacy('dashboard');
-  router.replace('/dashboard');
+  router.replace('/gallery');
 }
 </script>
 

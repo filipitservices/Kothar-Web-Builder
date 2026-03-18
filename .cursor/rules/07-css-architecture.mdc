@@ -24,13 +24,13 @@ Per core invariants. Before styling changes, audit design tokens in `app/assets/
 
 ## Structure
 
-- **Global CSS order** (nuxt.config): `style.css` (tokens + base), `components.css`, `navbar.css`. Page-scoped CSS (e.g. `landing.css`, `dashboard.css`, `editor.css`, `sites.css`, `request-form.css`, `showcase.css`) is loaded per page via `<style scoped src="...">`; do not re-import `style.css` in page CSS.
+- **Global CSS order** (nuxt.config): `style.css` (tokens + base), `components.css`, `navbar.css`. Page-scoped CSS (e.g. `landing.css`, `gallery.css`, `editor.css`, `sites.css`, `request-form.css`, `showcase.css`) is loaded per page via `<style scoped src="...">`; do not re-import `style.css` in page CSS.
 - **Breakpoints:** Use consistently: `480px`, `640px`, `768px`, `900px`, `1024px`, `1200px` in `@media`.
 - **Scoped styles:** Prefer Vue scoped `<style scoped>` or page-scoped CSS. No reliance on incidental global side effects.
 
 ## Layout Safety
 
-- Layout must remain safe across the app: navbar, landing, dashboard, builder, sites, request form. Changes to tokens or global layout must not break container width or cause horizontal scroll unless intended. Ensure layout safety across the app; do not rely on brittle CSS hacks or hardcoded heights.
+- Layout must remain safe across the app: navbar, landing, gallery, builder, sites, request form. Changes to tokens or global layout must not break container width or cause horizontal scroll unless intended. Ensure layout safety across the app; do not rely on brittle CSS hacks or hardcoded heights.
 
 ## Before Changing Styles
 

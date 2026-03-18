@@ -53,8 +53,8 @@ Read these documents in order for complete project understanding:
    - Props and events
    - Styling patterns
 
-7. **[Dashboard & Templates](17-DASHBOARD-AND-GALLERY.md)** 🆕
-   - Integrated dashboard architecture
+7. **[Gallery & Templates](17-DASHBOARD-AND-GALLERY.md)** 🆕
+   - Integrated Gallery architecture
    - Showcase template system (separate from builder)
    - SMB onboarding flow
    - Template preview and request flow

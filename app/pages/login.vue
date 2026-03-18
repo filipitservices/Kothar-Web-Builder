@@ -187,11 +187,18 @@ const form = reactive({
   confirmPassword: '',
 });
 
-// Get redirect URL from query params
-const redirectUrl = computed(() => {
+/** Resolve redirect path: query param, or landing-destination API, or /gallery fallback. */
+async function getRedirectUrl(): Promise<string> {
   const redirect = route.query.redirect;
-  return typeof redirect === 'string' ? redirect : '/dashboard';
-});
+  if (typeof redirect === 'string') return redirect;
+  try {
+    const res = await $fetch<{ destination?: string; error?: string }>('/api/user/landing-destination');
+    if (res && typeof res.destination === 'string') return res.destination;
+  } catch {
+    // Fallback on error
+  }
+  return '/gallery';
+}
 
 // Toggle between sign-in and sign-up
 function toggleMode(): void {
@@ -221,7 +228,7 @@ async function handleSubmit(): Promise<void> {
     }
     
     // Success - redirect to intended page
-    await router.push(redirectUrl.value);
+    await router.push(await getRedirectUrl());
     
   } catch {
     // Error is automatically set in the composable
@@ -238,7 +245,7 @@ async function handleGoogleSignIn(): Promise<void> {
     await signInWithGoogle();
     
     // Success - redirect
-    await router.push(redirectUrl.value);
+    await router.push(await getRedirectUrl());
     
   } catch {
     // Error is automatically set

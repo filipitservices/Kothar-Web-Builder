@@ -910,6 +910,8 @@ Maps `element.type` to component:
 
 **File**: [components/DrawingControlsPanel.vue](../app/components/DrawingControlsPanel.vue)
 
+**Note:** There is no `DrawingDashboard` component; the canonical name is `DrawingControlsPanel`.
+
 **Purpose**: Drawing toolbar with tool selection (Desktop/Mobile mode, sync, stroke controls)
 
 **Position**: At top of ScreensPanel, under the "Editing page layout" bar when in request mode.

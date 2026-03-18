@@ -8,7 +8,7 @@
 
 Request orders follow a two-phase lifecycle in Firestore:
 
-1. **Draft creation** — When a user selects a template on the dashboard, a draft order document is created in Firestore (status `draft`) with the initial layout from the template and empty business/contact fields. A daily-limit counter is updated atomically in the same batch.
+1. **Draft creation** — When a user selects a template on the Gallery, a draft order document is created in Firestore (status `draft`) with the initial layout from the template and empty business/contact fields. A daily-limit counter is updated atomically in the same batch.
 2. **Form submission** — When the user fills out and submits the request form, the existing draft is updated to status `submitted` with all business info, contact info, project details, uploaded files, and layout.
 
 Only the **modular Firebase SDK** is used (no legacy namespace API). Firestore and Storage logic live in dedicated composables; the UI layer stays thin.
@@ -79,18 +79,18 @@ Files are uploaded **before** the Firestore write. If any upload fails, the orde
 
 ### Phase 1: Draft Creation
 
-1. **Dashboard** (`pages/dashboard.vue`): User clicks "Choose This Design" on a showcase template.
+1. **Gallery** (`pages/gallery.vue`): User clicks "Choose This Design" on a showcase template.
 2. **Composable** (`composables/useCreateRequest.ts`): `createDraftRequest()` executes a Firestore batch write containing:
    - A new order document at `users/{userId}/orders/{newId}` with `status: 'draft'`, initial layout from the template, and empty business/contact fields.
    - A counter update at `users/{userId}/requestLimits/daily` with today's date and incremented count (max 3 per day).
-3. **Dashboard**: On success, navigates to `/gallery/request/{docId}`. On failure (limit exceeded or other), shows an inline error banner.
+3. **Gallery**: On success, navigates to `/gallery/request/{docId}`. On failure (limit exceeded or other), shows an inline error banner.
 
 ### Phase 2: Form Submission
 
 1. **Page** (`pages/gallery/request/[id].vue`): Loads the draft document from Firestore by doc ID; resolves the showcase template for preview; renders the form.
 2. On form submit, calls `useOrderUpdate().updateOrder()` with `status: 'submitted'`, validated form data, uploaded files, and layout.
 3. **Composable** (`composables/useOrderUpdate.ts`): Uploads files to Storage, then calls `updateDoc` to transition the draft to submitted with all fields populated.
-4. **Page**: On success, shows inline confirmation and navigates to dashboard. On error, shows inline error message (no `alert()`).
+4. **Page**: On success, shows inline confirmation and navigates to gallery. On error, shows inline error message (no `alert()`).
 
 ### Layout Persistence
 
@@ -127,7 +127,7 @@ Orders for the logged-in user can be read from:
 users/{userId}/orders
 ```
 
-where `userId` is the authenticated user’s UID. The **orders store** (`stores/orders.ts`) subscribes to this collection with `onSnapshot` and `orderBy('createdAt', 'desc')`, exposing a reactive list and `getOrderById` / `fetchOrder` for single-document access. The dashboard (sites index) and order edit page consume this store. The document’s shape is **OrderRequest** (with Firestore timestamps for `createdAt`/`updatedAt`).
+where `userId` is the authenticated user’s UID. The **orders store** (`stores/orders.ts`) subscribes to this collection with `onSnapshot` and `orderBy('createdAt', 'desc')`, exposing a reactive list and `getOrderById` / `fetchOrder` for single-document access. The sites index and order edit page consume this store. The document’s shape is **OrderRequest** (with Firestore timestamps for `createdAt`/`updatedAt`).
 
 **Runtime validation:** All order document reads (snapshot callbacks and `fetchOrder`) must use **`parseOrderDocument(data, documentId)`** from `app/utils/orderValidation.ts` before treating data as typed. Invalid payloads return `null` and are not pushed into store state; only valid `OrderWithId` shapes enter the app.
 

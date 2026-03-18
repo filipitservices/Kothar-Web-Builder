@@ -1,21 +1,21 @@
-# Dashboard & Template System
+# Gallery & Template System
 
-> **Document Version:** 2.1
+> **Document Version:** 3.0
 > **Last Updated:** March 2026
 > **Status:** Production
 
 ## Overview
 
-The dashboard serves as the authenticated central hub for Kothar, providing users with immediate access to both the website builder and a curated showcase of professional templates—all in one cohesive experience.
+The Gallery serves as the authenticated central hub for Kothar, providing users with immediate access to both the website builder and a curated showcase of professional templates—all in one cohesive experience.
 
-**Key Architecture Decision:** Templates are now integrated directly into the dashboard rather than existing as a separate page. This creates a more focused, intentional user experience where users can discover templates naturally without navigating away from their central workspace.
+**Key Architecture Decision:** Templates are integrated directly into the Gallery rather than existing as a separate page. This creates a more focused, intentional user experience where users can discover templates naturally without navigating away from their central workspace.
 
 ### System Separation
 
 | System | Purpose | Data Source | User Flow |
 |--------|---------|-------------|-----------|
-| **Builder Templates** | Starting points for DIY website building | `stores/templates.ts` | Dashboard → Builder → Select template → Edit blocks |
-| **Showcase Templates** | Professional designs for managed services | `stores/showcase.ts` | Dashboard → Preview → Request form → Consultation |
+| **Builder Templates** | Starting points for DIY website building | `stores/templates.ts` | Gallery → Builder → Select template → Edit blocks |
+| **Showcase Templates** | Professional designs for managed services | `stores/showcase.ts` | Gallery → Preview → Request form → Consultation |
 
 ---
 
@@ -28,11 +28,11 @@ Landing (/)
     │
     ├── Guest: "Get Started" / "Sign In" → /login
     │
-    └── Authenticated: "Dashboard" → /dashboard
+    └── Authenticated: "Gallery" → /gallery
                                         │
                                         ├── /builder (DIY website builder)
                                         │
-                                        ├── My Live Sites (UserMenu) → /sites (dashboard: Live Sites + Orders tabs)
+                                        ├── My Live Sites (UserMenu) → /sites (My Sites: Live Sites + Orders tabs)
                                         │       │
                                         │       ├── /sites/[id] (site control panel)
                                         │       └── Orders tab → Modify → /orders/[id]/edit (edit request)
@@ -46,26 +46,26 @@ Landing (/)
 
 All authenticated routes use the `auth` middleware:
 
-- `/dashboard` - Central hub with builder access and templates showcase
+- `/gallery` - Central hub with builder access and templates showcase
 - `/builder` - Website builder (existing)
 - `/sites` - My Live Sites list; `/sites/[id]` - site control panel (manage delivered sites; not the builder)
 - `/gallery/request/[id]` - Template request form
 - `/orders/[id]/edit` - Order edit form (locked orders redirect to /sites)
 
-**Note:** The standalone `/gallery` route has been removed. Templates are now accessed directly from the dashboard.
+**Note:** The route `/dashboard` has been replaced by `/gallery` (301 redirect). Templates are accessed directly from the Gallery.
 
 ---
 
-## Dashboard (`/dashboard`)
+## Gallery (`/gallery`)
 
-**File:** `app/pages/dashboard.vue`  
-**CSS:** `app/assets/css/dashboard.css`
+**File:** `app/pages/gallery.vue`  
+**CSS:** `app/assets/css/gallery.css`
 
-The dashboard is the authenticated entry point, combining quick access to the builder with an integrated templates showcase.
+The Gallery is the authenticated entry point, combining quick access to the builder with an integrated templates showcase.
 
 ### Layout Structure
 
-The dashboard uses the **default** layout, which provides the global **AppNavbar** (logo, UserMenu with optional name, no CTA on this page).
+The Gallery uses the **default** layout, which provides the global **AppNavbar** (logo, UserMenu with optional name, no CTA on this page).
 
 The page is structured as a control surface: a compact **control strip** (greeting + primary CTA), a **templates showcase** block with distinct background contrast, and a minimal **footer**. All content is constrained by `--container-max`; spacing and typography use the global design tokens from `style.css`.
 
@@ -92,8 +92,8 @@ The page is structured as a control surface: a compact **control strip** (greeti
 
 ### Components
 
-1. **Control strip** (`dashboard-strip`) — Header with personalized greeting and primary "Open Builder" CTA. White background, subtle left border accent. Single row on desktop; stacks on small screens.
-2. **Templates showcase** (`dashboard-showcase`) — Contrast block (primary-tint background) containing section heading, category pills (tablist), and a responsive grid of compact template cards. Cards use a small browser mockup preview, industry label, name, description clamp, and "Preview" action.
+1. **Control strip** (`dash-strip`) — Header with personalized greeting and primary "Open Builder" CTA. White background, subtle left border accent. Single row on desktop; stacks on small screens.
+2. **Templates showcase** (`dash-showcase`) — Contrast block (primary-tint background) containing section heading, category pills (tablist), and a responsive grid of compact template cards. Cards use a small browser mockup preview, industry label, name, description clamp, and "Preview" action.
 3. **ShowcaseModal** — In-page preview modal: desktop/mobile toggle, optional loading state (spinner) while the request is created, "Choose This Design" → creates a draft request in Firestore → navigates to `/gallery/request/{docId}` (Firebase document ID).
 4. **Footer** — Minimal copyright line; same container width as content.
 
@@ -183,7 +183,7 @@ interface ShowcaseTemplate {
 
 **File:** `app/components/ShowcaseModal.vue`
 
-Modal overlay for previewing complete showcase templates with device simulation. Opens directly from the dashboard when a template card is clicked.
+Modal overlay for previewing complete showcase templates with device simulation. Opens directly from the Gallery when a template card is clicked.
 
 ### Features
 
@@ -249,7 +249,7 @@ interface Props {
 **Form Component:** `app/components/TemplateRequestForm.vue`
 **CSS:** `app/assets/css/request-form.css`
 
-SMB onboarding form for requesting a website based on a selected showcase template. The `[id]` route param is a **Firebase document ID**, not a template slug. When the user clicks "Choose This Design" on the dashboard, a draft request is created in Firestore first, and the user is navigated to `/gallery/request/{docId}`.
+SMB onboarding form for requesting a website based on a selected showcase template. The `[id]` route param is a **Firebase document ID**, not a template slug. When the user clicks "Choose This Design" on the Gallery, a draft request is created in Firestore first, and the user is navigated to `/gallery/request/{docId}`.
 
 The form uses gamified, section-based interactions: industry selection via **IndustryCardGrid** (selectable cards), **GuidedBusinessDescription** (three optional blocks: what we do, who we serve, what sets us apart), **YearsInBusinessInput** (segmented options only; field is optional), and **GoalSelector** (multi-select goals; no order). All use design tokens and support a read-only state when the form is disabled.
 
@@ -268,7 +268,7 @@ The page consists of two main pieces:
 
 ### Error Handling
 
-If the route ID does not correspond to a valid request document (not found, inaccessible, or the user is not the owner), the page renders a styled error state with a link back to the dashboard. No crash, no raw error. All user-facing messages use inline styled feedback (no `alert()` calls).
+If the route ID does not correspond to a valid request document (not found, inaccessible, or the user is not the owner), the page renders a styled error state with a link back to the Gallery. No crash, no raw error. All user-facing messages use inline styled feedback (no `alert()` calls).
 
 ### Data Flow
 
@@ -286,9 +286,9 @@ TemplateRequestForm
 
 ### Navigation
 
-- Back link: Returns to `/dashboard` (templates section)
-- "Choose a different design" link: Returns to `/dashboard`
-- "Build your own" link: Goes to the dashboard templates section (`/dashboard#templates`)
+- Back link: Returns to `/gallery` (templates section)
+- "Choose a different design" link: Returns to `/gallery`
+- "Build your own" link: Goes to the Gallery templates section (`/gallery#templates`)
 - "Customize page layout" button: Goes to `/gallery/request/{orderId}/builder` so layout edits persist across refresh and are always tied to the current request
 
 ### Layout
@@ -337,7 +337,7 @@ Locked orders (`modificationLocked === true`) redirect to `/sites`; the edit pag
 
 | File | Purpose |
 |------|---------|
-| `dashboard.css` | Dashboard page: control strip, showcase block (contrast zone), compact template cards; uses design tokens only; page-scoped vars on `.dashboard-container` for section backgrounds |
+| `gallery.css` | Gallery page: control strip, showcase block (contrast zone), compact template cards; uses design tokens only; page-scoped vars on `.dash` for section backgrounds |
 | `request-form.css` | Request form page styles |
 | `components.css` | Shared UI components (buttons, forms, modals, device frames) |
 | `showcase.css` | ShowcaseRenderer section styles |
@@ -354,33 +354,32 @@ All CSS files follow the existing design system:
 
 ### Login Redirect
 
-After successful login, users are redirected to `/dashboard`:
-
-```typescript
-// app/pages/login.vue
-const redirectUrl = computed(() => {
-  const redirect = route.query.redirect;
-  return typeof redirect === 'string' ? redirect : '/dashboard';
-});
-```
+After successful login, users are redirected based on account state via `GET /api/user/landing-destination`:
+- If user has orders → `/sites`
+- Else → `/gallery`
+- Or to `?redirect` if explicitly specified
 
 ### Landing Page CTAs
 
 Landing page CTAs are auth-aware:
 - **Guest:** "Get Started" / "Launch Builder" → `/login`
-- **Authenticated:** "Dashboard" / "Go to Dashboard" → `/dashboard`
+- **Authenticated:** "Gallery" / "Open Gallery" → `/gallery`
 
 ### UserMenu Dropdown
 
-The UserMenu dropdown includes a "Dashboard" link for quick navigation from any authenticated page.
+The UserMenu dropdown includes a "Gallery" link for quick navigation from any authenticated page.
+
+### CTA on /sites
+
+The My Sites page includes a "Discover layout templates" CTA that links to `/gallery`, placed in the header area.
 
 ---
 
 ## Removed Routes
 
-The following route has been removed in favor of dashboard integration:
+The following route has been replaced:
 
-- ~~`/gallery`~~ - Templates are now accessed directly from the dashboard
+- ~~`/dashboard`~~ - Replaced by `/gallery`; 301 redirect in place
 
 The request form route remains at `/gallery/request/[id]` for URL stability.
 
@@ -390,7 +389,7 @@ The request form route remains at `/gallery/request/[id]` for URL stability.
 
 Request orders follow a two-phase lifecycle:
 
-1. **Draft creation** (on dashboard): When the user clicks "Choose This Design," a draft order document is created in Firestore at `users/{userId}/orders/{orderId}` with `status: 'draft'`, the initial layout from the template, and default empty fields. This is handled by `useCreateRequest().createDraftRequest()`.
+1. **Draft creation** (on Gallery): When the user clicks "Choose This Design," a draft order document is created in Firestore at `users/{userId}/orders/{orderId}` with `status: 'draft'`, the initial layout from the template, and default empty fields. This is handled by `useCreateRequest().createDraftRequest()`.
 
 2. **Form submission** (on request page): When the user fills out the form and submits, the existing draft is updated to `status: 'submitted'` with all form data, uploaded attachments, and the current layout. This is handled by `useOrderUpdate().updateOrder()` with a `status` parameter.
 
@@ -408,13 +407,13 @@ This section describes the sequence from "Choose This Design" to the request pag
 
 ### Reproduction (lag before fix)
 
-1. User is on the dashboard and clicks a template card → ShowcaseModal opens.
+1. User is on the Gallery and clicks a template card → ShowcaseModal opens.
 2. User clicks "Choose This Design".
-3. **Before the fix:** The modal closed immediately; the dashboard was visible with no loading indicator. The user then waited while: a separate Firestore read for the daily counter, then a transaction writing the order and counter, then client-side navigation, then the request page mounting and fetching the same order again. On slow connections this produced a noticeable delay with no feedback.
+3. **Before the fix:** The modal closed immediately; the Gallery was visible with no loading indicator. The user then waited while: a separate Firestore read for the daily counter, then a transaction writing the order and counter, then client-side navigation, then the request page mounting and fetching the same order again. On slow connections this produced a noticeable delay with no feedback.
 
 ### Root causes
 
-1. **Modal closed before async work** — The dashboard called `closeShowcase()` at the start of the handler, so the modal disappeared before the Firestore transaction and navigation. The user had no indication that request creation was in progress.
+1. **Modal closed before async work** — The Gallery called `closeShowcase()` at the start of the handler, so the modal disappeared before the Firestore transaction and navigation. The user had no indication that request creation was in progress.
 2. **Two Firestore round-trips** — The composable first called `getDoc(counterRef)` to read the daily counter, then ran `runTransaction` to write the order and counter. That was two sequential round-trips; the counter read was moved inside the transaction so a single transaction performs read + write.
 3. **Redundant fetch** — After navigation, the request page always called `fetchOrder()` to load the document that had just been created. Navigation state hydration was added as an optional fast-path so the page can render immediately when the order is passed in state; the page still loads from Firestore when state is absent (reload, direct URL, history restore).
 
@@ -422,8 +421,8 @@ This section describes the sequence from "Choose This Design" to the request pag
 
 1. **Loading UI before async work** — The handler sets `isCreating = true`, then `await nextTick()`, so Vue paints the modal’s loading state (spinner + "Preparing your request…") before the Firestore transaction runs. The modal is not closed until navigation occurs or an error is shown.
 2. **Single Firestore transaction** — In `useCreateRequest.createDraftRequest()`, the counter is read with `transaction.get(counterRef)` inside `runTransaction`; the new count is computed and both the order document and the counter are written in the same transaction. One round-trip instead of two.
-3. **Optional hydration from navigation state** — After a successful create, the dashboard passes the created order (as an `OrderWithId`-compatible object) in `router.push(..., state: { orderFromCreate } )`. The request page checks `history.state?.orderFromCreate`; if present and the id matches the route param, it uses that for immediate render and initializes the request layout store. Hydration is a performance optimization only; the canonical source of truth is Firestore. The request page always supports loading purely from the route id (e.g. direct URL or reload).
-4. **No concurrent request creation** — While `isCreating` is true, the dashboard does not open another template (`openShowcase` returns early), and the modal’s actions (Choose This Design, Close, overlay click, Escape) are disabled or no-op. Only one creation runs at a time.
+3. **Optional hydration from navigation state** — After a successful create, the Gallery passes the created order (as an `OrderWithId`-compatible object) in `router.push(..., state: { orderFromCreate } )`. The request page checks `history.state?.orderFromCreate`; if present and the id matches the route param, it uses that for immediate render and initializes the request layout store. Hydration is a performance optimization only; the canonical source of truth is Firestore. The request page always supports loading purely from the route id (e.g. direct URL or reload).
+4. **No concurrent request creation** — While `isCreating` is true, the Gallery does not open another template (`openShowcase` returns early), and the modal’s actions (Choose This Design, Close, overlay click, Escape) are disabled or no-op. Only one creation runs at a time.
 5. **Cleanup on modal unmount** — ShowcaseModal’s `onUnmounted` sets `document.body.style.overflow = ''` so that when the user navigates to the request page (or closes the modal), the body is not left with `overflow: hidden`, which would make the request page unscrollable.
 
 ### Loading UI
@@ -444,7 +443,7 @@ This section describes the sequence from "Choose This Design" to the request pag
 
 | File | Purpose |
 |------|--------|
-| `app/pages/dashboard.vue` | Set `isCreating = true`, `await nextTick()`, then run create + push; do not close modal before async work. Guard `openShowcase` and `closeShowcase` when `isCreating`. Pass `loading` to modal and optional `state.orderFromCreate` on push. |
+| `app/pages/gallery.vue` | Set `isCreating = true`, `await nextTick()`, then run create + push; do not close modal before async work. Guard `openShowcase` and `closeShowcase` when `isCreating`. Pass `loading` to modal and optional `state.orderFromCreate` on push. |
 | `app/composables/useCreateRequest.ts` | Single transaction with `transaction.get(counterRef)`; return `orderForHydration` for the request page fast-path. |
 | `app/components/ShowcaseModal.vue` | `loading` prop; in-modal loading overlay (spinner + message); disable actions when loading; `aria-busy`, `aria-live`; restore `document.body.style.overflow` in `onUnmounted`. |
 | `app/pages/gallery/request/[id]/index.vue` | In `loadRequestFromFirebase`, use `history.state?.orderFromCreate` when present and id matches for immediate render; otherwise load from Firestore. Page remains fully functional without hydration. |
@@ -465,7 +464,7 @@ This section describes the sequence from "Choose This Design" to the request pag
 
 ## Summary
 
-The integrated dashboard experience provides:
+The integrated Gallery experience provides:
 
 1. **Unified entry point** - Single destination after login
 2. **Discoverability** - Templates surface naturally alongside builder access

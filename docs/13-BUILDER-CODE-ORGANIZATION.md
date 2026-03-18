@@ -172,6 +172,23 @@ export const INITIAL_FIELD_ERRORS = {
 
 ---
 
+## Builder Component References
+
+Key components and their locations (for navigation and refactoring):
+
+| Component / Symbol | Location |
+|--------------------|----------|
+| **DrawingControlsPanel** | `app/components/DrawingControlsPanel.vue`; used in ScreensPanel. Root class: `.drawing-controls-panel`. |
+| **DrawingToolControls** | `app/components/DrawingToolControls.vue`; referenced in 06-COMPONENT-CATALOG, 02-ARCHITECTURE. |
+| **"Editing page layout"** | `app/components/BuilderEditor.vue` line 34. |
+| **SidebarBranding** | Removed. Was in BuilderEditor, editor.css; see docs/09-SIDEBAR-BRANDING.md. |
+| **Left sidebar header** | BuilderEditor — `.sidebar-header` with "Available Items". |
+| **Right sidebar header** | TemplatesList — `.templates-header`. |
+
+**Note:** There is no `DrawingDashboard` component; the canonical name is `DrawingControlsPanel`. The `.drawing-controls-panel` class is used in `useScreenScaling.ts` for height calculations.
+
+---
+
 ## Code Quality Metrics
 
 | Metric | Before | After | Change |
