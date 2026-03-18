@@ -289,6 +289,18 @@ Builder-specific CSS preserved exactly:
 | `app/assets/css/editor.css` | At 1200px breakpoint: `height: 100vh`, `min-height: 100vh`, `overflow: auto` on `.main-container`; `flex: 1 1 0` on `.screens-container`. |
 | `app/constants/builder.ts` | `CANVAS_DIMENSIONS` set to 700×550 (desktop) and 330×600 (mobile) to match ScreenCard and useScreenScaling. |
 
+### Builder UI Restructure (Drawing dashboard, headers, SidebarBranding)
+
+**Changes:**
+- **DrawingControlsPanel** moved from bottom to top of ScreensPanel, under the "Editing page layout" bar.
+- **Dashboard gradient** removed; panel uses `var(--color-bg-muted)`.
+- **Right sidebar header** now identical to left (`.sidebar-header` with "Templates").
+- **SidebarBranding.vue** removed. Account/help actions available via UserMenu in AppNavbar (dashboard, sites, etc.); builder layout has no navbar.
+
+**Verification:** Builder from request page, My Sites, or `/orders/:id/edit`; drawing dashboard at top; no gradient; left and right headers match; no SidebarBranding; `.screens-inner` not clipped; keyboard tab order logical.
+
+**Rollback:** Revert commits in reverse order: (1) docs/tests, (2) SidebarBranding removal, (3) gradient, (4) dashboard move, (5) right header.
+
 ---
 
 ## App Root and Layouts

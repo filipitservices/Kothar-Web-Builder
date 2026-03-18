@@ -1,5 +1,18 @@
 <template>
   <div class="screens-panel" ref="screensPanelRef">
+    <!-- Drawing Controls Panel (top, under "Editing page layout" bar) -->
+    <DrawingControlsPanel
+      :desktop-drawing-state="props.desktopDrawingState"
+      :mobile-drawing-state="props.mobileDrawingState"
+      :sync-screens="syncScreens"
+      @update:desktop-drawing-state="handleDesktopStateUpdate"
+      @update:mobile-drawing-state="handleMobileStateUpdate"
+      @update:sync-screens="(val) => syncScreens = val"
+      @undo="handleUndo"
+      @redo="handleRedo"
+      @clear="handleClear"
+    />
+
     <!-- Screens area (screens + overlay) -->
     <div class="screens-area">
       <div class="screens-inner" ref="screensContainerRef">
@@ -59,19 +72,6 @@
       <!-- AI Chat Panel (overlay) -->
       <AiChatPanel />
     </div>
-
-    <!-- Drawing Controls Panel -->
-    <DrawingControlsPanel
-      :desktop-drawing-state="props.desktopDrawingState"
-      :mobile-drawing-state="props.mobileDrawingState"
-      :sync-screens="syncScreens"
-      @update:desktop-drawing-state="handleDesktopStateUpdate"
-      @update:mobile-drawing-state="handleMobileStateUpdate"
-      @update:sync-screens="(val) => syncScreens = val"
-      @undo="handleUndo"
-      @redo="handleRedo"
-      @clear="handleClear"
-    />
   </div>
 </template>
 

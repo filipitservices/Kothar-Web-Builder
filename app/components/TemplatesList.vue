@@ -1,6 +1,6 @@
 <template>
   <div class="templates-list">
-    <div class="templates-header">
+    <div v-if="showHeader" class="templates-header">
       <h3>Templates</h3>
       <p class="subtitle">Click to apply a template</p>
     </div>
@@ -42,6 +42,10 @@ interface TemplatesListEmits {
   apply: [templateId: string, screen: 'desktop' | 'mobile' | 'both'];
 }
 
+const props = withDefaults(
+  defineProps<{ showHeader?: boolean }>(),
+  { showHeader: true }
+);
 const emit = defineEmits<TemplatesListEmits>();
 const templatesStore = useTemplatesStore();
 

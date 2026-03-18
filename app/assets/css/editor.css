@@ -49,7 +49,7 @@
   display: none; /* Chrome, Safari, Opera */
 }
 
-/* Left sidebar layout with branding at bottom */
+/* Left sidebar layout */
 .left-sidebar {
   display: flex;
   flex-direction: column;
@@ -59,11 +59,17 @@
   flex: 0 0 auto;
 }
 
-/* .sidebar-list already has flex: 1, overflow-y: auto, min-height: 0 */
-
-.left-sidebar > .sidebar-branding {
+.right-sidebar > .sidebar-header {
   flex: 0 0 auto;
 }
+
+.right-sidebar > .templates-list-wrapper {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* .sidebar-list already has flex: 1, overflow-y: auto, min-height: 0 */
 
 /* Screens Container */
 .screens-container {

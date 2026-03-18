@@ -205,8 +205,8 @@ const updateState = (key: keyof DrawingState, value: DrawingState[keyof DrawingS
 
 <style scoped>
 .drawing-controls-panel {
-  background: linear-gradient(135deg, #f6f7fb 0%, #e9edf5 100%);
-  border-top: 1px solid #dfe3eb;
+  background: var(--color-bg-muted);
+  border-top: 1px solid var(--color-border);
   box-shadow: 0 -6px 18px rgba(15, 23, 42, 0.08);
   padding: 12px 16px;
   display: flex;

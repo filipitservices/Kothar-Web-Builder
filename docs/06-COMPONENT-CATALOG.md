@@ -910,18 +910,13 @@ Maps `element.type` to component:
 
 **File**: [components/DrawingControlsPanel.vue](../app/components/DrawingControlsPanel.vue)
 
-**Purpose**: Drawing toolbar with tool selection
+**Purpose**: Drawing toolbar with tool selection (Desktop/Mobile mode, sync, stroke controls)
 
-**Props**: None
+**Position**: At top of ScreensPanel, under the "Editing page layout" bar when in request mode.
 
-**Emits**:
-```typescript
-{
-  'toggle-drawing': () => void,
-  'clear-drawing': () => void,
-  'undo-drawing': () => void
-}
-```
+**Props**: `desktopDrawingState`, `mobileDrawingState`, `syncScreens`
+
+**Emits**: `update:desktop-drawing-state`, `update:mobile-drawing-state`, `update:sync-screens`, `undo`, `redo`, `clear`
 
 **Features**:
 - Drawing mode toggle

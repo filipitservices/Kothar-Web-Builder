@@ -11,10 +11,6 @@
           :group="{ name: 'available', pull: 'clone', put: false }"
         />
       </div>
-      <SidebarBranding
-        @account-click="handleAccountClick"
-        @help-click="handleHelpClick"
-      />
     </div>
 
     <!-- Center Container with Screens -->
@@ -94,7 +90,12 @@
 
     <!-- Right Sidebar -->
     <div class="sidebar right-sidebar">
-      <TemplatesList @apply="handleTemplateApply" />
+      <div class="sidebar-header">
+        <h3>Templates</h3>
+      </div>
+      <div class="templates-list-wrapper">
+        <TemplatesList :show-header="false" @apply="handleTemplateApply" />
+      </div>
     </div>
   </div>
 </template>
@@ -111,13 +112,11 @@ import { useCreateRequest } from '~/composables/useCreateRequest';
 import ScreensPanel from '~/components/ScreensPanel.vue';
 import ItemsList from '~/components/ItemsList.vue';
 import TemplatesList from '~/components/TemplatesList.vue';
-import SidebarBranding from '~/components/SidebarBranding.vue';
 import type { BlockItem, DrawingState, ScreenId } from '~/types/builder';
 import {
   AVAILABLE_BLOCKS,
   CANVAS_DIMENSIONS,
 } from '~/constants/builder';
-import { logger } from '~/utils/logger';
 
 defineOptions({ name: 'BuilderEditor' });
 
@@ -199,9 +198,6 @@ function handleReturnToRequest(): void {
     router.back();
   }
 }
-
-const handleAccountClick = (): void => logger.log('Account settings requested');
-const handleHelpClick = (): void => logger.log('Help requested');
 </script>
 
 <style scoped src="~/assets/css/editor.css"></style>

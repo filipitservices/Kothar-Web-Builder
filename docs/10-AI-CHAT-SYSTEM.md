@@ -87,13 +87,13 @@ interface AiMessage {
 
 ```
 ScreensPanel.vue (.screens-panel)
-  ├─ .screens-area (flex: 1, position: relative)
-  │    ├─ .screens-inner (flex: 1, scrollable) — device frames
-  │    └─ AiChatPanel (position: absolute, bottom: 0) — overlay
-  └─ DrawingControlsPanel (fixed height)
+  ├─ DrawingControlsPanel (fixed height, at top under "Editing page layout" bar)
+  └─ .screens-area (flex: 1, position: relative)
+       ├─ .screens-inner (flex: 1, scrollable) — device frames
+       └─ AiChatPanel (position: absolute, bottom: 0) — overlay
 ```
 
-The AI Chat Panel is a **floating overlay** that does not participate in the flex layout. It is positioned at the bottom of `.screens-area`, overlaying the device frames only. DrawingControlsPanel remains fully visible and accessible. Opening or closing the chat does not affect the dimensions of screens or other controls.
+The AI Chat Panel is a **floating overlay** that does not participate in the flex layout. It is positioned at the bottom of `.screens-area`, overlaying the device frames only. DrawingControlsPanel is at the top of the panel and remains fully visible and accessible. Opening or closing the chat does not affect the dimensions of screens or other controls.
 
 ### Scaling System Integration
 
