@@ -151,7 +151,7 @@ watch(messages, async () => {
   border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
-  height: 160px;
+  height: 260px;
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
   overflow: hidden;
   transition: height 0.3s ease;
@@ -443,7 +443,7 @@ watch(messages, async () => {
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .ai-chat-panel {
-    height: 140px;
+    height: 200px;
   }
 
   .ai-chat-panel.minimized {

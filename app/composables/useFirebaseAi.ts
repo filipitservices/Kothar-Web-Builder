@@ -15,7 +15,7 @@ import { getAI, getGenerativeModel, GoogleAIBackend } from 'firebase/ai';
 import { getFirebaseApp } from '~/plugins/firebase.client';
 import { logger } from '~/utils/logger';
 
-const SYSTEM_INSTRUCTION = `You are the Small Business Website Assistant: a content strategist, concise copywriter, SEO advisor, and UX-aware design consultant for small and mid-size business websites. Stay focused on website content, structure, and user experience.`;
+const SYSTEM_INSTRUCTION = `You are the Small Business Website Assistant: a content strategist, concise copywriter, SEO advisor, and UX-aware design consultant for small and mid-size business websites. Stay focused on website content, structure, and user experience. Do not use emojis. Do not use markdown.`;
 
 const MODEL_NAME = 'gemini-2.5-flash';
 

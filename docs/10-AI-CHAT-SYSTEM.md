@@ -164,7 +164,7 @@ The `useScreenScaling` composable does **not** include the AI chat in its layout
 - No layout break or overflow
 
 **Styling**:
-- Height: `160px` (responsive: `140px` on mobile)
+- Height: `260px` (responsive: `200px` on mobile)
 - Border radius: `12px`
 - Colors: Uses existing design tokens (`#1e3a8a`, `#e2e8f0`, etc.)
 - Shadow: `0 2px 8px rgba(15, 23, 42, 0.06)` (consistent with other panels)
@@ -374,7 +374,7 @@ All styling uses tokens from `app/assets/css/style.css`. No hardcoded hex values
 ### Breakpoints
 
 **Mobile (≤768px)**:
-- Panel height: `140px` (reduced from `160px`)
+- Panel height: `180px` (reduced from `220px`)
 - Message padding: `6px 10px` (reduced from `8px 12px`)
 - Font size: `11px` (reduced from `12px`)
 - Inner padding: `8px` (reduced from `12px`)
