@@ -346,7 +346,6 @@ Builder-specific CSS preserved exactly:
 All stores remain global and persist across route changes:
 - **business** - Global business data (persists across routes)
 - **blocks** - Desktop/mobile block customizations (persists across routes)
-- **quiz** - Quiz completion status (persists across routes)
 - **templates** - Template library (persists across routes)
 - **aiChat** - AI chat history (persists across routes)
 
@@ -436,7 +435,7 @@ const goToBuilder = () => router.push('/builder');
 
 **Result**:
 - App stays mounted, only `<NuxtPage />` changes
-- Business store state preserved (if quiz completed)
+- Business store state preserved
 - User lands on builder with pre-filled data
 
 ### From Builder to Landing
@@ -462,20 +461,6 @@ const goHome = () => router.push('/');
 - User returns to landing page
 - All builder state preserved
 - User can navigate back to `/builder` and resume editing
-
-### Quiz Flow Integration
-
-**Quiz Placement**: `app.vue` (global level)
-
-**Flow**:
-1. App mounts, checks `quizStore.quizCompleted`
-2. If not completed, shows QuizModal (overlays current page)
-3. User completes quiz
-4. Business data transferred to `businessStore`
-5. Quiz modal hidden, page becomes interactive
-6. User can navigate to builder or stay on landing
-
-**No Impact**: Landing page and builder page both work with or without quiz completion.
 
 ---
 
@@ -559,7 +544,6 @@ To extend state management:
 - [ ] No layout breaks or visual glitches
 
 ### State Persistence Verification
-- [ ] Quiz completion state persists across routes
 - [ ] Business data survives landing → builder navigation
 - [ ] Block customizations saved across navigation
 - [ ] Stores remain mounted across routes

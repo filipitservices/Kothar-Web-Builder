@@ -76,12 +76,10 @@ app/
   ├── components/          # Vue components
   ├── composables/         # Reusable composition functions
   │   ├── useBlockData.ts      # 🧱 Block data composable
-  │   ├── useDrawing.ts        # 🎨 Drawing state
-  │   └── useValidation.ts     # Form validation
+  │   └── useDrawing.ts        # 🎨 Drawing state
   ├── stores/              # Pinia state stores
   │   ├── blockStorage.ts      # 🧱 Per-block local data
-  │   ├── business.ts          # Global business info
-  │   └── quiz.ts              # Quiz state
+  │   └── business.ts          # Global business info
   ├── pages/               # Nuxt pages
   └── plugins/             # Vue plugins
 

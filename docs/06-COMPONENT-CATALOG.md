@@ -1124,51 +1124,6 @@ Maps `element.type` to component:
 
 ---
 
-### QuizModal
-
-**File**: [components/QuizModal.vue](../app/components/QuizModal.vue)
-
-**Purpose**: Onboarding quiz overlay
-
-**Props**:
-```typescript
-{
-  step: number;                     // Current question index
-  answers: Record<string, any>;     // User answers
-}
-```
-
-**Emits**:
-```typescript
-{
-  'next': () => void,
-  'previous': () => void,
-  'answer': (answer: any) => void,
-  'complete': () => void
-}
-```
-
-**Features**:
-- Multi-step wizard
-- Progress indicator
-- Previous/Next navigation
-- Auto-populates business store on completion
-
-**Usage**:
-```vue
-<QuizModal
-  v-if="quiz.showModal"
-  :step="quiz.currentStep"
-  :answers="quiz.answers"
-  @next="quiz.nextStep"
-  @previous="quiz.previousStep"
-  @answer="handleAnswer"
-  @complete="quiz.completeQuiz"
-/>
-```
-
----
-
 ### InfoBar
 
 **File**: [components/InfoBar.vue](../app/components/InfoBar.vue)

@@ -83,9 +83,6 @@ const mobileList: Ref<BlockItem[]> = ref([]);
 
 // Composables (2 lines)
 const businessStore = useBusinessStore();
-const { validate, businessHoursOptions } = useValidation();
-
-// Composable destructuring (1 line)
 const { desktopDrawingState, ... } = useDrawing();
 
 // State initialization (7 lines)

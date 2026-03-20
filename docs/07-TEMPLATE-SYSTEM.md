@@ -641,7 +641,7 @@ Vue's reactivity system + vue-draggable handles all rendering:
 3. **Don't hardcode IDs**: Always generate unique IDs
 4. **Don't bypass composable**: Always use `useTemplateApplication`
 5. **Don't store block data in template**: Templates define structure only
-6. **Don't mix concerns**: Templates don't know about drawing, quiz, etc.
+6. **Don't mix concerns**: Templates don't know about drawing mode, AI chat, etc.
 
 ---
 

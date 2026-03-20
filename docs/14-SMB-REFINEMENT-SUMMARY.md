@@ -285,7 +285,7 @@ Verified across all blocks:
 - [ ] Test with actual SMB use case scenarios
 - [ ] Gather feedback on template appropriateness
 - [ ] Verify industry terminology accuracy
-- [ ] Test workflow end-to-end (quiz → template → customize)
+- [ ] Test workflow end-to-end (template selection → customize)
 
 ---
 
@@ -301,7 +301,7 @@ Verified across all blocks:
 1. Industry-specific default content per template
 2. Block variants (e.g., Services as list vs. cards)
 3. Template previews (visual thumbnails)
-4. Block suggestions based on business type from quiz
+4. Block suggestions based on business type or industry metadata
 
 ### Long-term (Future Roadmap)
 1. AI-powered content suggestions per industry

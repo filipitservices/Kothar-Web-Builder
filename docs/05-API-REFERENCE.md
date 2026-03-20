@@ -199,75 +199,6 @@ blocks.importData(data);
 
 ---
 
-### useQuizStore
-
-**File**: [stores/quiz.ts](../app/stores/quiz.ts)
-
-**Purpose**: Manages onboarding quiz state and answers
-
-#### State
-
-```typescript
-{
-  quizCompleted: Ref<boolean>,
-  currentSlide: Ref<number>,
-  answers: Ref<Record<string, string>>
-}
-```
-
-#### Actions
-
-**`nextSlide(): void`**
-
-Advances to next quiz question.
-
-```typescript
-const quiz = useQuizStore();
-quiz.nextSlide();
-```
-
-**`previousSlide(): void`**
-
-Goes back to previous quiz question.
-
-```typescript
-quiz.previousSlide();
-```
-
-**`setAnswer(fieldName: string, value: string): void`**
-
-Stores an answer to a quiz question.
-
-```typescript
-quiz.setAnswer('companyName', 'Acme Corp');
-```
-
-**`getAnswer(fieldName: string): string`**
-
-Retrieves a stored answer.
-
-```typescript
-const company = quiz.getAnswer('companyName');
-```
-
-**`completeQuiz(): void`**
-
-Marks quiz as completed.
-
-```typescript
-quiz.completeQuiz();
-```
-
-**`resetQuiz(): void`**
-
-Resets quiz to initial state.
-
-```typescript
-quiz.resetQuiz();
-```
-
----
-
 ## Composables
 
 ### useBusinessData()
@@ -559,57 +490,6 @@ desktopDrawingState.lineWidth = 5;
 
 ---
 
-### useValidation()
-
-**File**: [composables/useValidation.ts](../app/composables/useValidation.ts)
-
-**Purpose**: Form validation for business information fields
-
-**Returns**:
-```typescript
-{
-  validate: (fieldName: string, value: string) => string | null,
-  businessHoursOptions: string[]
-}
-```
-
-**`validate(fieldName, value)`**
-
-Validates a field value and returns error message or `null` if valid.
-
-```typescript
-const { validate } = useValidation();
-
-const emailError = validate('email', 'invalid-email');
-// Returns: 'Please enter a valid email address'
-
-const validEmail = validate('email', 'user@example.com');
-// Returns: null
-```
-
-**Validation Rules**:
-- **companyName**: Required, min 2 characters
-- **email**: Valid email format
-- **telephone**: Valid phone format (digits, spaces, hyphens, parentheses)
-- **address**: Required, min 5 characters
-- **city**: Required, min 2 characters
-- **postalCode**: Required, min 3 characters
-- **website**: Valid URL format (if provided)
-- **taxId**: Min 5 characters (if provided)
-
-**businessHoursOptions**:
-```typescript
-const { businessHoursOptions } = useValidation();
-// [
-//   '9:00 AM - 5:00 PM',
-//   '8:00 AM - 6:00 PM',
-//   '24/7',
-//   ...
-// ]
-```
-
----
-
 ### useScreenScaling()
 
 **File**: [composables/useScreenScaling.ts](../app/composables/useScreenScaling.ts)
@@ -830,18 +710,6 @@ interface ScreenBlocks {
 }
 ```
 
-### QuizQuestion
-
-```typescript
-interface QuizQuestion {
-  id: number;
-  question: string;
-  options: string[];
-  fieldName: keyof BusinessInfo;
-  type: 'text' | 'select';
-}
-```
-
 ---
 
 ## Event System
@@ -902,7 +770,6 @@ interface QuizQuestion {
 
 - **Blocks store**: Data persists after block deletion (minor memory leak)
 - **Business store**: In-memory only, resets on page refresh
-- **Quiz store**: Persists during session
 
 ---
 

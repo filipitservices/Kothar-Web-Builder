@@ -27,7 +27,7 @@
                  │
 ┌────────────────▼────────────────────────────────────┐
 │                   DATA LAYER                        │
-│  Pinia Stores (blocks, business, quiz, sites)     │
+│  Pinia Stores (blocks, business, sites)            │
 │  - State management                                 │
 │  - Data persistence (in-memory)                     │
 │  - Single source of truth                           │
@@ -630,7 +630,6 @@ ScreenCard
 1. Add to `business` store state
 2. Add to `useBusinessData` composable
 3. Add to InfoBar fields array
-4. Add to quiz questions (optional)
 
 ### Adding New Composable
 
