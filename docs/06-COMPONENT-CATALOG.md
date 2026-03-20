@@ -731,6 +731,122 @@
 
 ---
 
+## Sites Page Components
+
+### SitesWelcomeHeader
+
+**File**: [components/sites/SitesWelcomeHeader.vue](../app/components/sites/SitesWelcomeHeader.vue)
+
+**Purpose**: My Sites page header with title, subtitle, and Gallery CTA
+
+**Features**:
+- Page title "My Sites" and descriptive subtitle
+- "Discover layout templates" CTA linking to `/gallery`
+- Uses design tokens only
+
+**Usage**:
+```vue
+<SitesWelcomeHeader />
+```
+
+---
+
+### SitesTabList
+
+**File**: [components/sites/SitesTabList.vue](../app/components/sites/SitesTabList.vue)
+
+**Purpose**: Tab list for switching between Live Sites and Orders panels
+
+**Props**:
+```typescript
+{
+  modelValue: 'sites' | 'orders';
+  sitesCount: number;
+  ordersCount: number;
+}
+```
+
+**Emits**: `update:modelValue`
+
+**Features**:
+- `role="tablist"`, `role="tab"`, `aria-selected`, `aria-controls`
+- Keyboard navigation (arrow keys)
+- Badge counts for sites and orders
+
+---
+
+### SitesLiveSitesPanel
+
+**File**: [components/sites/SitesLiveSitesPanel.vue](../app/components/sites/SitesLiveSitesPanel.vue)
+
+**Purpose**: Panel listing delivered (live) websites
+
+**Props**:
+```typescript
+{
+  sites: SiteSummary[];
+  visible: boolean;
+  panelId?: string;
+  labelledBy?: string;
+  getStatusLabel: (status: string) => string;
+  formatLastUpdated: (isoDate: string) => string;
+}
+```
+
+**Features**:
+- Table: Business, Domain, Last update, Status, Manage action
+- SitesEmptyState when no sites
+
+---
+
+### SitesOrdersPanel
+
+**File**: [components/sites/SitesOrdersPanel.vue](../app/components/sites/SitesOrdersPanel.vue)
+
+**Purpose**: Panel listing template request orders
+
+**Props**:
+```typescript
+{
+  orders: OrderWithId[];
+  visible: boolean;
+  panelId?: string;
+  labelledBy?: string;
+  getOrderStatusLabel: (status: string) => string;
+  getOrderStatusClass: (status: string) => string;
+  formatOrderDate: (createdAt: unknown) => string;
+}
+```
+
+**Features**:
+- Table: Template, Submitted, Status, Editing, Modify action
+- Locked orders show "—" instead of Modify link
+- SitesEmptyState when no orders
+
+---
+
+### SitesEmptyState
+
+**File**: [components/sites/SitesEmptyState.vue](../app/components/sites/SitesEmptyState.vue)
+
+**Purpose**: Context-aware empty state for Live Sites or Orders panel
+
+**Props**:
+```typescript
+{
+  context: 'sites' | 'orders';
+  message?: string;
+  showCta?: boolean;
+  live?: boolean;
+}
+```
+
+**Features**:
+- Default messages per context
+- Orders context: "Browse templates" CTA to Gallery
+
+---
+
 ## UI Components
 
 ### ItemsList

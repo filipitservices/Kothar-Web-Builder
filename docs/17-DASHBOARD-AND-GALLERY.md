@@ -58,7 +58,7 @@ All authenticated routes use the `auth` middleware:
 
 ## Gallery (`/gallery`)
 
-**File:** `app/pages/gallery.vue`  
+**File:** `app/pages/gallery/index.vue`  
 **CSS:** `app/assets/css/gallery.css`
 
 The Gallery is the authenticated entry point, combining quick access to the builder with an integrated templates showcase.
@@ -369,9 +369,29 @@ Landing page CTAs are auth-aware:
 
 The UserMenu dropdown includes a "Gallery" link for quick navigation from any authenticated page.
 
+### My Sites Page (`/sites`)
+
+**File:** `app/pages/sites/index.vue`  
+**CSS:** `app/assets/css/sites.css`
+
+The My Sites page is the authenticated hub for managing delivered websites and template request orders. It uses the **default** layout (AppNavbar) and is protected by the `auth` middleware.
+
+**Layout structure:**
+- **SitesWelcomeHeader** — Page title, subtitle, and "Discover layout templates" CTA (links to `/gallery`)
+- **SitesTabList** — Tab list (role="tablist") with Live Sites and Orders; keyboard navigable (arrow keys)
+- **SitesLiveSitesPanel** — Table of delivered sites (business, domain, last update, status, Manage action)
+- **SitesOrdersPanel** — Table of template request orders (template, submitted date, status, editable/locked, Modify action)
+- **SitesEmptyState** — Context-aware empty state; Orders empty state includes "Browse templates" CTA to Gallery
+
+**Data sources:** `stores/sites.ts` (live sites, in-memory demo data) and `stores/orders.ts` (Firestore subscription). No direct store mutation from components; all data flows via props.
+
+**Accessibility:** Tab list uses `role="tablist"`, `role="tab"`, `aria-selected`, `aria-controls`; panels use `role="tabpanel"`, `aria-labelledby`, `aria-hidden`. Focus rings use `--color-primary`. `prefers-reduced-motion` disables hover transforms and entrance animations.
+
+**Responsive:** Table horizontal scroll on viewports ≤768px; welcome section stacks vertically. Breakpoints follow design system (480, 640, 768, 900, 1024, 1200).
+
 ### CTA on /sites
 
-The My Sites page includes a "Discover layout templates" CTA that links to `/gallery`, placed in the header area.
+The My Sites page includes a "Discover layout templates" CTA that links to `/gallery`, placed in the header area (SitesWelcomeHeader). The Orders empty state also includes a "Browse templates" CTA.
 
 ---
 
@@ -443,7 +463,7 @@ This section describes the sequence from "Choose This Design" to the request pag
 
 | File | Purpose |
 |------|--------|
-| `app/pages/gallery.vue` | Set `isCreating = true`, `await nextTick()`, then run create + push; do not close modal before async work. Guard `openShowcase` and `closeShowcase` when `isCreating`. Pass `loading` to modal and optional `state.orderFromCreate` on push. |
+| `app/pages/gallery/index.vue` | Set `isCreating = true`, `await nextTick()`, then run create + push; do not close modal before async work. Guard `openShowcase` and `closeShowcase` when `isCreating`. Pass `loading` to modal and optional `state.orderFromCreate` on push. |
 | `app/composables/useCreateRequest.ts` | Single transaction with `transaction.get(counterRef)`; return `orderForHydration` for the request page fast-path. |
 | `app/components/ShowcaseModal.vue` | `loading` prop; in-modal loading overlay (spinner + message); disable actions when loading; `aria-busy`, `aria-live`; restore `document.body.style.overflow` in `onUnmounted`. |
 | `app/pages/gallery/request/[id]/index.vue` | In `loadRequestFromFirebase`, use `history.state?.orderFromCreate` when present and id matches for immediate render; otherwise load from Firestore. Page remains fully functional without hydration. |

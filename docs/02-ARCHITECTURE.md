@@ -309,6 +309,24 @@ No page implements its own navbar; all use the default layout and shared AppNavb
 
 ## Component Hierarchy
 
+### My Sites Page (`pages/sites/index.vue`)
+
+```
+sites/index.vue  [uses default layout → AppNavbar + slot]
+├── SitesWelcomeHeader
+│   ├── Title + subtitle
+│   └── Gallery CTA (Open Gallery → /gallery)
+├── SitesTabList (role="tablist", Live Sites | Orders)
+├── SitesLiveSitesPanel (role="tabpanel", visible when Live Sites active)
+│   ├── Table of site entries (business, domain, last update, status, Manage)
+│   └── SitesEmptyState (when no sites)
+└── SitesOrdersPanel (role="tabpanel", visible when Orders active)
+    ├── Table of order entries (template, submitted, status, editing, Modify)
+    └── SitesEmptyState (when no orders; CTA → Gallery)
+```
+
+### Builder / Main Editor Page (`pages/index.vue` or builder pages)
+
 ```
 index.vue (Main Page)  [uses default layout → AppNavbar + slot]
 ├── InfoBar

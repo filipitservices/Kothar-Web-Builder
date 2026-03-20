@@ -208,4 +208,3 @@ function requestChange() {
 }
 </script>
 
-<style scoped src="~/assets/css/sites.css"></style>

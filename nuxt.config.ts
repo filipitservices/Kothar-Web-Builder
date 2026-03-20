@@ -4,7 +4,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@pinia/nuxt'],
   
-  // Global CSS
+  // Global CSS — resets, typography, shared components, navbar. Page-specific CSS imported in pages.
   css: [
     '~/assets/css/style.css',
     '~/assets/css/components.css',

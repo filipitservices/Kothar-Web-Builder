@@ -24,7 +24,7 @@ Kothar follows a clear page separation pattern:
 | Route | Page File | Purpose | Layout | Auth |
 |-------|-----------|---------|--------|------|
 | `/` | `pages/index.vue` | Landing page with marketing messaging (auth users redirected) | Full-height, centered | Public |
-| `/gallery` | `pages/gallery.vue` | Central hub with templates and request flow | Full-page, sections | **Protected** |
+| `/gallery` | `pages/gallery/index.vue` | Central hub with templates and request flow | Full-page, sections | **Protected** |
 | `/builder` | `pages/builder.vue` | Legacy redirect; routes to ID-scoped builder pages | Default | **Protected** |
 | `/sites` | `pages/sites/index.vue` | My Sites: Live Sites + Orders tabs | Full-page, table dashboard | **Protected** |
 | `/sites/[id]` | `pages/sites/[id].vue` | Site control panel — manage one live site | Full-page, sections | **Protected** |
@@ -69,18 +69,20 @@ Route middleware runs on **both server and client**:
 
 **File-Based Routing** (Nuxt 4 Auto-Routing)
 
+**Gallery hub path:** Use `pages/gallery/index.vue` for `/gallery`. Do not add a sibling `pages/gallery.vue` file while `pages/gallery/` contains nested routes (`request/...`); Nuxt would treat that file as the parent of `gallery/*` without a `<NuxtPage />` outlet, and child routes would not render.
+
 ```
 app/pages/
 ├── index.vue               # / route - landing page (public; auth users redirected)
-├── gallery.vue             # /gallery route - central hub with templates (protected)
+├── gallery/
+│   ├── index.vue           # /gallery - central hub with templates (protected)
+│   └── request/
+│       ├── [id].vue        # /gallery/request/:id - template request form (protected)
+│       └── [id]/builder.vue # /gallery/request/:id/builder - builder for that request (protected)
 ├── builder.vue             # /builder route - legacy redirect to ID-scoped builder
 ├── sites/
 │   ├── index.vue           # /sites - My Live Sites list (protected)
 │   └── [id].vue            # /sites/:id - site control panel (protected)
-├── gallery/
-│   └── request/
-│       ├── [id].vue        # /gallery/request/:id - template request form (protected)
-│       └── [id]/builder.vue # /gallery/request/:id/builder - builder for that request (protected)
 ├── orders/
 │   └── [id]/
 │       ├── edit.vue        # /orders/:id/edit - order edit (protected; locked redirect)
@@ -94,7 +96,7 @@ app/pages/
 Routes are implicitly defined by file structure. No manual `vue-router` config required.
 
 - `/` → renders `pages/index.vue` (authenticated users redirected via `landing` middleware)
-- `/gallery` → renders `pages/gallery.vue` (requires auth)
+- `/gallery` → renders `pages/gallery/index.vue` (requires auth)
 - `/builder` → renders `pages/builder.vue` (requires auth)
 - `/sites` → renders `pages/sites/index.vue` (requires auth)
 - `/sites/:id` → renders `pages/sites/[id].vue` (requires auth)
@@ -587,7 +589,7 @@ Route and page mapping applied in March 2026:
 
 | Before | After |
 |--------|-------|
-| `pages/dashboard.vue` | `pages/gallery.vue` |
+| `pages/dashboard.vue` | `pages/gallery/index.vue` |
 | `/dashboard` | `/gallery` |
 | `assets/css/dashboard.css` | `assets/css/gallery.css` |
 

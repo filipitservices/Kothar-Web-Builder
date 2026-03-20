@@ -160,7 +160,7 @@ pnpm dev
 | File | Purpose |
 |------|---------|
 | `app/pages/index.vue` | Landing page (public) |
-| `app/pages/gallery.vue` | Central hub with builder + templates (protected) |
+| `app/pages/gallery/index.vue` | Central hub with builder + templates (protected) |
 | `app/pages/builder.vue` | Main editor page (protected, requires auth) |
 | `app/pages/sites/index.vue` | My Sites: Live Sites + Orders tabs (protected) |
 | `app/pages/sites/[id].vue` | Site control panel (protected) |
@@ -185,6 +185,11 @@ pnpm dev
 | `app/components/ItemsList.vue` | Renders draggable blocks |
 | `app/components/ScreenCard.vue` | Single screen container |
 | `app/components/ShowcaseModal.vue` | Template preview modal |
+| `app/components/sites/SitesWelcomeHeader.vue` | My Sites page header + Gallery CTA |
+| `app/components/sites/SitesTabList.vue` | Live Sites / Orders tab list |
+| `app/components/sites/SitesLiveSitesPanel.vue` | Live sites table panel |
+| `app/components/sites/SitesOrdersPanel.vue` | Orders table panel |
+| `app/components/sites/SitesEmptyState.vue` | Empty state for sites/orders |
 
 ---
 

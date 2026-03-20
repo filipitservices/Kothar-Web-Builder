@@ -79,7 +79,7 @@ Files are uploaded **before** the Firestore write. If any upload fails, the orde
 
 ### Phase 1: Draft Creation
 
-1. **Gallery** (`pages/gallery.vue`): User clicks "Choose This Design" on a showcase template.
+1. **Gallery** (`pages/gallery/index.vue`): User clicks "Choose This Design" on a showcase template.
 2. **Composable** (`composables/useCreateRequest.ts`): `createDraftRequest()` executes a Firestore batch write containing:
    - A new order document at `users/{userId}/orders/{newId}` with `status: 'draft'`, initial layout from the template, and empty business/contact fields.
    - A counter update at `users/{userId}/requestLimits/daily` with today's date and incremented count (max 3 per day).
