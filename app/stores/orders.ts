@@ -4,6 +4,9 @@
  * Holds state for template request orders (Firestore: users/{userId}/orders).
  * Subscribes to the user's orders collection when userId is set; exposes list and getById.
  * Single source of truth for order list; no duplicate state elsewhere.
+ *
+ * Snapshot lifecycle: pages should use `useOrdersSnapshotWhenFocused` so the listener is
+ * detached while the tab/window is inactive, avoiding idle WebChannel teardown noise.
  */
 
 import { defineStore } from 'pinia';
@@ -16,6 +19,7 @@ import {
   query,
   orderBy,
   onSnapshot,
+  FirestoreError,
   type Unsubscribe,
   type Firestore
 } from 'firebase/firestore';
@@ -23,6 +27,20 @@ import { getFirebaseApp } from '~/plugins/firebase.client';
 import type { OrderWithId } from '~/types/order';
 import { parseOrderDocument } from '~/utils/orderValidation';
 import { logger } from '~/utils/logger';
+
+/** Recoverable listener errors: SDK retries; keep last successful snapshot. */
+function isRecoverableSnapshotError(err: unknown): boolean {
+  if (err instanceof FirestoreError) {
+    return (
+      err.code === 'unavailable' ||
+      err.code === 'deadline-exceeded' ||
+      err.code === 'resource-exhausted' ||
+      err.code === 'aborted' ||
+      err.code === 'cancelled'
+    );
+  }
+  return true;
+}
 
 export const useOrdersStore = defineStore('orders', () => {
   const orders = ref<OrderWithId[]>([]);
@@ -57,17 +75,33 @@ export const useOrdersStore = defineStore('orders', () => {
         orders.value = list;
       },
       (err) => {
-        logger.error('[orders store] snapshot error:', err);
-        orders.value = [];
+        if (err instanceof FirestoreError && err.code === 'permission-denied') {
+          logger.error('[orders store] snapshot permission denied:', err);
+          orders.value = [];
+          return;
+        }
+        if (isRecoverableSnapshotError(err)) {
+          if (import.meta.dev) {
+            const code = err instanceof FirestoreError ? err.code : 'unknown';
+            logger.debug('[orders store] snapshot recoverable error (keeping list):', code);
+          }
+          return;
+        }
+        logger.warn('[orders store] snapshot error:', err);
       }
     );
   }
 
-  function unsubscribeFromOrders(): void {
+  /** Stop the listener only; keep cached orders (e.g. tab/window inactive). */
+  function detachSnapshotListener(): void {
     if (unsubscribe) {
       unsubscribe();
       unsubscribe = null;
     }
+  }
+
+  function unsubscribeFromOrders(): void {
+    detachSnapshotListener();
     orders.value = [];
   }
 
@@ -149,6 +183,7 @@ export const useOrdersStore = defineStore('orders', () => {
     orders: ordersList,
     hasOrders,
     subscribe,
+    detachSnapshotListener,
     unsubscribeFromOrders,
     getOrderById,
     fetchOrder,

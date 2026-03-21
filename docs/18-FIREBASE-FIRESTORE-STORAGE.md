@@ -13,6 +13,8 @@ Request orders follow a two-phase lifecycle in Firestore:
 
 Only the **modular Firebase SDK** is used (no legacy namespace API). Firestore and Storage logic live in dedicated composables; the UI layer stays thin.
 
+**Orders snapshot lifecycle:** Real-time listeners use Firestore’s WebChannel `Listen` transport (browser DevTools may show `firestore.googleapis.com/.../Listen/channel`). Background tabs often tear those connections down, which produces `net::ERR_CONNECTION_CLOSED` lines that **cannot be fully suppressed from app code** (you may still see occasional lines when a listener is closed or reopened). Mitigation: `useOrdersSnapshotWhenFocused()` **detaches** `onSnapshot` while inactive and **re-subscribes** when active, preserving the in-memory list. When `document.visibilityState === 'hidden'`, the listener is removed immediately; when the tab stays visible but the window loses focus (e.g. minimize), detach is **delayed** briefly to avoid subscribe/detach churn. `detachSnapshotListener()` / `unsubscribeFromOrders()` live on `stores/orders.ts`. Do not clear the order list on transient snapshot errors.
+
 ---
 
 ## Data Model
@@ -167,11 +169,12 @@ The Cursor rule **15-firebase-rules.mdc** enforces this: when editing rules or F
 |------|---------|
 | `app/types/order.ts` | `OrderRequest`, `OrderWithId`, `OrderLayout`, `OrderLayoutBlock` (alias of `BlockItem`), `OrderAttachment`, `OrderStatus`, `OrderBusinessInfo`, `OrderContactInfo`, `OrderProjectDetails`. |
 | `app/utils/orderValidation.ts` | `validateOrderRequest()`, `parseOrderDocument()` — runtime guards at Firestore boundary; use before accepting order data into store. |
-| `app/stores/orders.ts` | Subscribes to user orders; uses `parseOrderDocument()` in snapshot and `fetchOrder`; exposes list, `getOrderById`, `fetchOrder`, status/date helpers. |
+| `app/stores/orders.ts` | Subscribes to user orders; uses `parseOrderDocument()` in snapshot and `fetchOrder`; exposes list, `getOrderById`, `fetchOrder`, `detachSnapshotListener`, status/date helpers. |
+| `app/composables/useOrdersSnapshotWhenFocused.ts` | Subscribes while the tab is visible and the window has focus; detaches the listener when inactive to avoid idle WebChannel teardown noise. |
 | `app/composables/useCreateRequest.ts` | `createDraftRequest()`: batch write of draft order + daily counter. `saveLayout()`: persist layout to an existing order. |
 | `app/composables/useOrderSubmission.ts` | `submitOrder()`: upload files to Storage, then write order to Firestore (used for standalone submissions). |
 | `app/composables/useOrderUpdate.ts` | `updateOrder()`, `orderToFormData()`: update existing order (now supports `status` field for draft→submitted transition). |
-| `app/plugins/firebase.client.ts` | Initializes Firebase app (and Auth); composable uses `getFirebaseApp()` for Firestore and Storage. |
+| `app/plugins/firebase.client.ts` | Initializes Firebase app and Auth; composables use `getFirebaseApp()` for Firestore and Storage. |
 | `firebase/firestore.rules` | Firestore security rules; deploy with `firebase deploy --only firestore`. |
 | `firebase/storage.rules` | Storage security rules; deploy with `firebase deploy --only storage`. |
 | `firebase.json` | CLI config; references rules in `firebase/`. |

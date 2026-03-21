@@ -102,12 +102,6 @@ watch(defaultTab, (tab) => {
 const authStore = useAuthStore();
 const userId = computed(() => authStore.uid ?? authStore.currentUser?.uid ?? '');
 
-onMounted(() => {
-  if (userId.value) ordersStore.subscribe(userId.value);
-});
-
-onUnmounted(() => {
-  ordersStore.unsubscribeFromOrders();
-});
+useOrdersSnapshotWhenFocused(userId);
 </script>
 

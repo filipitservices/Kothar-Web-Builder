@@ -151,6 +151,8 @@ const { updateOrder } = useOrderUpdate();
 const requestId = computed(() => route.params.id as string);
 const userId = computed(() => authStore.uid ?? authStore.currentUser?.uid ?? '');
 
+useOrdersSnapshotWhenFocused(userId);
+
 const userName = computed(() => {
   const user = authStore.currentUser;
   if (!user) return '';
@@ -264,9 +266,6 @@ async function loadRequestFromFirebase(): Promise<void> {
 }
 
 onMounted(async () => {
-  const uid = userId.value;
-  if (uid) ordersStore.subscribe(uid);
-
   await loadRequestFromFirebase();
 
   if (loadError.value) return;
@@ -286,7 +285,6 @@ watch(
   userId,
   async (uid) => {
     if (!uid || hasLoaded.value || loadError.value) return;
-    ordersStore.subscribe(uid);
     await loadRequestFromFirebase();
   }
 );
