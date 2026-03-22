@@ -275,9 +275,7 @@ async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
     });
 
     requestLayoutStore.reset();
-    feedbackType.value = 'success';
-    feedbackMessage.value = 'Your request has been updated.';
-    await router.push('/gallery');
+    await navigateTo({ path: '/sites', query: { tab: 'orders' } });
   } catch (err) {
     feedbackType.value = 'error';
     feedbackMessage.value = err instanceof Error ? err.message : 'Failed to update. Please try again.';

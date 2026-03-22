@@ -352,9 +352,7 @@ async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
     });
 
     requestLayoutStore.reset();
-    feedbackType.value = 'success';
-    feedbackMessage.value = "Thank you! Your request has been submitted. We'll be in touch soon.";
-    await router.push('/gallery');
+    await navigateTo({ path: '/sites', query: { tab: 'orders' } });
   } catch (err) {
     feedbackType.value = 'error';
     feedbackMessage.value = err instanceof Error
