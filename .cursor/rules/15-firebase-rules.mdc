@@ -1,6 +1,6 @@
 ---
 description: Firestore and Storage rules live in firebase/; update them when app usage changes. Apply when editing rules or Firestore/Storage usage.
-globs: firebase/*.rules, app/composables/useOrderSubmission.ts
+globs: firebase/*.rules, app/composables/useOrderSubmission.ts, app/composables/useIssueReport.ts
 alwaysApply: false
 ---
 
@@ -28,7 +28,7 @@ After changing rules, **update documentation** per documentation-integrity: `doc
 
 ## Current App Usage
 
-- **Firestore:** Only `users/{userId}/orders/{orderId}` is used (template request orders). Owner-only read/write.
+- **Firestore:** `users/{userId}/orders/{orderId}` (template request orders; owner read/write), `users/{userId}/requestLimits/{limitId}` (daily counter), `users/{userId}/reports/{reportId}` (issue reports; create-only for owner, no client read/update/delete). Other paths denied by catch-all.
 - **Storage:** Only `orders/{userId}/{orderId}/{fileName}` is used (order attachments). Owner-only read/write.
 
 Any new collection or path must be added to the rules explicitly; the catch-all deny in Firestore must remain so that only intended paths are allowed.

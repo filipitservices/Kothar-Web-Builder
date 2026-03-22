@@ -1,0 +1,124 @@
+/* Report issue page — tokens from style.css :root only */
+
+.report-issue {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  background: var(--color-bg-muted);
+}
+
+.report-issue__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-xl) var(--space-md) var(--space-2xl);
+}
+
+.report-issue__inner {
+  max-width: var(--container-max);
+  width: 100%;
+  margin: 0 auto;
+}
+
+.report-issue__header {
+  margin-bottom: var(--space-xl);
+}
+
+.report-issue__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 var(--space-sm) 0;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+}
+
+.report-issue__lead {
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
+  margin: 0;
+  line-height: 1.5;
+  max-width: 36rem;
+}
+
+.report-issue__card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.report-issue__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.report-issue__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.report-issue__meta {
+  margin-top: var(--space-xl);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--color-border);
+}
+
+.report-issue__meta-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-sm) 0;
+}
+
+.report-issue__meta-list {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-xs) var(--space-md);
+  align-items: baseline;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.report-issue__meta-list dt {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.report-issue__meta-list dd {
+  margin: 0;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.report-issue__footer {
+  margin-top: var(--space-2xl);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--color-border);
+}
+
+.report-issue__back {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.report-issue__select {
+  width: 100%;
+  max-width: 24rem;
+}
+
+.report-issue__hint {
+  margin: var(--space-xs) 0 0;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+

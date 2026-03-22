@@ -135,6 +135,30 @@ where `userId` is the authenticated user’s UID. The **orders store** (`stores/
 
 ---
 
+## Issue reports (user feedback)
+
+**Collection path:** `users/{userId}/reports/{reportId}`
+
+Authenticated users can submit **create-only** documents from the client (`addDoc` via **`useIssueReport`** in `app/composables/useIssueReport.ts`). There is no client **read**, **update**, or **delete** — rules deny those operations so reports cannot be listed or tampered with from the app (review happens in Firebase Console or future admin tooling).
+
+**Write path:** Same pattern as orders: user-scoped subcollection under `users/{userId}`. Validation and sanitization run in the composable before write; TypeScript types live in `app/types/issueReport.ts`.
+
+### Report document shape
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `message` | string | Trimmed description; max length enforced in composable and rules. |
+| `category` | string | One of: `bug`, `ui`, `account`, `billing`, `other`. |
+| `locale` | string | Browser language tag (e.g. `en-US`) or `und` if unavailable. |
+| `routePath` | string | App route path when the user submitted (e.g. `/gallery`). |
+| `userEmail` | string \| null | Snapshot from auth at submit time. |
+| `userDisplayName` | string \| null | Snapshot from auth at submit time. |
+| `createdAt` | server timestamp | Set with `serverTimestamp()` on create. |
+
+**Security rules** enforce field allowlists, string lengths, category values, `createdAt == request.time`, and `request.auth.uid == userId` on create. Deploy updated rules when changing this model: `firebase deploy --only firestore` (or paste from `firebase/firestore.rules` in the Console).
+
+---
+
 ## Security Rules (in Repo)
 
 Firestore and Storage rules are kept in the project under **`firebase/`** and are the source of truth for access control. The root **`firebase.json`** points the Firebase CLI at these files; do not put rule content in project root.
@@ -143,7 +167,7 @@ Firestore and Storage rules are kept in the project under **`firebase/`** and ar
 
 | File | Purpose |
 |------|---------|
-| `firebase/firestore.rules` | Firestore security rules. `users/{userId}/orders/{orderId}` (owner-only; creation requires valid daily counter via `getAfter()`), `users/{userId}/requestLimits/{limitId}` (owner-only; count validation); all other paths explicitly denied. |
+| `firebase/firestore.rules` | Firestore security rules. `users/{userId}/orders/{orderId}` (owner-only; creation requires valid daily counter via `getAfter()`), `users/{userId}/requestLimits/{limitId}` (owner-only; count validation), `users/{userId}/reports/{reportId}` (create-only for owner; validated fields); all other paths explicitly denied. |
 | `firebase/storage.rules` | Storage security rules. Only `orders/{userId}/{orderId}/{fileName}` is allowed (owner-only). |
 | `firebase.json` (root) | Firebase CLI config; references `firebase/firestore.rules` and `firebase/storage.rules` for deployment. |
 
@@ -174,6 +198,8 @@ The Cursor rule **15-firebase-rules.mdc** enforces this: when editing rules or F
 | `app/composables/useCreateRequest.ts` | `createDraftRequest()`: batch write of draft order + daily counter. `saveLayout()`: persist layout to an existing order. |
 | `app/composables/useOrderSubmission.ts` | `submitOrder()`: upload files to Storage, then write order to Firestore (used for standalone submissions). |
 | `app/composables/useOrderUpdate.ts` | `updateOrder()`, `orderToFormData()`: update existing order (now supports `status` field for draft→submitted transition). |
+| `app/types/issueReport.ts` | `IssueReportCategory`, `IssueReportFormInput`, `IssueReportDocument` — issue report shapes for Firestore. |
+| `app/composables/useIssueReport.ts` | `submitReport()`: validated `addDoc` to `users/{userId}/reports/{reportId}`. |
 | `app/plugins/firebase.client.ts` | Initializes Firebase app and Auth; composables use `getFirebaseApp()` for Firestore and Storage. |
 | `firebase/firestore.rules` | Firestore security rules; deploy with `firebase deploy --only firestore`. |
 | `firebase/storage.rules` | Storage security rules; deploy with `firebase deploy --only storage`. |
@@ -196,4 +222,5 @@ The Cursor rule **15-firebase-rules.mdc** enforces this: when editing rules or F
 
 - Orders: Firestore `users/{userId}/orders/{orderId}` (status lifecycle: `draft` → `submitted` → admin stages); Storage `orders/{userId}/{orderId}/{fileName}`.
 - Daily limit: Firestore `users/{userId}/requestLimits/daily` (counter with date; max 3 per day).
+- Issue reports: Firestore `users/{userId}/reports/{reportId}` (create-only from client; no client read/update/delete).
 - Rules: `firebase/firestore.rules` and `firebase/storage.rules`; update them and docs when usage changes (see Cursor rule 15-firebase-rules).

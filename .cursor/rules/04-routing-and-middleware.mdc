@@ -10,7 +10,7 @@ Per core invariants and Nuxt structure. Before changing routes or auth, verify l
 
 ## Protected Routes
 
-- **auth middleware:** Applied to `/gallery`, `/sites`, `/sites/[id]`, `/gallery/request/[id]`, `/gallery/request/[id]/builder`, `/orders/[id]/edit`, `/orders/[id]/builder`. Unauthenticated users redirect to `/login?redirect={path}`. Session verified via server API; no protected UI sent before redirect.
+- **auth middleware:** Applied to `/gallery`, `/sites`, `/sites/[id]`, `/report-issue`, `/gallery/request/[id]`, `/gallery/request/[id]/builder`, `/orders/[id]/edit`, `/orders/[id]/builder`. Unauthenticated users redirect to `/login?redirect={path}`. Session verified via server API; no protected UI sent before redirect.
 - **guest middleware:** Applied to `/login`, `/reset-password`. Authenticated users redirect to landing destination (`/sites` or `/gallery`).
 
 ## Verification Checklist for Routing Edits
@@ -28,6 +28,7 @@ Per core invariants and Nuxt structure. Before changing routes or auth, verify l
 | `/gallery` | default | auth |
 | `/builder` | builder | auth |
 | `/sites`, `/sites/[id]` | default | auth |
+| `/report-issue` | default | auth |
 | `/gallery/request/[id]` | default | auth |
 | `/login`, `/reset-password` | default | guest |
 

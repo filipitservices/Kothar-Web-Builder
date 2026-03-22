@@ -15,7 +15,7 @@
           subtitle="Manage your live websites and track template requests. Make updates, adjust content, or request changes from our team."
           cta-headline="Discover layout templates"
           cta-label="Open Gallery"
-          cta-to="/gallery"
+          :cta-to="PATH_GALLERY"
           cta-aria-label="Open Gallery — browse professional website templates"
         />
         <div class="sites-block">
@@ -55,7 +55,7 @@
             subtitle="Loading…"
             cta-headline="Discover layout templates"
             cta-label="Open Gallery"
-            cta-to="/gallery"
+            :cta-to="PATH_GALLERY"
             cta-aria-label="Open Gallery — browse professional website templates"
           />
           <div class="sites-block">
@@ -82,6 +82,7 @@
 </template>
 
 <script setup lang="ts">
+import { PATH_GALLERY } from '~/constants/routes';
 import '~/assets/css/sites.css';
 
 definePageMeta({

@@ -74,7 +74,7 @@ The page is structured as a control surface: a compact **control strip** (greeti
 │  AppNavbar (logo, UserMenu)                                  │
 ├─────────────────────────────────────────────────────────────┤
 │ ▌ Control strip (white, left accent)                         │
-│   Welcome back, [Name]          [Open Builder →]             │
+│   Welcome back, [Name]          [Open My Sites →]            │
 │   Choose a path below to get started.                        │
 ├─────────────────────────────────────────────────────────────┤
 │  Templates block (primary-tint background)                  │
@@ -92,7 +92,7 @@ The page is structured as a control surface: a compact **control strip** (greeti
 
 ### Components
 
-1. **Control strip** (`dash-strip`) — Header with personalized greeting and primary "Open Builder" CTA. White background, subtle left border accent. Single row on desktop; stacks on small screens.
+1. **Primary hero** (`PrimaryPageHero`) — Header with personalized greeting and primary **Open My Sites** CTA (`/sites`). White background, subtle left border accent. Single row on desktop; stacks on small screens.
 2. **Templates showcase** (`dash-showcase`) — Contrast block (primary-tint background) containing section heading, category pills (tablist), and a responsive grid of compact template cards. Cards use a small browser mockup preview, industry label, name, description clamp, and "Preview" action.
 3. **ShowcaseModal** — In-page preview modal: desktop/mobile toggle, optional loading state (spinner) while the request is created, "Choose This Design" → creates a draft request in Firestore → navigates to `/gallery/request/{docId}` (Firebase document ID).
 4. **Footer** — Minimal copyright line; same container width as content.
@@ -288,7 +288,7 @@ TemplateRequestForm
 
 - Back link: Returns to `/gallery` (templates section)
 - "Choose a different design" link: Returns to `/gallery`
-- "Build your own" link: Goes to the Gallery templates section (`/gallery#templates`)
+- "Build your own" link: Goes to `/gallery` (templates are on the Gallery page)
 - "Customize page layout" button: Goes to `/gallery/request/{orderId}/builder` so layout edits persist across refresh and are always tied to the current request
 
 ### Layout
@@ -367,7 +367,7 @@ Landing page CTAs are auth-aware:
 
 ### UserMenu Dropdown
 
-The UserMenu dropdown includes a "Gallery" link for quick navigation from any authenticated page.
+The UserMenu dropdown includes **Gallery**, **My Live Sites**, **Report an issue** (`/report-issue`), and **Sign Out**. The report page is not linked from the global navbar.
 
 ### My Sites Page (`/sites`)
 

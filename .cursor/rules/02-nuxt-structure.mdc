@@ -22,7 +22,7 @@ Per core invariants. Re-read [Nuxt 4 documentation](https://nuxt.com/docs) befor
 
 ## Layout Assignment
 
-- **default:** Used by `/`, `/gallery`, `/gallery/request/[id]`, `/login`, `/reset-password`, `/sites`, `/sites/[id]`. Provides `AppNavbar`.
+- **default:** Used by `/`, `/gallery`, `/gallery/request/[id]`, `/login`, `/reset-password`, `/sites`, `/sites/[id]`, `/report-issue`. Provides `AppNavbar`.
 - **builder:** Used only by `/builder`. No navbar; full viewport for editor.
 
 Do not add per-page navbars; extend or configure `AppNavbar` for route-specific behavior.

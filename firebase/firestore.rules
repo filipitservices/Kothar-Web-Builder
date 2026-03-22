@@ -36,6 +36,40 @@ service cloud.firestore {
         );
     }
 
+    // User-submitted issue reports: create-only; no client read/update/delete.
+    match /users/{userId}/reports/{reportId} {
+      allow read: if false;
+      allow update: if false;
+      allow delete: if false;
+      allow create: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly([
+          'message',
+          'category',
+          'createdAt',
+          'locale',
+          'routePath',
+          'userEmail',
+          'userDisplayName'
+        ])
+        && request.resource.data.message is string
+        && request.resource.data.message.size() >= 1
+        && request.resource.data.message.size() <= 4000
+        && request.resource.data.category in ['bug', 'ui', 'account', 'billing', 'other']
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.locale is string
+        && request.resource.data.locale.size() >= 1
+        && request.resource.data.locale.size() <= 64
+        && request.resource.data.routePath is string
+        && request.resource.data.routePath.size() >= 1
+        && request.resource.data.routePath.size() <= 512
+        && request.resource.data.routePath.matches('^/.*')
+        && (request.resource.data.userEmail == null || request.resource.data.userEmail is string)
+        && (request.resource.data.userDisplayName == null || request.resource.data.userDisplayName is string)
+        && (request.resource.data.userEmail == null || request.resource.data.userEmail.size() <= 320)
+        && (request.resource.data.userDisplayName == null || request.resource.data.userDisplayName.size() <= 200);
+    }
+
     // Explicit deny for all other paths (no other collections used by the app).
     match /{document=**} {
       allow read, write: if false;

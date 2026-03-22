@@ -4,10 +4,10 @@
       title-id="gallery-hero-title"
       :title="`Welcome back${userName ? `, ${userName}` : ''}`"
       subtitle="Choose a path below to get started."
-      cta-headline="Discover layout templates"
-      cta-label="Browse templates"
-      cta-to="/gallery#templates"
-      cta-aria-label="Browse professional templates — jump to templates section"
+      cta-headline="Your live sites and requests"
+      cta-label="Open My Sites"
+      :cta-to="PATH_SITES"
+      cta-aria-label="Open My Sites — manage live websites and template requests"
     />
 
     <!-- Templates: contrast block -->
@@ -103,6 +103,7 @@
 
 <script setup lang="ts">
 import { ref, computed, nextTick } from 'vue';
+import { PATH_SITES } from '~/constants/routes';
 import { useAuth } from '~/composables/useAuth';
 import { useShowcaseStore, type ShowcaseTemplate, type ShowcaseCategory } from '~/stores/showcase';
 import { useCreateRequest, CreateRequestError } from '~/composables/useCreateRequest';

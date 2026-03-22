@@ -28,6 +28,7 @@ Kothar follows a clear page separation pattern:
 | `/builder` | `pages/builder.vue` | Legacy redirect; routes to ID-scoped builder pages | Default | **Protected** |
 | `/sites` | `pages/sites/index.vue` | My Sites: Live Sites + Orders tabs | Full-page, table dashboard | **Protected** |
 | `/sites/[id]` | `pages/sites/[id].vue` | Site control panel — manage one live site | Full-page, sections | **Protected** |
+| `/report-issue` | `pages/report-issue.vue` | Report an issue (feedback form; not in global nav) | Full-page, form | **Protected** |
 | `/gallery/request/[id]` | `pages/gallery/request/[id].vue` | Template request form (`[id]` = Firebase document ID) | 2-column layout | **Protected** |
 | `/gallery/request/[id]/builder` | `pages/gallery/request/[id]/builder.vue` | Builder for the layout of a specific request | Builder | **Protected** |
 | `/orders/[id]/edit` | `pages/orders/[id]/edit.vue` | Order edit form (locked orders redirect to /sites) | Same as request form | **Protected** |
@@ -48,6 +49,7 @@ Routes are protected using Nuxt 4 route middleware:
 - `/builder` - Legacy entry point that immediately redirects to an ID-scoped builder route or gallery
 - `/sites` - My Live Sites list (requires authentication via `auth` middleware)
 - `/sites/[id]` - Site control panel (requires authentication via `auth` middleware)
+- `/report-issue` - Report an issue (requires authentication; entry from UserMenu only)
 - `/gallery/request/[id]` - Template request form (requires authentication via `auth` middleware)
 - `/gallery/request/[id]/builder` - Builder for a specific request (requires auth; redirects away when context is invalid)
 - `/orders/[id]/edit` - Order edit form (requires auth; locked orders redirect to /sites)
@@ -83,6 +85,7 @@ app/pages/
 ├── sites/
 │   ├── index.vue           # /sites - My Live Sites list (protected)
 │   └── [id].vue            # /sites/:id - site control panel (protected)
+├── report-issue.vue        # /report-issue - report an issue (protected; UserMenu only)
 ├── orders/
 │   └── [id]/
 │       ├── edit.vue        # /orders/:id/edit - order edit (protected; locked redirect)
@@ -100,6 +103,7 @@ Routes are implicitly defined by file structure. No manual `vue-router` config r
 - `/builder` → renders `pages/builder.vue` (requires auth)
 - `/sites` → renders `pages/sites/index.vue` (requires auth)
 - `/sites/:id` → renders `pages/sites/[id].vue` (requires auth)
+- `/report-issue` → renders `pages/report-issue.vue` (requires auth)
 - `/gallery/request/:id` → renders `pages/gallery/request/[id].vue` (requires auth; `:id` is a Firebase document ID)
 - `/login` → renders `pages/login.vue` (guests only)
 - `/reset-password` → renders `pages/reset-password.vue` (guests only)
@@ -112,7 +116,7 @@ Routes are implicitly defined by file structure. No manual `vue-router` config r
 - **Template Preview → Request**: "Choose This Design" → creates a draft request in Firebase → navigates to `/gallery/request/:id` (Firebase doc ID)
 - **Request → Builder**: "Customize page layout" → navigates to `/builder?orderId=:id` (enables layout rehydration after refresh)
 - **Request → Gallery**: Back link or "Choose different design" link
-- **UserMenu (authenticated)**: Gallery, **My Live Sites** (`/sites`), Sign Out
+- **UserMenu (authenticated)**: Gallery, **My Live Sites** (`/sites`), **Report an issue** (`/report-issue`), Sign Out
 - **Sites list → Site control panel**: "Manage site" → `/sites/:id`
 - **Site control panel → Sites list**: "Back to your sites" → `/sites`
 - **Any page → Landing**: Logo link with `<NuxtLink to="/">`
