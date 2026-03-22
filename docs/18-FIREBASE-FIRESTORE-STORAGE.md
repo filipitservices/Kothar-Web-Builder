@@ -11,7 +11,7 @@ Request orders follow a two-phase lifecycle in Firestore:
 1. **Draft creation** — When a user selects a template on the Gallery, a draft order document is created in Firestore (status `draft`) with the initial layout from the template and empty business/contact fields. A daily-limit counter is updated atomically in the same batch.
 2. **Form submission** — When the user fills out and submits the request form, the existing draft is updated to status `submitted` with all business info, contact info, project details, uploaded files, and layout.
 
-Only the **modular Firebase SDK** is used (no legacy namespace API). Firestore and Storage logic live in dedicated composables; the UI layer stays thin.
+Only the **modular Firebase SDK** is used (no legacy namespace API) for orders and attachments. Firestore and Storage logic for those domains live in dedicated composables; the UI layer stays thin. **Issue reports** are written only from the server via the Admin SDK (see **Issue reports** below).
 
 **Orders snapshot lifecycle:** Real-time listeners use Firestore’s WebChannel `Listen` transport (browser DevTools may show `firestore.googleapis.com/.../Listen/channel`). Background tabs often tear those connections down, which produces `net::ERR_CONNECTION_CLOSED` lines that **cannot be fully suppressed from app code** (you may still see occasional lines when a listener is closed or reopened). Mitigation: `useOrdersSnapshotWhenFocused()` **detaches** `onSnapshot` while inactive and **re-subscribes** when active, preserving the in-memory list. When `document.visibilityState === 'hidden'`, the listener is removed immediately; when the tab stays visible but the window loses focus (e.g. minimize), detach is **delayed** briefly to avoid subscribe/detach churn. `detachSnapshotListener()` / `unsubscribeFromOrders()` live on `stores/orders.ts`. Do not clear the order list on transient snapshot errors.
 
@@ -135,6 +135,30 @@ where `userId` is the authenticated user’s UID. The **orders store** (`stores/
 
 ---
 
+## Issue reports (support / feedback)
+
+Reports are stored per user at:
+
+**Collection path:** `users/{userId}/reports/{reportId}`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `category` | string | One of: `bug`, `ux_confusion`, `account`, `performance`, `feature_request`, `other` (see `app/types/issueReport.ts`). |
+| `message` | string | Sanitized user description (length validated server-side). |
+| `submitterEmail` | string \| null | From verified session claims (not from raw client input). |
+| `submitterDisplayName` | string \| null | From verified session claims. |
+| `userAgent` | string \| null | Truncated `User-Agent` header from the HTTP request (max 512 chars). |
+| `source` | string | `web` — origin of the submission. |
+| `createdAt` | server timestamp | `FieldValue.serverTimestamp()` on write (Admin SDK). |
+
+**Write path:** `POST /api/reports/issue` (`server/api/reports/issue.post.ts`). The handler verifies the **session cookie** (same model as `GET /api/user/landing-destination`), validates the JSON body with **`validateIssueReportInput`** from `app/utils/issueReportValidation.ts`, then **`collection('users').doc(uid).collection('reports').add(...)`** using **Firebase Admin**. The authenticated user id comes only from the verified session, never from the request body.
+
+**Client:** Pages use **`useIssueReport()`** (`app/composables/useIssueReport.ts`), which calls the API only — no Firestore calls in Vue components for this feature.
+
+**Security rules:** Client SDK access to `users/{userId}/reports/{reportId}` is **denied** (`allow read, write: if false`). The Admin SDK bypasses security rules for trusted server writes; this prevents browsers from reading others’ reports or writing arbitrary documents while keeping rules explicit for defense in depth.
+
+---
+
 ## Security Rules (in Repo)
 
 Firestore and Storage rules are kept in the project under **`firebase/`** and are the source of truth for access control. The root **`firebase.json`** points the Firebase CLI at these files; do not put rule content in project root.
@@ -143,7 +167,7 @@ Firestore and Storage rules are kept in the project under **`firebase/`** and ar
 
 | File | Purpose |
 |------|---------|
-| `firebase/firestore.rules` | Firestore security rules. `users/{userId}/orders/{orderId}` (owner-only; creation requires valid daily counter via `getAfter()`), `users/{userId}/requestLimits/{limitId}` (owner-only; count validation); all other paths explicitly denied. |
+| `firebase/firestore.rules` | Firestore security rules. `users/{userId}/orders/{orderId}` (owner-only; creation requires valid daily counter via `getAfter()`), `users/{userId}/requestLimits/{limitId}` (owner-only; count validation), `users/{userId}/reports/{reportId}` (client denied; server writes via Admin only); all other paths explicitly denied. |
 | `firebase/storage.rules` | Storage security rules. Only `orders/{userId}/{orderId}/{fileName}` is allowed (owner-only). |
 | `firebase.json` (root) | Firebase CLI config; references `firebase/firestore.rules` and `firebase/storage.rules` for deployment. |
 
@@ -178,6 +202,10 @@ The Cursor rule **15-firebase-rules.mdc** enforces this: when editing rules or F
 | `firebase/firestore.rules` | Firestore security rules; deploy with `firebase deploy --only firestore`. |
 | `firebase/storage.rules` | Storage security rules; deploy with `firebase deploy --only storage`. |
 | `firebase.json` | CLI config; references rules in `firebase/`. |
+| `app/types/issueReport.ts` | Categories, `IssueReportCreateInput`, `IssueReportSubmitResponse`, `IssueReportDocument`. |
+| `app/utils/issueReportValidation.ts` | `validateIssueReportInput()`, `issueReportCategoryLabel()` — shared by API and client. |
+| `app/composables/useIssueReport.ts` | `submitReport()` — `$fetch` to `POST /api/reports/issue` only. |
+| `server/api/reports/issue.post.ts` | Session verification + Admin Firestore `add()` for reports. |
 
 ---
 
@@ -196,4 +224,5 @@ The Cursor rule **15-firebase-rules.mdc** enforces this: when editing rules or F
 
 - Orders: Firestore `users/{userId}/orders/{orderId}` (status lifecycle: `draft` → `submitted` → admin stages); Storage `orders/{userId}/{orderId}/{fileName}`.
 - Daily limit: Firestore `users/{userId}/requestLimits/daily` (counter with date; max 3 per day).
+- Issue reports: Firestore `users/{userId}/reports/{reportId}` via **Admin SDK** from `POST /api/reports/issue`; client Firestore rules deny this path.
 - Rules: `firebase/firestore.rules` and `firebase/storage.rules`; update them and docs when usage changes (see Cursor rule 15-firebase-rules).

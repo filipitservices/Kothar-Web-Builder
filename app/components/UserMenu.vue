@@ -21,13 +21,17 @@
           <p class="dropdown-name">{{ name }}</p>
           <p v-if="currentUser?.email" class="dropdown-email">{{ currentUser.email }}</p>
           <hr />
-          <NuxtLink to="/gallery" class="item" @click="isOpen = false">
+          <NuxtLink :to="ROUTES.gallery" class="item" @click="isOpen = false">
             <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" /></svg>
             Gallery
           </NuxtLink>
-          <NuxtLink to="/sites" class="item" @click="isOpen = false">
+          <NuxtLink :to="ROUTES.sites" class="item" @click="isOpen = false">
             <svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" /></svg>
             My Live Sites
+          </NuxtLink>
+          <NuxtLink :to="ROUTES.reportIssue" class="item" @click="isOpen = false">
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+            Report a problem
           </NuxtLink>
           <button class="item" @click="handleSignOut">
             <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd" /></svg>
@@ -44,6 +48,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useAuth } from '~/composables/useAuth';
+import { ROUTES } from '~/constants/routes';
 
 withDefaults(defineProps<{ showName?: boolean }>(), { showName: false });
 

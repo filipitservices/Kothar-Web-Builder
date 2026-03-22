@@ -28,6 +28,7 @@ Kothar follows a clear page separation pattern:
 | `/builder` | `pages/builder.vue` | Legacy redirect; routes to ID-scoped builder pages | Default | **Protected** |
 | `/sites` | `pages/sites/index.vue` | My Sites: Live Sites + Orders tabs | Full-page, table dashboard | **Protected** |
 | `/sites/[id]` | `pages/sites/[id].vue` | Site control panel — manage one live site | Full-page, sections | **Protected** |
+| `/report-issue` | `pages/report-issue.vue` | Report app issues (entry from user menu only) | Full-page, form | **Protected** |
 | `/gallery/request/[id]` | `pages/gallery/request/[id].vue` | Template request form (`[id]` = Firebase document ID) | 2-column layout | **Protected** |
 | `/gallery/request/[id]/builder` | `pages/gallery/request/[id]/builder.vue` | Builder for the layout of a specific request | Builder | **Protected** |
 | `/orders/[id]/edit` | `pages/orders/[id]/edit.vue` | Order edit form (locked orders redirect to /sites) | Same as request form | **Protected** |
@@ -52,6 +53,7 @@ Routes are protected using Nuxt 4 route middleware:
 - `/gallery/request/[id]/builder` - Builder for a specific request (requires auth; redirects away when context is invalid)
 - `/orders/[id]/edit` - Order edit form (requires auth; locked orders redirect to /sites)
 - `/orders/[id]/builder` - Builder for a specific order (requires auth; redirects away when context is invalid)
+- `/report-issue` - Report app issues (requires authentication via `auth` middleware; entry from **UserMenu → Report a problem** only, not global nav)
 
 **Guest-Only Routes:**
 - `/login` - Redirects authenticated users away via `guest` middleware
@@ -112,7 +114,7 @@ Routes are implicitly defined by file structure. No manual `vue-router` config r
 - **Template Preview → Request**: "Choose This Design" → creates a draft request in Firebase → navigates to `/gallery/request/:id` (Firebase doc ID)
 - **Request → Builder**: "Customize page layout" → navigates to `/builder?orderId=:id` (enables layout rehydration after refresh)
 - **Request → Gallery**: Back link or "Choose different design" link
-- **UserMenu (authenticated)**: Gallery, **My Live Sites** (`/sites`), Sign Out
+- **UserMenu (authenticated)**: Gallery, **My Live Sites** (`/sites`), **Report a problem** (`/report-issue`), Sign Out
 - **Sites list → Site control panel**: "Manage site" → `/sites/:id`
 - **Site control panel → Sites list**: "Back to your sites" → `/sites`
 - **Any page → Landing**: Logo link with `<NuxtLink to="/">`

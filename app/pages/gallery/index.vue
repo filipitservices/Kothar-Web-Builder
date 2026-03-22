@@ -4,10 +4,10 @@
       title-id="gallery-hero-title"
       :title="`Welcome back${userName ? `, ${userName}` : ''}`"
       subtitle="Choose a path below to get started."
-      cta-headline="Discover layout templates"
-      cta-label="Browse templates"
-      cta-to="/gallery#templates"
-      cta-aria-label="Browse professional templates — jump to templates section"
+      cta-headline="Manage your live sites"
+      cta-label="Open My Sites"
+      :cta-to="ROUTES.sites"
+      cta-aria-label="Open My Sites — manage live websites and orders"
     />
 
     <!-- Templates: contrast block -->
@@ -108,6 +108,7 @@ import { useShowcaseStore, type ShowcaseTemplate, type ShowcaseCategory } from '
 import { useCreateRequest, CreateRequestError } from '~/composables/useCreateRequest';
 import { useToast } from '~/composables/useToast';
 import ShowcaseModal from '~/components/ShowcaseModal.vue';
+import { ROUTES } from '~/constants/routes';
 
 definePageMeta({
   middleware: 'auth'

@@ -67,14 +67,14 @@ The Gallery is the authenticated entry point, combining quick access to the buil
 
 The Gallery uses the **default** layout, which provides the global **AppNavbar** (logo, UserMenu with optional name, no CTA on this page).
 
-The page is structured as a control surface: a compact **control strip** (greeting + primary CTA), a **templates showcase** block with distinct background contrast, and a minimal **footer**. All content is constrained by `--container-max`; spacing and typography use the global design tokens from `style.css`.
+The page is structured as a **PrimaryPageHero** (greeting + primary CTA to **My Sites**), a **templates showcase** block with distinct background contrast, and a minimal **footer**. All content is constrained by `--container-max`; spacing and typography use the global design tokens from `style.css`. The hero CTA uses the shared `ROUTES.sites` constant (`app/constants/routes.ts`) — label **Open My Sites**, headline **Manage your live sites**.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  AppNavbar (logo, UserMenu)                                  │
 ├─────────────────────────────────────────────────────────────┤
-│ ▌ Control strip (white, left accent)                         │
-│   Welcome back, [Name]          [Open Builder →]             │
+│ ▌ Primary hero                                               │
+│   Welcome back, [Name]          [Open My Sites →]            │
 │   Choose a path below to get started.                        │
 ├─────────────────────────────────────────────────────────────┤
 │  Templates block (primary-tint background)                  │
@@ -92,7 +92,7 @@ The page is structured as a control surface: a compact **control strip** (greeti
 
 ### Components
 
-1. **Control strip** (`dash-strip`) — Header with personalized greeting and primary "Open Builder" CTA. White background, subtle left border accent. Single row on desktop; stacks on small screens.
+1. **PrimaryPageHero** — Shared hero (`PrimaryPageHero.vue`, `sites-hero.css`) with personalized greeting and primary CTA to **`/sites`** (My Sites). Single row on desktop; stacks on small screens.
 2. **Templates showcase** (`dash-showcase`) — Contrast block (primary-tint background) containing section heading, category pills (tablist), and a responsive grid of compact template cards. Cards use a small browser mockup preview, industry label, name, description clamp, and "Preview" action.
 3. **ShowcaseModal** — In-page preview modal: desktop/mobile toggle, optional loading state (spinner) while the request is created, "Choose This Design" → creates a draft request in Firestore → navigates to `/gallery/request/{docId}` (Firebase document ID).
 4. **Footer** — Minimal copyright line; same container width as content.
@@ -367,7 +367,7 @@ Landing page CTAs are auth-aware:
 
 ### UserMenu Dropdown
 
-The UserMenu dropdown includes a "Gallery" link for quick navigation from any authenticated page.
+The UserMenu dropdown includes **Gallery**, **My Live Sites** (`/sites`), **Report a problem** (`/report-issue`), and **Sign Out**. The report page is not linked from global nav elsewhere.
 
 ### My Sites Page (`/sites`)
 
@@ -377,7 +377,7 @@ The UserMenu dropdown includes a "Gallery" link for quick navigation from any au
 The My Sites page is the authenticated hub for managing delivered websites and template request orders. It uses the **default** layout (AppNavbar) and is protected by the `auth` middleware.
 
 **Layout structure:**
-- **SitesWelcomeHeader** — Page title, subtitle, and "Discover layout templates" CTA (links to `/gallery`)
+- **PrimaryPageHero** — Page title, subtitle, and "Discover layout templates" CTA (links to `/gallery` via `ROUTES.gallery`)
 - **SitesTabList** — Tab list (role="tablist") with Live Sites and Orders; keyboard navigable (arrow keys)
 - **SitesLiveSitesPanel** — Table of delivered sites (business, domain, last update, status, Manage action)
 - **SitesOrdersPanel** — Table of template request orders (template, submitted date, status, editable/locked, Modify action)

@@ -36,6 +36,11 @@ service cloud.firestore {
         );
     }
 
+    // Issue reports: written only via Firebase Admin (server API). Deny all client SDK access.
+    match /users/{userId}/reports/{reportId} {
+      allow read, write: if false;
+    }
+
     // Explicit deny for all other paths (no other collections used by the app).
     match /{document=**} {
       allow read, write: if false;
