@@ -117,6 +117,13 @@
         </div>
       </div>
     </main>
+
+    <SubmissionAccessModal
+      :open="showAccessModal"
+      :checkout-loading="accessCheckoutLoading"
+      @close="showAccessModal = false"
+      @continue="onAccessContinue"
+    />
   </div>
 </template>
 
@@ -132,6 +139,8 @@ import { ORDER_STATUS_DEFAULT } from '~/types/order';
 import type { OrderWithId } from '~/types/order';
 import ShowcaseRenderer from '~/components/showcase/ShowcaseRenderer.vue';
 import TemplateRequestForm from '~/components/TemplateRequestForm.vue';
+import SubmissionAccessModal from '~/components/SubmissionAccessModal.vue';
+import { useWhopAccess } from '~/composables/useWhopAccess';
 import type { TemplateRequestFormData, ColorCustomization } from '~/types/templateRequest';
 
 definePageMeta({
@@ -147,6 +156,10 @@ const authStore = useAuthStore();
 const ordersStore = useOrdersStore();
 const requestLayoutStore = useRequestLayoutStore();
 const { updateOrder } = useOrderUpdate();
+const { ensureLoaded, hasAccess, openCheckout } = useWhopAccess();
+
+const showAccessModal = ref(false);
+const accessCheckoutLoading = ref(false);
 
 const requestId = computed(() => route.params.id as string);
 const userId = computed(() => authStore.uid ?? authStore.currentUser?.uid ?? '');
@@ -270,6 +283,8 @@ onMounted(async () => {
 
   if (loadError.value) return;
 
+  void ensureLoaded();
+
   await nextTick();
   calculateViewportScale();
 
@@ -324,12 +339,31 @@ function openBuilder(): void {
   router.push({ path: `/gallery/request/${id}/builder` });
 }
 
+async function onAccessContinue(): Promise<void> {
+  accessCheckoutLoading.value = true;
+  try {
+    await openCheckout(route.fullPath);
+    showAccessModal.value = false;
+  } catch {
+    feedbackType.value = 'error';
+    feedbackMessage.value = 'Could not open checkout. Please try again.';
+  } finally {
+    accessCheckoutLoading.value = false;
+  }
+}
+
 async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
   const uid = userId.value;
   const order = orderDoc.value;
   if (!uid || !order) {
     feedbackType.value = 'error';
     feedbackMessage.value = 'You must be signed in to submit a request.';
+    return;
+  }
+
+  await ensureLoaded();
+  if (!hasAccess.value) {
+    showAccessModal.value = true;
     return;
   }
 

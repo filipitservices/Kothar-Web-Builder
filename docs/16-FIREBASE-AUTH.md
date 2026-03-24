@@ -90,6 +90,12 @@ NUXT_FIREBASE_ADMIN_CREDENTIALS={"type":"service_account",...}
 
 # Session configuration
 NUXT_FIREBASE_SESSION_EXPIRY_DAYS=5
+
+# Whop (subscriptions — server-only secrets; see docs/18-FIREBASE-FIRESTORE-STORAGE.md)
+NUXT_WHOP_API_KEY=your-company-or-app-api-key
+NUXT_WHOP_WEBHOOK_SECRET=your-webhook-signing-secret
+NUXT_WHOP_APP_ID=app_xxxxxxxxxxxxxx
+NUXT_WHOP_PLAN_ID=plan_xxxxxxxxxxxxxx
 ```
 
 ### Runtime Config in nuxt.config.ts
@@ -100,6 +106,10 @@ export default defineNuxtConfig({
     // Server-only (private) - never exposed to client
     firebaseAdminCredentials: '',
     firebaseSessionExpiryDays: 5,
+    whopApiKey: '',
+    whopWebhookSecret: '',
+    whopAppId: '',
+    whopPlanId: '',
     
     // Public - safe to expose, embedded in client bundle
     public: {
@@ -113,6 +123,10 @@ export default defineNuxtConfig({
   }
 })
 ```
+
+### Whop billing and the same session
+
+Subscription checks and checkout **reuse the Firebase session cookie**: `GET /api/access/me` and `POST /api/billing/checkout-session` verify the session the same way as `POST /api/reports/issue`. The client does not send Whop API keys; it only calls those routes after sign-in. Entitlement is stored in Firestore at `users/{uid}/access/billing` by the **server** (webhook handler and Admin SDK). See **[18-FIREBASE-FIRESTORE-STORAGE.md](18-FIREBASE-FIRESTORE-STORAGE.md)** for paths, rules, and webhook behavior.
 
 ### Security Notes
 

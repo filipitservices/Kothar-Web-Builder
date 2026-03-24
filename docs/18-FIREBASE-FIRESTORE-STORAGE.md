@@ -11,7 +11,7 @@ Request orders follow a two-phase lifecycle in Firestore:
 1. **Draft creation** — When a user selects a template on the Gallery, a draft order document is created in Firestore (status `draft`) with the initial layout from the template and empty business/contact fields. A daily-limit counter is updated atomically in the same batch.
 2. **Form submission** — When the user fills out and submits the request form, the existing draft is updated to status `submitted` with all business info, contact info, project details, uploaded files, and layout.
 
-Only the **modular Firebase SDK** is used (no legacy namespace API) for orders and attachments. Firestore and Storage logic for those domains live in dedicated composables; the UI layer stays thin. **Issue reports** are written only from the server via the Admin SDK (see **Issue reports** below).
+Only the **modular Firebase SDK** is used (no legacy namespace API) for orders and attachments. Firestore and Storage logic for those domains live in dedicated composables; the UI layer stays thin. **Issue reports** are written only from the server via the Admin SDK (see **Issue reports** below). **Whop subscription access** is stored at `users/{userId}/access/billing` and is **server-written only** (webhooks + Admin SDK); the client may read it for UX, but **Firestore rules** enforce entitlement on order updates (see **Whop access and order writes** below).
 
 **Orders snapshot lifecycle:** Real-time listeners use Firestore’s WebChannel `Listen` transport (browser DevTools may show `firestore.googleapis.com/.../Listen/channel`). Background tabs often tear those connections down, which produces `net::ERR_CONNECTION_CLOSED` lines that **cannot be fully suppressed from app code** (you may still see occasional lines when a listener is closed or reopened). Mitigation: `useOrdersSnapshotWhenFocused()` **detaches** `onSnapshot` while inactive and **re-subscribes** when active, preserving the in-memory list. When `document.visibilityState === 'hidden'`, the listener is removed immediately; when the tab stays visible but the window loses focus (e.g. minimize), detach is **delayed** briefly to avoid subscribe/detach churn. `detachSnapshotListener()` / `unsubscribeFromOrders()` live on `stores/orders.ts`. Do not clear the order list on transient snapshot errors.
 
@@ -29,6 +29,25 @@ Orders are stored under the authenticated user so that security rules can enforc
 - `orderId` — auto-generated (e.g. Firestore `doc(collection).id`) before uploads so the same ID can be used for the Storage path.
 
 This structure makes it straightforward to enforce: *users can only read and write their own orders*.
+
+### Firestore: Whop access snapshot (server-written)
+
+**Collection path:** `users/{userId}/access/billing` (fixed document id `billing` under subcollection `access`; see `app/constants/access.ts`).
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `hasAccess` | boolean | When `true`, the user may submit a template request and update submitted orders (enforced by security rules). |
+| `whopMembershipId` | string \| null | Whop membership id (for support / debugging). |
+| `whopUserId` | string \| null | Whop user id when present on webhook payloads. |
+| `validUntil` | string \| null | Optional ISO timestamp for membership boundary. |
+| `source` | string | `webhook` or `reconcile`. |
+| `updatedAt` | server timestamp | Set on each upsert. |
+
+**Write path:** Firebase Admin only — `POST /api/webhooks/whop` (verified with `@whop/sdk` Standard Webhooks unwrap) and `server/utils/access-billing.ts`. Clients **cannot** write this document (rules deny).
+
+**Read path:** Owner can read for UI; **`GET /api/access/me`** returns a minimal `{ hasAccess, pending }` from the same snapshot (Admin read), which **`useWhopAccess`** uses so entitlement is not scattered across components.
+
+**User mapping:** Checkout sessions are created with `metadata.firebase_uid` set to the Firebase uid (`WHOP_METADATA_FIREBASE_UID`). Whop propagates metadata to memberships; webhooks read `metadata.firebase_uid` to know which Firestore user to update.
 
 ### Order Document Shape
 
@@ -90,9 +109,11 @@ Files are uploaded **before** the Firestore write. If any upload fails, the orde
 ### Phase 2: Form Submission
 
 1. **Page** (`pages/gallery/request/[id].vue`): Loads the draft document from Firestore by doc ID; resolves the showcase template for preview; renders the form.
-2. On form submit, calls `useOrderUpdate().updateOrder()` with `status: 'submitted'`, validated form data, uploaded files, and layout.
+2. On form submit, the page calls **`useWhopAccess().ensureLoaded()`** and, if `hasAccess` is false, shows **SubmissionAccessModal** (checkout via `POST /api/billing/checkout-session`) instead of writing the order. If `hasAccess` is true, it calls `useOrderUpdate().updateOrder()` with `status: 'submitted'`, validated form data, uploaded files, and layout.
 3. **Composable** (`composables/useOrderUpdate.ts`): Uploads files to Storage, then calls `updateDoc` to transition the draft to submitted with all fields populated.
 4. **Page**: On success, shows inline confirmation and navigates to gallery. On error, shows inline error message (no `alert()`).
+
+The **builder** and **layout save** (`saveLayout`) do not require Whop access; only transitions that change service usage (submitting or updating a non-draft order) require `hasAccess` in Firestore rules.
 
 ### Layout Persistence
 
@@ -159,6 +180,21 @@ Reports are stored per user at:
 
 ---
 
+## Whop access and order writes
+
+Security rules require `users/{userId}/access/billing` to exist with `hasAccess == true` when:
+
+- The order transitions **draft → submitted**, or  
+- The order is **not** in `draft` (e.g. the user updates a submitted request on `/orders/[id]/edit`).
+
+While **status stays `draft`**, the owner may update the order without Whop access (this covers **`saveLayout`** — typically `layout` and `updatedAt` only). The builder and request editor remain usable without a subscription; gating applies only to submission and to updates on non-draft orders.
+
+## Whop webhooks
+
+Configure a company (or app) webhook in the Whop dashboard pointing to **`POST /api/webhooks/whop`** on your deployed origin. Subscribe to at least **`membership.activated`** and **`membership.deactivated`** (API v1). The handler verifies the payload with the official **`@whop/sdk`** (Standard Webhooks) using **`NUXT_WHOP_WEBHOOK_SECRET`**. Never expose that secret to the client.
+
+---
+
 ## Security Rules (in Repo)
 
 Firestore and Storage rules are kept in the project under **`firebase/`** and are the source of truth for access control. The root **`firebase.json`** points the Firebase CLI at these files; do not put rule content in project root.
@@ -167,7 +203,7 @@ Firestore and Storage rules are kept in the project under **`firebase/`** and ar
 
 | File | Purpose |
 |------|---------|
-| `firebase/firestore.rules` | Firestore security rules. `users/{userId}/orders/{orderId}` (owner-only; creation requires valid daily counter via `getAfter()`), `users/{userId}/requestLimits/{limitId}` (owner-only; count validation), `users/{userId}/reports/{reportId}` (client denied; server writes via Admin only); all other paths explicitly denied. |
+| `firebase/firestore.rules` | Firestore security rules. `users/{userId}/orders/{orderId}` (owner-only; creation requires valid daily counter via `getAfter()`; submit and non-draft updates require Whop access per **Whop access and order writes** above), `users/{userId}/access/{docId}` (owner read; client write denied), `users/{userId}/requestLimits/{limitId}` (owner-only; count validation), `users/{userId}/reports/{reportId}` (client denied; server writes via Admin only); all other paths explicitly denied. |
 | `firebase/storage.rules` | Storage security rules. Only `orders/{userId}/{orderId}/{fileName}` is allowed (owner-only). |
 | `firebase.json` (root) | Firebase CLI config; references `firebase/firestore.rules` and `firebase/storage.rules` for deployment. |
 
@@ -206,6 +242,13 @@ The Cursor rule **15-firebase-rules.mdc** enforces this: when editing rules or F
 | `app/utils/issueReportValidation.ts` | `validateIssueReportInput()`, `issueReportCategoryLabel()` — shared by API and client. |
 | `app/composables/useIssueReport.ts` | `submitReport()` — `$fetch` to `POST /api/reports/issue` only. |
 | `server/api/reports/issue.post.ts` | Session verification + Admin Firestore `add()` for reports. |
+| `app/stores/whopAccess.ts` | Cached result of `GET /api/access/me`; reset on sign-out. |
+| `app/composables/useWhopAccess.ts` | `ensureLoaded`, `openCheckout`, `refresh` — single client entry for entitlement UX. |
+| `server/api/access/me.get.ts` | Session + Admin read of `access/billing`. |
+| `server/api/billing/checkout-session.post.ts` | Session + Whop `checkoutConfigurations.create` with `metadata.firebase_uid`. |
+| `server/api/webhooks/whop.post.ts` | Raw body + SDK unwrap + Admin `upsertAccessBilling`. |
+| `server/utils/whop-client.ts` | Constructs Whop SDK clients for API vs webhook verification. |
+| `server/utils/access-billing.ts` | Admin upsert for `access/billing`. |
 
 ---
 
@@ -222,7 +265,8 @@ The Cursor rule **15-firebase-rules.mdc** enforces this: when editing rules or F
 
 ## Summary
 
-- Orders: Firestore `users/{userId}/orders/{orderId}` (status lifecycle: `draft` → `submitted` → admin stages); Storage `orders/{userId}/{orderId}/{fileName}`.
+- Orders: Firestore `users/{userId}/orders/{orderId}` (status lifecycle: `draft` → `submitted` → admin stages; submit/non-draft updates gated by `users/{userId}/access/billing` in rules); Storage `orders/{userId}/{orderId}/{fileName}`.
+- Whop: `users/{userId}/access/billing` (server-only writes); `GET /api/access/me`, `POST /api/billing/checkout-session`, `POST /api/webhooks/whop`.
 - Daily limit: Firestore `users/{userId}/requestLimits/daily` (counter with date; max 3 per day).
 - Issue reports: Firestore `users/{userId}/reports/{reportId}` via **Admin SDK** from `POST /api/reports/issue`; client Firestore rules deny this path.
 - Rules: `firebase/firestore.rules` and `firebase/storage.rules`; update them and docs when usage changes (see Cursor rule 15-firebase-rules).

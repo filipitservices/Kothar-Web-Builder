@@ -137,8 +137,9 @@ export interface OrderUpdateParams {
 }
 
 /**
- * Update an existing order. Only writes businessInfo, contactInfo, projectDetails,
- * updatedAt, and optionally appends new attachments. Never writes status or modificationLocked.
+ * Update an existing order. Writes businessInfo, contactInfo, projectDetails,
+ * attachments, layout, updatedAt, and optionally status (e.g. draft → submitted).
+ * Never writes modificationLocked (admin-only).
  */
 export function useOrderUpdate(): UseOrderUpdateReturn {
   function updateOrder(params: OrderUpdateParams): Promise<void> {

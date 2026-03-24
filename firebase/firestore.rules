@@ -6,12 +6,45 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Whop entitlement snapshot — written only via Admin (webhooks). Owner read-only.
+    match /users/{userId}/access/{docId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false;
+    }
+
+    function accessBillingPath(uid) {
+      return /databases/$(database)/documents/users/$(uid)/access/billing;
+    }
+
+    function hasWhopAccess(uid) {
+      return exists(accessBillingPath(uid))
+        && get(accessBillingPath(uid)).data.hasAccess == true;
+    }
+
     // Template request orders: owner-only.
     // Creation requires a valid daily-limit counter in the same transaction.
     // When counter does not exist, allow (first request); otherwise getAfter validates post-transaction count.
+    // Updates while status is draft → draft (e.g. layout save) do not require Whop access.
+    // Submitting (draft → submitted) or editing a submitted+ order requires hasAccess on users/{uid}/access/billing.
     match /users/{userId}/orders/{orderId} {
       allow read: if request.auth != null && request.auth.uid == userId;
-      allow update: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && request.auth.uid == userId
+        && (
+          (
+            resource.data.status == 'draft'
+            && request.resource.data.status == 'draft'
+          )
+          || (
+            resource.data.status == 'draft'
+            && request.resource.data.status == 'submitted'
+            && hasWhopAccess(userId)
+          )
+          || (
+            resource.data.status != 'draft'
+            && request.resource.data.status == resource.data.status
+            && hasWhopAccess(userId)
+          )
+        );
       allow create: if request.auth != null && request.auth.uid == userId
         && (
           !exists(/databases/$(database)/documents/users/$(userId)/requestLimits/daily)

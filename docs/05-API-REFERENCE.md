@@ -199,7 +199,29 @@ blocks.importData(data);
 
 ---
 
+### useWhopAccessStore
+
+**File**: [stores/whopAccess.ts](../app/stores/whopAccess.ts)
+
+**Purpose**: Caches Whop subscription entitlement from `GET /api/access/me`. Reset on sign-out.
+
+**State**: `hasAccess`, `pending`, `isLoading`, `loadError` — see `app/types/access.ts` for API shape.
+
+**Actions**: `setFromResponse`, `reset`, `invalidate`.
+
+---
+
 ## Composables
+
+### useWhopAccess()
+
+**File**: [composables/useWhopAccess.ts](../app/composables/useWhopAccess.ts)
+
+**Purpose**: Single client entry for subscription UX — `ensureLoaded()` before submit, `openCheckout()` for the upgrade modal, `refresh()` after returning from Whop.
+
+**Server routes**: `GET /api/access/me`, `POST /api/billing/checkout-session` (session cookie required). Webhooks: `POST /api/webhooks/whop` (Whop → server only).
+
+---
 
 ### useBusinessData()
 

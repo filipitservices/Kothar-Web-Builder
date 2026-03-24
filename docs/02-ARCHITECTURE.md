@@ -238,6 +238,7 @@ Canonical domain models live in `app/types` and are shared across UI, composable
 - **Builder/Layout**: `BlockType`, `BlockItem`, `DrawingState`, `ScreenId`, `ScreenCardRefShape` in `app/types/builder.ts`.
 - **Templates**: `ShowcaseTemplate` and related types in `app/stores/showcase.ts`.
 - **Auth & Sessions**: `AuthUser`, `SessionClaims`, and related types in `app/types/auth.ts`.
+- **Whop / access**: `AccessBillingSnapshot` and API responses in `app/types/access.ts`; entitlement state in `stores/whopAccess.ts`; client API via `useWhopAccess()` (backed by `GET /api/access/me`). Submission-time gating only — builder and draft layout saves do not require access.
 
 Layering is enforced end-to-end:
 

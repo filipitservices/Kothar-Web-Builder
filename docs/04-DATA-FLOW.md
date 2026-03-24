@@ -662,6 +662,16 @@ function setField(name, value) {
 
 ---
 
+## Whop access (subscription entitlement)
+
+**Store:** `stores/whopAccess.ts` holds the last result of **`GET /api/access/me`** (`hasAccess`, `pending`). It is reset on sign-out (`useAuth`).
+
+**Composable:** `useWhopAccess()` exposes `ensureLoaded()`, `refresh()`, `openCheckout()`, and computed refs — used by the template request page and order edit page **only at submit time**, not for builder navigation or layout save.
+
+**Server truth:** Firestore `users/{uid}/access/billing` is written only by the webhook handler and Admin SDK; security rules on orders enforce the same `hasAccess` flag for draft→submitted and non-draft updates.
+
+---
+
 ## Data Flow Summary
 
 ### Read Operations

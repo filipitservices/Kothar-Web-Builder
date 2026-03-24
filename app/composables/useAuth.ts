@@ -35,6 +35,7 @@ import {
 } from 'firebase/auth';
 import { getFirebaseAuth } from '~/plugins/firebase.client';
 import { useAuthStore } from '~/stores/auth';
+import { useWhopAccessStore } from '~/stores/whopAccess';
 import type { AuthUser, AuthError, MeResponse, SessionCreateResponse } from '~/types/auth';
 
 /**
@@ -344,11 +345,13 @@ export function useAuth(): UseAuthReturn {
       
       authStore.clearUser();
       authStore.setLoading(false);
+      useWhopAccessStore().reset();
       
     } catch (error) {
       // Even if server logout fails, clear local state
       authStore.clearUser();
       authStore.setLoading(false);
+      useWhopAccessStore().reset();
       logger.warn('[Auth] Sign out error:', error);
     }
   }

@@ -91,6 +91,13 @@
         </div>
       </div>
     </main>
+
+    <SubmissionAccessModal
+      :open="showAccessModal"
+      :checkout-loading="accessCheckoutLoading"
+      @close="showAccessModal = false"
+      @continue="onAccessContinue"
+    />
   </div>
 </template>
 
@@ -105,6 +112,8 @@ import type { TemplateRequestFormData, ColorCustomization } from '~/types/templa
 import type { OrderWithId } from '~/types/order';
 import ShowcaseRenderer from '~/components/showcase/ShowcaseRenderer.vue';
 import TemplateRequestForm from '~/components/TemplateRequestForm.vue';
+import SubmissionAccessModal from '~/components/SubmissionAccessModal.vue';
+import { useWhopAccess } from '~/composables/useWhopAccess';
 
 definePageMeta({
   middleware: 'auth'
@@ -119,6 +128,10 @@ const authStore = useAuthStore();
 const ordersStore = useOrdersStore();
 const requestLayoutStore = useRequestLayoutStore();
 const { orderToFormData, updateOrder } = useOrderUpdate();
+const { ensureLoaded, hasAccess, openCheckout } = useWhopAccess();
+
+const showAccessModal = ref(false);
+const accessCheckoutLoading = ref(false);
 
 const orderId = computed(() => route.params.id as string);
 const userId = computed(() => authStore.uid ?? authStore.currentUser?.uid ?? '');
@@ -234,6 +247,7 @@ let resizeObserver: ResizeObserver | null = null;
 
 onMounted(async () => {
   await loadOrderAndTemplate();
+  void ensureLoaded();
   await nextTick();
   calculateViewportScale();
   if (previewContainerRef.value) {
@@ -252,10 +266,29 @@ function openBuilder(): void {
   router.push({ path: `/orders/${id}/builder` });
 }
 
+async function onAccessContinue(): Promise<void> {
+  accessCheckoutLoading.value = true;
+  try {
+    await openCheckout(route.fullPath);
+    showAccessModal.value = false;
+  } catch {
+    feedbackType.value = 'error';
+    feedbackMessage.value = 'Could not open checkout. Please try again.';
+  } finally {
+    accessCheckoutLoading.value = false;
+  }
+}
+
 async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
   const uid = userId.value;
   const order = orderRef.value;
   if (!uid || !order) return;
+
+  await ensureLoaded();
+  if (!hasAccess.value) {
+    showAccessModal.value = true;
+    return;
+  }
 
   isSubmitting.value = true;
   feedbackMessage.value = null;

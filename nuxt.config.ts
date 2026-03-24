@@ -18,6 +18,14 @@ export default defineNuxtConfig({
     // These are read from environment variables prefixed with NUXT_
     firebaseAdminCredentials: '', // NUXT_FIREBASE_ADMIN_CREDENTIALS
     firebaseSessionExpiryDays: 5, // NUXT_FIREBASE_SESSION_EXPIRY_DAYS
+    /** Whop company API key (Bearer) — server only */
+    whopApiKey: '', // NUXT_WHOP_API_KEY
+    /** Whop webhook signing secret (Standard Webhooks) — server only */
+    whopWebhookSecret: '', // NUXT_WHOP_WEBHOOK_SECRET
+    /** Whop app id when using app-scoped API — server only */
+    whopAppId: '', // NUXT_WHOP_APP_ID
+    /** Existing Whop plan id for checkout sessions — server only */
+    whopPlanId: '', // NUXT_WHOP_PLAN_ID
     
     // Public - safe to expose, embedded in client bundle
     // These are read from environment variables prefixed with NUXT_PUBLIC_
@@ -41,7 +49,14 @@ export default defineNuxtConfig({
   nitro: {
     // Ensure firebase-admin is not bundled for client
     externals: {
-      external: ['firebase-admin']
+      external: ['firebase-admin', '@whop/sdk']
+    }
+  },
+
+  // Vite configuration for development server
+  vite: {
+    server: {
+      allowedHosts: true
     }
   }
 })

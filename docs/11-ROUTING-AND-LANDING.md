@@ -44,6 +44,8 @@ Routes are protected using Nuxt 4 route middleware:
 - **`guest` middleware**: Protects guest-only routes. Redirects authenticated users to landing destination (`/sites` or `/gallery`).
 - **`landing` middleware**: Runs on `/`. Authenticated users are redirected to `/sites` or `/gallery` based on account state (see Post-Login Landing below).
 
+**Subscription (Whop):** There is no subscription-specific route middleware. Whop access is enforced when **submitting** a request or **updating** an order on `/orders/[id]/edit` (client check via `useWhopAccess` + server `GET /api/access/me`, and Firestore rules on order writes). Builder and request-editor routes use only the **`auth`** middleware so users can explore and edit layouts without a paid membership.
+
 **Protected Routes:**
 - `/gallery` - Central hub with templates (requires authentication via `auth` middleware)
 - `/builder` - Legacy entry point that immediately redirects to an ID-scoped builder route or gallery
