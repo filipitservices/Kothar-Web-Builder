@@ -664,11 +664,13 @@ function setField(name, value) {
 
 ## Whop access (subscription entitlement)
 
-**Store:** `stores/whopAccess.ts` holds the last result of **`GET /api/access/me`** (`hasAccess`, `pending`). It is reset on sign-out (`useAuth`).
+**Store:** `stores/whopAccess.ts` holds the last result of **`GET /api/access/me`** (`hasAccess`, `pending`). It is reset on sign-out (`useAuth`). After the first successful fetch, `hasAccess` is a boolean (`true` or `false`), so a **cached** snapshot must not be used as the sole source for submit gating.
 
-**Composable:** `useWhopAccess()` exposes `ensureLoaded()`, `refresh()`, `openCheckout()`, and computed refs — used by the template request page and order edit page **only at submit time**, not for builder navigation or layout save.
+**Composable:** `useWhopAccess()` exposes **`fetchAccessFromServer()`** (always refetches), **`ensureLoaded()`** (first-load prefetch only — skips if a snapshot already exists), **`refresh()`** (invalidates then refetches), **`openCheckout(returnPath?)`** (Whop checkout; `returnPath` becomes `redirect_url` under **`window.location.origin`** — use **`/sites?tab=orders`** after draft persist so the payment tab lands on the orders list), and computed refs. **Gallery request** and **draft** **`/orders/[id]/edit`**: persist a **draft** Firestore write **before** access check, then **`fetchAccessFromServer()`**; **submitted** edit still checks access before updating. They use **`ensureLoaded()`** on mount for optional prefetch. **`/sites`** may call **`refresh()`** on mount to warm entitlement. Builder navigation and layout save do not use this flow.
 
-**Server truth:** Firestore `users/{uid}/access/billing` is written only by the webhook handler and Admin SDK; security rules on orders enforce the same `hasAccess` flag for draft→submitted and non-draft updates.
+**Orders list (`stores/orders.ts`):** **`useOrdersSnapshotWhenFocused`** detaches the Firestore listener on **route unmount** via **`detachSnapshotListener()`** but **keeps** the last in-memory list (avoids an empty flash when moving e.g. request form → `/sites`). **`unsubscribeFromOrders()`** (clear list + detach) runs when **`userId`** is empty or on **sign-out** (`useAuth`), so the next user never sees another user’s orders. **`ordersSnapshotHydrated`** flips true after the first snapshot emission (including an empty list) so **`/sites`** can show loading until Firestore has responded.
+
+**Server truth:** Firestore `users/{uid}/access/billing` is written only by the webhook handler and Admin SDK (including optional reconcile on **`GET /api/access/me`** when configured); security rules on orders enforce the same `hasAccess` flag for draft→submitted and non-draft updates.
 
 ---
 

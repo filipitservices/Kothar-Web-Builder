@@ -7,7 +7,8 @@
  * - Tab visible but window unfocused (e.g. minimized): detach only after a short
  *   delay so brief blur/focus cycles do not constantly unsubscribe/resubscribe.
  *
- * In-memory order list is preserved; subscribe() runs again when active.
+ * In-memory order list is preserved across route unmount (listener detached only);
+ * subscribe() runs again when active. Full clear is sign-out / empty userId.
  */
 
 import { onMounted, onUnmounted, watch, toValue, type MaybeRefOrGetter } from 'vue';
@@ -97,7 +98,8 @@ export function useOrdersSnapshotWhenFocused(userId: MaybeRefOrGetter<string>): 
       eventDebounceTimer = null;
     }
     cancelUnfocusedDetachTimer();
-    ordersStore.unsubscribeFromOrders();
+    // Keep cached orders for the next route; full clear only on sign-out (see useAuth).
+    ordersStore.detachSnapshotListener();
   });
 
   watch(

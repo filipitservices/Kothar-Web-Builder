@@ -1,6 +1,7 @@
 /**
  * Client access to Whop entitlement: single fetch path, shared store.
- * Submit-time checks call ensureLoaded() then read hasAccess.
+ * Prefetch uses ensureLoaded() (cached after first load). Submission must call
+ * fetchAccessFromServer() so access is never read from a stale cached false after payment.
  */
 
 import { computed } from 'vue';
@@ -15,13 +16,18 @@ export function useWhopAccess() {
 
   const isReady = computed(() => store.hasAccess !== null);
 
-  async function ensureLoaded(): Promise<void> {
+  /**
+   * Always hits GET /api/access/me and updates the store. Use before submit.
+   */
+  async function fetchAccessFromServer(): Promise<void> {
     if (!authStore.isAuthenticated) return;
-    if (store.hasAccess !== null) return;
     store.isLoading = true;
     store.loadError = null;
     try {
-      const res = await $fetch<AccessMeResponse>('/api/access/me');
+      const res = await $fetch<AccessMeResponse>('/api/access/me', {
+        query: { _: String(Date.now()) },
+        cache: 'no-store',
+      });
       store.setFromResponse(res);
     } catch {
       store.loadError = 'Could not verify access.';
@@ -31,9 +37,16 @@ export function useWhopAccess() {
     }
   }
 
+  /** First-load prefetch only; skips refetch if we already have a snapshot (avoids spam). */
+  async function ensureLoaded(): Promise<void> {
+    if (!authStore.isAuthenticated) return;
+    if (store.hasAccess !== null) return;
+    await fetchAccessFromServer();
+  }
+
   async function refresh(): Promise<void> {
     store.invalidate();
-    await ensureLoaded();
+    await fetchAccessFromServer();
   }
 
   /**
@@ -60,6 +73,7 @@ export function useWhopAccess() {
     loadError: computed(() => store.loadError),
     isReady,
     ensureLoaded,
+    fetchAccessFromServer,
     refresh,
     openCheckout,
   };

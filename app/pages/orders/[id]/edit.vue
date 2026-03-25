@@ -110,6 +110,8 @@ import { useOrderUpdate } from '~/composables/useOrderUpdate';
 import { useRequestLayoutStore } from '~/stores/requestLayout';
 import type { TemplateRequestFormData, ColorCustomization } from '~/types/templateRequest';
 import type { OrderWithId } from '~/types/order';
+import { ORDER_STATUS_DEFAULT } from '~/types/order';
+import { ROUTES } from '~/constants/routes';
 import ShowcaseRenderer from '~/components/showcase/ShowcaseRenderer.vue';
 import TemplateRequestForm from '~/components/TemplateRequestForm.vue';
 import SubmissionAccessModal from '~/components/SubmissionAccessModal.vue';
@@ -128,7 +130,9 @@ const authStore = useAuthStore();
 const ordersStore = useOrdersStore();
 const requestLayoutStore = useRequestLayoutStore();
 const { orderToFormData, updateOrder } = useOrderUpdate();
-const { ensureLoaded, hasAccess, openCheckout } = useWhopAccess();
+const { ensureLoaded, fetchAccessFromServer, hasAccess, openCheckout } = useWhopAccess();
+
+const WHOP_RETURN_PATH_ORDERS = `${ROUTES.sites}?tab=orders` as const;
 
 const showAccessModal = ref(false);
 const accessCheckoutLoading = ref(false);
@@ -269,7 +273,7 @@ function openBuilder(): void {
 async function onAccessContinue(): Promise<void> {
   accessCheckoutLoading.value = true;
   try {
-    await openCheckout(route.fullPath);
+    await openCheckout(WHOP_RETURN_PATH_ORDERS);
     showAccessModal.value = false;
   } catch {
     feedbackType.value = 'error';
@@ -284,20 +288,47 @@ async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
   const order = orderRef.value;
   if (!uid || !order) return;
 
-  await ensureLoaded();
-  if (!hasAccess.value) {
-    showAccessModal.value = true;
+  const layout = requestLayoutStore.active
+    ? requestLayoutStore.getLayoutForSubmission()
+    : undefined;
+
+  // Submitted (or other non-draft): rules require access for any client update.
+  if (order.status !== 'draft') {
+    await fetchAccessFromServer();
+    if (!hasAccess.value) {
+      showAccessModal.value = true;
+      return;
+    }
+
+    isSubmitting.value = true;
+    feedbackMessage.value = null;
+
+    try {
+      await updateOrder({
+        userId: uid,
+        orderId: order.id,
+        formData,
+        existingAttachments: order.attachments ?? [],
+        newFiles: formData.files?.length ? [...formData.files] : undefined,
+        layout,
+      });
+
+      requestLayoutStore.reset();
+      await navigateTo({ path: ROUTES.sites, query: { tab: 'orders' } });
+    } catch (err) {
+      feedbackType.value = 'error';
+      feedbackMessage.value = err instanceof Error ? err.message : 'Failed to update. Please try again.';
+    } finally {
+      isSubmitting.value = false;
+    }
     return;
   }
 
+  // Draft: persist full payload first, then Whop gate (same as gallery request).
   isSubmitting.value = true;
   feedbackMessage.value = null;
 
   try {
-    const layout = requestLayoutStore.active
-      ? requestLayoutStore.getLayoutForSubmission()
-      : undefined;
-
     await updateOrder({
       userId: uid,
       orderId: order.id,
@@ -307,8 +338,42 @@ async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
       layout,
     });
 
+    const refreshed = await ordersStore.fetchOrder(uid, order.id);
+    if (refreshed) {
+      orderRef.value = refreshed;
+    }
+
+    await fetchAccessFromServer();
+
+    if (!hasAccess.value) {
+      try {
+        await openCheckout(WHOP_RETURN_PATH_ORDERS);
+      } catch {
+        feedbackType.value = 'error';
+        feedbackMessage.value = 'Could not open checkout. Use Continue below or try again.';
+        showAccessModal.value = true;
+        isSubmitting.value = false;
+        return;
+      }
+      requestLayoutStore.reset();
+      await router.replace({ path: ROUTES.sites, query: { tab: 'orders' } });
+      isSubmitting.value = false;
+      return;
+    }
+
+    const current = orderRef.value ?? order;
+    await updateOrder({
+      userId: uid,
+      orderId: order.id,
+      formData,
+      existingAttachments: current.attachments ?? [],
+      newFiles: undefined,
+      layout,
+      status: ORDER_STATUS_DEFAULT,
+    });
+
     requestLayoutStore.reset();
-    await navigateTo({ path: '/sites', query: { tab: 'orders' } });
+    await navigateTo({ path: ROUTES.sites, query: { tab: 'orders' } });
   } catch (err) {
     feedbackType.value = 'error';
     feedbackMessage.value = err instanceof Error ? err.message : 'Failed to update. Please try again.';

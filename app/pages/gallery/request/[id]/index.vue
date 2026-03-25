@@ -141,7 +141,11 @@ import ShowcaseRenderer from '~/components/showcase/ShowcaseRenderer.vue';
 import TemplateRequestForm from '~/components/TemplateRequestForm.vue';
 import SubmissionAccessModal from '~/components/SubmissionAccessModal.vue';
 import { useWhopAccess } from '~/composables/useWhopAccess';
+import { ROUTES } from '~/constants/routes';
 import type { TemplateRequestFormData, ColorCustomization } from '~/types/templateRequest';
+
+/** Whop `redirect_url` and original-tab navigation after starting checkout (stable, persisted list). */
+const WHOP_RETURN_PATH_ORDERS = `${ROUTES.sites}?tab=orders` as const;
 
 definePageMeta({
   middleware: 'auth'
@@ -156,7 +160,7 @@ const authStore = useAuthStore();
 const ordersStore = useOrdersStore();
 const requestLayoutStore = useRequestLayoutStore();
 const { updateOrder } = useOrderUpdate();
-const { ensureLoaded, hasAccess, openCheckout } = useWhopAccess();
+const { ensureLoaded, fetchAccessFromServer, hasAccess, openCheckout } = useWhopAccess();
 
 const showAccessModal = ref(false);
 const accessCheckoutLoading = ref(false);
@@ -342,7 +346,7 @@ function openBuilder(): void {
 async function onAccessContinue(): Promise<void> {
   accessCheckoutLoading.value = true;
   try {
-    await openCheckout(route.fullPath);
+    await openCheckout(WHOP_RETURN_PATH_ORDERS);
     showAccessModal.value = false;
   } catch {
     feedbackType.value = 'error';
@@ -361,20 +365,15 @@ async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
     return;
   }
 
-  await ensureLoaded();
-  if (!hasAccess.value) {
-    showAccessModal.value = true;
-    return;
-  }
-
   isSubmitting.value = true;
   feedbackMessage.value = null;
 
-  try {
-    const layout = requestLayoutStore.active
-      ? requestLayoutStore.getLayoutForSubmission()
-      : undefined;
+  const layout = requestLayoutStore.active
+    ? requestLayoutStore.getLayoutForSubmission()
+    : undefined;
 
+  try {
+    // Persist full draft first (allowed without Whop); survives payment tab / navigation.
     await updateOrder({
       userId: uid,
       orderId: order.id,
@@ -382,11 +381,43 @@ async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
       existingAttachments: order.attachments ?? [],
       newFiles: formData.files?.length ? [...formData.files] : undefined,
       layout,
+    });
+
+    const refreshed = await ordersStore.fetchOrder(uid, order.id);
+    if (refreshed) {
+      orderDoc.value = refreshed;
+    }
+
+    await fetchAccessFromServer();
+
+    if (!hasAccess.value) {
+      try {
+        await openCheckout(WHOP_RETURN_PATH_ORDERS);
+      } catch {
+        feedbackType.value = 'error';
+        feedbackMessage.value = 'Could not open checkout. Use Continue below or try again.';
+        showAccessModal.value = true;
+        isSubmitting.value = false;
+        return;
+      }
+      requestLayoutStore.reset();
+      await router.replace({ path: ROUTES.sites, query: { tab: 'orders' } });
+      isSubmitting.value = false;
+      return;
+    }
+
+    await updateOrder({
+      userId: uid,
+      orderId: order.id,
+      formData,
+      existingAttachments: (orderDoc.value?.attachments ?? order.attachments) ?? [],
+      newFiles: undefined,
+      layout,
       status: ORDER_STATUS_DEFAULT,
     });
 
     requestLayoutStore.reset();
-    await navigateTo({ path: '/sites', query: { tab: 'orders' } });
+    await navigateTo({ path: ROUTES.sites, query: { tab: 'orders' } });
   } catch (err) {
     feedbackType.value = 'error';
     feedbackMessage.value = err instanceof Error

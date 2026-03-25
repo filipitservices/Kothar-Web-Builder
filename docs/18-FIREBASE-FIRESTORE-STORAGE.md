@@ -45,9 +45,9 @@ This structure makes it straightforward to enforce: *users can only read and wri
 
 **Write path:** Firebase Admin only — `POST /api/webhooks/whop` (verified with `@whop/sdk` Standard Webhooks unwrap) and `server/utils/access-billing.ts`. Clients **cannot** write this document (rules deny).
 
-**Read path:** Owner can read for UI; **`GET /api/access/me`** returns a minimal `{ hasAccess, pending }` from the same snapshot (Admin read), which **`useWhopAccess`** uses so entitlement is not scattered across components.
+**Read path:** Owner can read for UI; **`GET /api/access/me`** returns a minimal `{ hasAccess, pending }` from the same snapshot (Admin read), which **`useWhopAccess`** uses so entitlement is not scattered across components. When Firestore has no doc or `hasAccess` is not `true`, the handler **reconciles** in **`server/utils/whop-access-reconcile.ts`**: it tries **`users.checkAccess(productId, { id: whopUserId })`** when `whopUserId` is already on the doc, and—when **`NUXT_WHOP_COMPANY_ID`** is set—looks up the signed-in user’s **Firebase email** via **`members.list({ company_id, product_ids, query: email })`**, matches Whop `user.email`, then **`checkAccess`** and upserts Firestore. This covers webhook delay, static checkout links without `firebase_uid` metadata, and local testing without webhooks. Requires **`NUXT_WHOP_API_KEY`** and **`NUXT_WHOP_PRODUCT_ID`** (and company id for the email path).
 
-**User mapping:** Checkout sessions are created with `metadata.firebase_uid` set to the Firebase uid (`WHOP_METADATA_FIREBASE_UID`). Whop propagates metadata to memberships; webhooks read `metadata.firebase_uid` to know which Firestore user to update.
+**User mapping:** Checkout sessions are created with `metadata.firebase_uid` set to the Firebase uid (`WHOP_METADATA_FIREBASE_UID`). Whop copies checkout metadata onto **payments** and **memberships**; webhooks resolve `firebase_uid` from **`data.metadata`** first, then **`data.membership?.metadata`**, so payment-only payloads still map to the correct Firestore user.
 
 ### Order Document Shape
 
@@ -109,9 +109,10 @@ Files are uploaded **before** the Firestore write. If any upload fails, the orde
 ### Phase 2: Form Submission
 
 1. **Page** (`pages/gallery/request/[id].vue`): Loads the draft document from Firestore by doc ID; resolves the showcase template for preview; renders the form.
-2. On form submit, the page calls **`useWhopAccess().ensureLoaded()`** and, if `hasAccess` is false, shows **SubmissionAccessModal** (checkout via `POST /api/billing/checkout-session`) instead of writing the order. If `hasAccess` is true, it calls `useOrderUpdate().updateOrder()` with `status: 'submitted'`, validated form data, uploaded files, and layout.
-3. **Composable** (`composables/useOrderUpdate.ts`): Uploads files to Storage, then calls `updateDoc` to transition the draft to submitted with all fields populated.
-4. **Page**: On success, shows inline confirmation and navigates to gallery. On error, shows inline error message (no `alert()`).
+2. On form submit (after validation), the page **first** calls **`useOrderUpdate().updateOrder()`** with the full form, attachments, and layout while **`status` stays `draft`** (allowed by rules without Whop). Then **`fetchAccessFromServer()`** runs. If **`hasAccess`** is false: **`openCheckout`** uses Whop **`redirect_url`** **`{origin}/sites?tab=orders`**; the **original tab** **`router.replace`s** to **`/sites?tab=orders`**; **`requestLayoutStore.reset()`** runs. If opening checkout fails, **SubmissionAccessModal** offers retry. If **`hasAccess`** is true: a **second** `updateOrder` sets **`status: 'submitted'`** (and may repeat fields idempotently), then navigation to **`/sites?tab=orders`**. **`/orders/[id]/edit`** uses the same **draft** path; **non-draft** orders still require access **before** any client update (rules).
+3. **Composable** (`composables/useOrderUpdate.ts`): Uploads files to Storage, then calls `updateDoc` for the draft save and, when entitled, for `draft → submitted`.
+4. **Resume after payment:** The user continues from **My Sites → Orders → Modify** (`/orders/{id}/edit`); data is read from Firestore, not from in-memory form state.
+5. **Page**: On error, shows inline error message (no `alert()`).
 
 The **builder** and **layout save** (`saveLayout`) do not require Whop access; only transitions that change service usage (submitting or updating a non-draft order) require `hasAccess` in Firestore rules.
 
@@ -191,7 +192,9 @@ While **status stays `draft`**, the owner may update the order without Whop acce
 
 ## Whop webhooks
 
-Configure a company (or app) webhook in the Whop dashboard pointing to **`POST /api/webhooks/whop`** on your deployed origin. Subscribe to at least **`membership.activated`** and **`membership.deactivated`** (API v1). The handler verifies the payload with the official **`@whop/sdk`** (Standard Webhooks) using **`NUXT_WHOP_WEBHOOK_SECRET`**. Never expose that secret to the client.
+Configure a company (or app) webhook in the Whop dashboard pointing to **`POST /api/webhooks/whop`** on your deployed origin. Subscribe to **`membership.activated`**, **`membership.deactivated`**, and **`payment.succeeded`** so entitlement updates when metadata appears on the payment object before or without a full membership payload. The handler verifies the payload with the official **`@whop/sdk`** (Standard Webhooks) using **`NUXT_WHOP_WEBHOOK_SECRET`**. Never expose that secret to the client.
+
+**Metadata resolution:** For each event, the server resolves `firebase_uid` from **`data.metadata`**, then **`data.membership?.metadata`**. **`payment.succeeded`** grants access when a uid is found and upserts `users/{uid}/access/billing` with **`merge: true`** (idempotent). Membership activate/deactivate use the same helper.
 
 ---
 

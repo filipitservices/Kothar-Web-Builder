@@ -264,7 +264,7 @@ The page consists of two main pieces:
 
 1. **Draft creation** (dashboard): `useCreateRequest().createDraftRequest()` runs a single Firestore transaction that writes the draft order doc to `users/{uid}/orders/{newId}` (with `status: 'draft'`, initial layout from the template, empty business/contact fields) and updates the daily-limit counter. The modal shows a loading state until navigation completes. See **Template selection flow and performance** below.
 2. **Form filling** (request page): The page loads the draft by doc ID (or, when coming from the dashboard, may use navigation state for immediate paint; Firestore remains the canonical source). It resolves the template, initializes the request layout store, and renders the form. The user fills in details and optionally customizes the layout via the builder.
-3. **Submission**: On form submit, the page calls `useOrderUpdate().updateOrder()` to transition the draft to `status: 'submitted'` with the full form data, attachments, and layout.
+3. **Submission**: On form submit, the page **saves the draft to Firestore first** (full form, attachments, layout; `status` remains `draft`), then checks Whop access. Without access: checkout opens in a new tab with **`redirect_url`** to **`/sites?tab=orders`**, and the current tab navigates there so data is never held only in memory. With access: a follow-up update sets `status: 'submitted'` and navigates to **`/sites?tab=orders`**. After payment, the user resumes via **Orders → Modify** (`/orders/{id}/edit`).
 
 ### Error Handling
 
@@ -279,7 +279,7 @@ TemplateRequestForm
     │
     ├── @progress-update ───► [id].vue updates progress bar in left column
     │
-    └── @submit ────────────► [id].vue calls updateOrder() to transition draft → submitted
+    └── @submit ────────────► [id].vue persists draft (updateOrder), then access check → submit or checkout + /sites
 ```
 
 **State:** Form draft in `useTemplateRequestForm`; page seeds once via `initialFormData` → `hydrateFormData`. Updates via `updateField`. Children are controlled (`modelValue` / `update:modelValue`).
@@ -383,7 +383,7 @@ The My Sites page is the authenticated hub for managing delivered websites and t
 - **SitesOrdersPanel** — Table of template request orders (template, submitted date, status, editable/locked, Modify action)
 - **SitesEmptyState** — Context-aware empty state; Orders empty state includes "Browse templates" CTA to Gallery
 
-**Data sources:** `stores/sites.ts` (live sites, in-memory demo data) and `stores/orders.ts` (Firestore subscription). No direct store mutation from components; all data flows via props.
+**Data sources:** `stores/sites.ts` (live sites, in-memory demo data) and `stores/orders.ts` (Firestore `onSnapshot` via **`useOrdersSnapshotWhenFocused`**). The orders list is the **canonical** view of requests; route changes detach the listener without clearing cached rows until sign-out. **`SitesOrdersPanel`** shows a short loading state until the first snapshot (including empty). On mount, **`useWhopAccess().refresh()`** runs once to refresh entitlement after returning from checkout. No direct store mutation from components; all data flows via props.
 
 **Accessibility:** Tab list uses `role="tablist"`, `role="tab"`, `aria-selected`, `aria-controls`; panels use `role="tabpanel"`, `aria-labelledby`, `aria-hidden`. Focus rings use `--color-primary`. `prefers-reduced-motion` disables hover transforms and entrance animations.
 

@@ -217,9 +217,9 @@ blocks.importData(data);
 
 **File**: [composables/useWhopAccess.ts](../app/composables/useWhopAccess.ts)
 
-**Purpose**: Single client entry for subscription UX — `ensureLoaded()` before submit, `openCheckout()` for the upgrade modal, `refresh()` after returning from Whop.
+**Purpose**: Single client entry for subscription UX. **`fetchAccessFromServer()`** always calls `GET /api/access/me` and updates the store — **use after persisting a draft** and before branching on payment vs submit. **`ensureLoaded()`** only fetches when `hasAccess` is still `null` (typical mount prefetch). **`refresh()`** clears the snapshot and refetches. **`openCheckout(returnPath?)`** POSTs to checkout-session; optional **`returnPath`** (e.g. **`/sites?tab=orders`**) is sent as **`returnUrl`** and becomes Whop **`redirect_url`** as **`origin + returnPath`** — prefer this over the request form path so post-payment navigation does not depend on ephemeral client state.
 
-**Server routes**: `GET /api/access/me`, `POST /api/billing/checkout-session` (session cookie required). Webhooks: `POST /api/webhooks/whop` (Whop → server only).
+**Server routes**: `GET /api/access/me` (authoritative; reconciles against Whop when needed via `whop-access-reconcile`—`checkAccess` plus optional **`members.list` by Firebase user email** when `NUXT_WHOP_COMPANY_ID` is set), `POST /api/billing/checkout-session` (session cookie required). Webhooks: `POST /api/webhooks/whop` (Whop → server only; handles `membership.activated`, `membership.deactivated`, `payment.succeeded`). Client **`$fetch`** uses a cache-busting query and `cache: 'no-store'`.
 
 ---
 

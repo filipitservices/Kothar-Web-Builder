@@ -26,6 +26,10 @@ export default defineNuxtConfig({
     whopAppId: '', // NUXT_WHOP_APP_ID
     /** Existing Whop plan id for checkout sessions — server only */
     whopPlanId: '', // NUXT_WHOP_PLAN_ID
+    /** Whop product id for server-side access reconcile (users.checkAccess) — server only */
+    whopProductId: '', // NUXT_WHOP_PRODUCT_ID
+    /** Whop company id (required for members.list email reconcile) — server only */
+    whopCompanyId: '', // NUXT_WHOP_COMPANY_ID
     
     // Public - safe to expose, embedded in client bundle
     // These are read from environment variables prefixed with NUXT_PUBLIC_

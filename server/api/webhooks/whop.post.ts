@@ -27,6 +27,29 @@ function readFirebaseUidFromMetadata(metadata: Record<string, unknown> | null | 
   return null;
 }
 
+/** Whop webhook `data`: payment metadata, membership metadata, or nested `membership.metadata`. */
+interface WhopWebhookDataShape {
+  id?: string;
+  metadata?: Record<string, unknown> | null;
+  user?: { id: string } | null;
+  membership?: { id?: string; metadata?: Record<string, unknown> | null } | null;
+}
+
+/**
+ * Resolves firebase_uid from checkout/session metadata (payment events copy metadata from checkout config).
+ * Order: `data.metadata`, then `data.membership?.metadata`.
+ */
+function extractFirebaseUidFromWebhookData(data: WhopWebhookDataShape | null | undefined): string | null {
+  if (!data) return null;
+  const fromTop = readFirebaseUidFromMetadata(data.metadata ?? undefined);
+  if (fromTop) return fromTop;
+  const nested = data.membership;
+  if (nested && typeof nested === 'object') {
+    return readFirebaseUidFromMetadata(nested.metadata ?? undefined);
+  }
+  return null;
+}
+
 export default defineEventHandler(async (event) => {
   assertMethod(event, 'POST');
 
@@ -60,7 +83,7 @@ export default defineEventHandler(async (event) => {
 
   const payload = parsed as unknown as {
     type: string;
-    data?: { id: string; metadata?: Record<string, unknown>; user?: { id: string } | null };
+    data?: WhopWebhookDataShape;
   };
   const eventType = payload.type;
 
@@ -70,9 +93,11 @@ export default defineEventHandler(async (event) => {
       if (!data?.id) {
         return { ok: true };
       }
-      const firebaseUid = readFirebaseUidFromMetadata(data.metadata);
+      const firebaseUid = extractFirebaseUidFromWebhookData(data);
       if (!firebaseUid) {
-        logger.warn('[Whop Webhook] membership.activated missing metadata.firebase_uid');
+        logger.warn(
+          '[Whop Webhook] membership.activated missing firebase_uid in data.metadata or data.membership.metadata (payment.succeeded may still carry it)'
+        );
         return { ok: true };
       }
       const whopUserId = data.user?.id ?? null;
@@ -87,15 +112,35 @@ export default defineEventHandler(async (event) => {
       if (!data?.id) {
         return { ok: true };
       }
-      const firebaseUid = readFirebaseUidFromMetadata(data.metadata);
+      const firebaseUid = extractFirebaseUidFromWebhookData(data);
       if (!firebaseUid) {
-        logger.warn('[Whop Webhook] membership.deactivated missing metadata.firebase_uid');
+        logger.warn(
+          '[Whop Webhook] membership.deactivated missing firebase_uid in data.metadata or data.membership.metadata'
+        );
         return { ok: true };
       }
       const whopUserId = data.user?.id ?? null;
       await upsertAccessBilling(firebaseUid, {
         hasAccess: false,
         whopMembershipId: data.id,
+        whopUserId: whopUserId ?? undefined,
+        source: 'webhook',
+      });
+    } else if (eventType === 'payment.succeeded') {
+      const data = payload.data;
+      if (!data) {
+        return { ok: true };
+      }
+      const firebaseUid = extractFirebaseUidFromWebhookData(data);
+      if (!firebaseUid) {
+        logger.warn('[Whop Webhook] payment.succeeded missing firebase_uid in data.metadata or data.membership.metadata');
+        return { ok: true };
+      }
+      const whopUserId = data.user?.id ?? null;
+      const membershipId = data.membership?.id;
+      await upsertAccessBilling(firebaseUid, {
+        hasAccess: true,
+        whopMembershipId: typeof membershipId === 'string' ? membershipId : undefined,
         whopUserId: whopUserId ?? undefined,
         source: 'webhook',
       });
