@@ -30,8 +30,8 @@
         </div>
         <div class="modal-body submission-access-modal__body">
           <p class="text-muted">
-            A membership is required to send your request to our team. You can keep editing your
-            layout and details until you are ready. When you have access, submit again from this page.
+            A membership is required to send your request to our team. Your draft is saved. After
+            you subscribe, open My Sites → Orders, choose your request, and submit again.
           </p>
         </div>
         <div class="modal-footer submission-access-modal__footer">

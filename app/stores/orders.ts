@@ -46,8 +46,6 @@ function isRecoverableSnapshotError(err: unknown): boolean {
 
 export const useOrdersStore = defineStore('orders', () => {
   const orders = ref<OrderWithId[]>([]);
-  /** True after the first snapshot for the current subscription (even if list is empty). */
-  const ordersSnapshotHydrated = ref(false);
   let unsubscribe: Unsubscribe | null = null;
 
   const ordersList = computed<OrderWithId[]>(() => [...orders.value]);
@@ -63,8 +61,6 @@ export const useOrdersStore = defineStore('orders', () => {
       unsubscribe = null;
     }
 
-    ordersSnapshotHydrated.value = false;
-
     const db = getFirestore(app) as Firestore;
     const ordersColl = collection(db, 'users', userId, 'orders');
     const q = query(ordersColl, orderBy('createdAt', 'desc'));
@@ -79,13 +75,11 @@ export const useOrdersStore = defineStore('orders', () => {
           if (order) list.push(order);
         });
         orders.value = list;
-        ordersSnapshotHydrated.value = true;
       },
       (err) => {
         if (err instanceof FirestoreError && err.code === 'permission-denied') {
           logger.error('[orders store] snapshot permission denied:', err);
           orders.value = [];
-          ordersSnapshotHydrated.value = true;
           return;
         }
         if (isRecoverableSnapshotError(err)) {
@@ -111,7 +105,6 @@ export const useOrdersStore = defineStore('orders', () => {
   function unsubscribeFromOrders(): void {
     detachSnapshotListener();
     orders.value = [];
-    ordersSnapshotHydrated.value = false;
   }
 
   function getOrderById(id: string): OrderWithId | undefined {
@@ -190,7 +183,6 @@ export const useOrdersStore = defineStore('orders', () => {
 
   return {
     orders: ordersList,
-    ordersSnapshotHydrated,
     hasOrders,
     subscribe,
     detachSnapshotListener,

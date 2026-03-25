@@ -78,9 +78,6 @@
         </tbody>
       </table>
     </div>
-    <div v-else-if="listLoading" class="sites-panel sites-panel--loading" role="status">
-      Loading orders…
-    </div>
     <SitesEmptyState v-else context="orders" />
   </section>
 </template>
@@ -90,18 +87,13 @@ import type { OrderWithId } from '~/types/order';
 
 defineOptions({ name: 'SitesOrdersPanel' });
 
-withDefaults(
-  defineProps<{
-    orders: OrderWithId[];
-    panelId?: string;
-    labelledBy?: string;
-    visible?: boolean;
-    /** True while Firestore snapshot for orders has not emitted yet. */
-    listLoading?: boolean;
-    getOrderStatusLabel: (status: string) => string;
-    getOrderStatusClass: (status: string) => string;
-    formatOrderDate: (createdAt: unknown) => string;
-  }>(),
-  { listLoading: false }
-);
+defineProps<{
+  orders: OrderWithId[];
+  panelId?: string;
+  labelledBy?: string;
+  visible?: boolean;
+  getOrderStatusLabel: (status: string) => string;
+  getOrderStatusClass: (status: string) => string;
+  formatOrderDate: (createdAt: unknown) => string;
+}>();
 </script>

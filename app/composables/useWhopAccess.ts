@@ -7,8 +7,7 @@
 import { computed } from 'vue';
 import { useWhopAccessStore } from '~/stores/whopAccess';
 import { useAuthStore } from '~/stores/auth';
-import type { AccessMeResponse } from '~/types/access';
-import type { CheckoutSessionResponse } from '~/types/access';
+import type { AccessMeResponse, CheckoutSessionResponse } from '~/types/access';
 
 export function useWhopAccess() {
   const store = useWhopAccessStore();

@@ -38,7 +38,6 @@
             <SitesOrdersPanel
               :orders="ordersStore.orders"
               :visible="activeTab === 'orders'"
-              :list-loading="ordersListLoading"
               :get-order-status-label="ordersStore.getOrderStatusLabel"
               :get-order-status-class="ordersStore.getOrderStatusClass"
               :format-order-date="ordersStore.formatOrderDate"
@@ -84,9 +83,7 @@
 
 <script setup lang="ts">
 import '~/assets/css/sites.css';
-import { onMounted } from 'vue';
 import { ROUTES } from '~/constants/routes';
-import { useWhopAccess } from '~/composables/useWhopAccess';
 
 definePageMeta({
   middleware: 'auth',
@@ -130,19 +127,5 @@ const activeTab = computed({
 const authStore = useAuthStore();
 const userId = computed(() => authStore.uid ?? authStore.currentUser?.uid ?? '');
 
-const ordersListLoading = computed(
-  () =>
-    Boolean(userId.value) &&
-    activeTab.value === 'orders' &&
-    !ordersStore.ordersSnapshotHydrated
-);
-
 useOrdersSnapshotWhenFocused(userId);
-
-const { refresh: refreshWhopAccess } = useWhopAccess();
-
-onMounted(() => {
-  if (import.meta.server) return;
-  void refreshWhopAccess();
-});
 </script>

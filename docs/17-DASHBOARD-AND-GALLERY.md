@@ -383,7 +383,7 @@ The My Sites page is the authenticated hub for managing delivered websites and t
 - **SitesOrdersPanel** — Table of template request orders (template, submitted date, status, editable/locked, Modify action)
 - **SitesEmptyState** — Context-aware empty state; Orders empty state includes "Browse templates" CTA to Gallery
 
-**Data sources:** `stores/sites.ts` (live sites, in-memory demo data) and `stores/orders.ts` (Firestore `onSnapshot` via **`useOrdersSnapshotWhenFocused`**). The orders list is the **canonical** view of requests; route changes detach the listener without clearing cached rows until sign-out. **`SitesOrdersPanel`** shows a short loading state until the first snapshot (including empty). On mount, **`useWhopAccess().refresh()`** runs once to refresh entitlement after returning from checkout. No direct store mutation from components; all data flows via props.
+**Data sources:** `stores/sites.ts` (live sites, in-memory demo data) and `stores/orders.ts` (Firestore `onSnapshot` via **`useOrdersSnapshotWhenFocused`**). The orders list is the **canonical** view of requests; route unmount detaches the listener but keeps the last snapshot in memory until sign-out clears the store. No direct store mutation from components; all data flows via props.
 
 **Accessibility:** Tab list uses `role="tablist"`, `role="tab"`, `aria-selected`, `aria-controls`; panels use `role="tabpanel"`, `aria-labelledby`, `aria-hidden`. Focus rings use `--color-primary`. `prefers-reduced-motion` disables hover transforms and entrance animations.
 
