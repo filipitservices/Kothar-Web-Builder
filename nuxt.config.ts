@@ -26,7 +26,7 @@ export default defineNuxtConfig({
     whopAppId: '', // NUXT_WHOP_APP_ID
     /** Existing Whop plan id for checkout sessions — server only */
     whopPlanId: '', // NUXT_WHOP_PLAN_ID
-    /** Whop product id for server-side access reconcile (users.checkAccess) — server only */
+    /** Whop product id for checkAccess / members.list; optional if NUXT_WHOP_PLAN_ID is set (resolved via Plans API) */
     whopProductId: '', // NUXT_WHOP_PRODUCT_ID
     /** Whop company id (required for members.list email reconcile) — server only */
     whopCompanyId: '', // NUXT_WHOP_COMPANY_ID

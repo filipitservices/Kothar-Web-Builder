@@ -49,6 +49,10 @@ service cloud.firestore {
         && (
           !exists(/databases/$(database)/documents/users/$(userId)/requestLimits/daily)
           || getAfter(/databases/$(database)/documents/users/$(userId)/requestLimits/daily).data.count <= 3
+        )
+        && (
+          request.resource.data.status == 'draft'
+          || (request.resource.data.status == 'submitted' && hasWhopAccess(userId))
         );
     }
 

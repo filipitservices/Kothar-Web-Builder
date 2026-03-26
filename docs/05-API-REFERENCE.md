@@ -217,15 +217,15 @@ blocks.importData(data);
 
 **File**: [composables/useWhopAccess.ts](../app/composables/useWhopAccess.ts)
 
-**Purpose**: Single client entry for subscription UX. **`fetchAccessFromServer()`** always calls `GET /api/access/me` and updates the store. **`ensureLoaded()`** skips if a snapshot exists. **`refresh()`** invalidates then refetches. **`openCheckout(returnPath?)`** POSTs checkout-session; pass **`WHOP_CHECKOUT_RETURN_PATH`** from **`constants/access.ts`** for the standard post-pay landing (**`/sites?tab=orders`**).
+**Purpose**: Single client entry for subscription UX. **`fetchAccessFromServer()`** always calls `GET /api/access/me`, updates the store, and **returns** the same `{ hasAccess, pending }` for submit gates (avoids relying on store reads immediately after await). **`ensureLoaded()`** skips if a snapshot exists. **`refresh()`** invalidates then refetches. **`openCheckout(returnPath?)`** POSTs checkout-session; pass **`WHOP_CHECKOUT_RETURN_PATH`** from **`constants/access.ts`** for the standard post-pay landing (**`/sites?tab=orders`**).
 
 ### useDraftRequestSubmitFlow()
 
 **File**: [composables/useDraftRequestSubmitFlow.ts](../app/composables/useDraftRequestSubmitFlow.ts)
 
-**Purpose**: One implementation of draft persist → server access check → Whop checkout + `/sites` or `draft → submitted`. Used by the gallery request page and **`/orders/[id]/edit`** for **draft** orders only.
+**Purpose**: Draft persist → **`POST /api/orders/finalize-draft`** (authoritative Whop `checkAccess` + Admin status update) → on denial, **`{ ok: false, reason: 'subscription_required' }`** (HTTP 200) and access modal; on **`{ ok: true }`**, navigate to `/sites?tab=orders`. Used by the gallery request page and **`/orders/[id]/edit`** for **draft** orders only.
 
-**Server routes**: `GET /api/access/me` (authoritative; reconciles against Whop when needed via `whop-access-reconcile`—`checkAccess` plus optional **`members.list` by Firebase user email** when `NUXT_WHOP_COMPANY_ID` is set), `POST /api/billing/checkout-session` (session cookie required). Webhooks: `POST /api/webhooks/whop` (Whop → server only; handles `membership.activated`, `membership.deactivated`, `payment.succeeded`). Client **`$fetch`** uses a cache-busting query and `cache: 'no-store'`.
+**Server routes**: **`POST /api/orders/finalize-draft`** (body `{ orderId }`; session; **`evaluateWhopProductAccess`** + membership policy; returns **`{ ok: true }`** or **`{ ok: false, reason: 'subscription_required' }`**). `GET /api/access/me` (billing snapshot + **`syncBillingAccessFromWhop`** for UI; same underlying `evaluateWhopProductAccess` logic as finalize). `POST /api/billing/checkout-session`. Webhooks: `POST /api/webhooks/whop`. For **`GET /api/access/me`**, client **`$fetch`** uses cache-busting and `cache: 'no-store'`.
 
 ---
 

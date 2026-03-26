@@ -131,7 +131,7 @@ const authStore = useAuthStore();
 const ordersStore = useOrdersStore();
 const requestLayoutStore = useRequestLayoutStore();
 const { orderToFormData, updateOrder } = useOrderUpdate();
-const { ensureLoaded, fetchAccessFromServer, hasAccess, openCheckout } = useWhopAccess();
+const { ensureLoaded, fetchAccessFromServer, openCheckout } = useWhopAccess();
 const { submitDraftOrder } = useDraftRequestSubmitFlow();
 
 const showAccessModal = ref(false);
@@ -294,8 +294,8 @@ async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
 
   // Submitted (or other non-draft): rules require access for any client update.
   if (order.status !== 'draft') {
-    await fetchAccessFromServer();
-    if (!hasAccess.value) {
+    const accessSnapshot = await fetchAccessFromServer();
+    if (accessSnapshot?.hasAccess !== true) {
       showAccessModal.value = true;
       return;
     }
@@ -329,12 +329,13 @@ async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
 
   try {
     const result = await submitDraftOrder({ userId: uid, order, formData, layout, updateOrder });
-    if (result.kind === 'checkout_failed') {
+    if (result.kind === 'subscription_required') {
       if (result.syncedOrder) {
         orderRef.value = result.syncedOrder;
       }
       feedbackType.value = 'error';
-      feedbackMessage.value = 'Could not open checkout. Use Continue below or try again.';
+      feedbackMessage.value =
+        'Your draft is saved. A subscription is required to submit — use Continue below.';
       showAccessModal.value = true;
     }
   } catch (err) {

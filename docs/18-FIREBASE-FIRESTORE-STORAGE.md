@@ -43,9 +43,9 @@ This structure makes it straightforward to enforce: *users can only read and wri
 | `source` | string | `webhook` or `reconcile`. |
 | `updatedAt` | server timestamp | Set on each upsert. |
 
-**Write path:** Firebase Admin only — `POST /api/webhooks/whop` (verified with `@whop/sdk` Standard Webhooks unwrap) and `server/utils/access-billing.ts`. Clients **cannot** write this document (rules deny).
+**Write path:** Firebase Admin only — `POST /api/webhooks/whop` (verified with `@whop/sdk` Standard Webhooks unwrap), **`server/utils/access-billing.ts`**, and **`server/utils/whop-access-reconcile.ts`** (reconcile may set `hasAccess` to `false` when Whop denies access). Clients **cannot** write this document (rules deny).
 
-**Read path:** Owner can read for UI; **`GET /api/access/me`** returns a minimal `{ hasAccess, pending }` from the same snapshot (Admin read), which **`useWhopAccess`** uses so entitlement is not scattered across components. When Firestore has no doc or `hasAccess` is not `true`, the handler **reconciles** in **`server/utils/whop-access-reconcile.ts`**: it tries **`users.checkAccess(productId, { id: whopUserId })`** when `whopUserId` is already on the doc, and—when **`NUXT_WHOP_COMPANY_ID`** is set—looks up the signed-in user’s **Firebase email** via **`members.list({ company_id, product_ids, query: email })`**, matches Whop `user.email`, then **`checkAccess`** and upserts Firestore. This covers webhook delay, static checkout links without `firebase_uid` metadata, and local testing without webhooks. Requires **`NUXT_WHOP_API_KEY`** and **`NUXT_WHOP_PRODUCT_ID`** (and company id for the email path).
+**Read path:** Owner can read for UI; **`GET /api/access/me`** returns `{ hasAccess, pending }` for **`useWhopAccess`**. When **`NUXT_WHOP_API_KEY`** is set and **either** **`NUXT_WHOP_PRODUCT_ID`** **or** **`NUXT_WHOP_PLAN_ID`** is set, every request runs **`syncBillingAccessFromWhop`**: it resolves the **product id** from `NUXT_WHOP_PRODUCT_ID` or, if omitted, from Whop **`plans.retrieve(plan_id)`** (same plan as checkout). It then resolves candidate Whop user ids from the billing doc’s `whopUserId` and—when **`NUXT_WHOP_COMPANY_ID`** is set—from **`members.list({ company_id, product_ids, query: email })`**, then **`users.checkAccess(productId, { id })`** per candidate. Responses use **snake_case and camelCase** (`has_access` / `hasAccess`, `access_level` / `accessLevel`). If any candidate indicates access, Firestore is upserted `hasAccess: true`; if any definitively denies and none grant, **`hasAccess: false`**. If **no candidates** while the doc still has `hasAccess: true`, or if the live check is **inconclusive** (API errors, unknown payloads, missing product on plan) while the doc still says true, the handler **upserts `hasAccess: false`** so Firestore rules stay aligned (fail closed). Without a Whop API key, **`GET /api/access/me`** falls back to the Firestore snapshot only (webhook-only; unreliable if webhooks miss).
 
 **User mapping:** Checkout sessions are created with `metadata.firebase_uid` set to the Firebase uid (`WHOP_METADATA_FIREBASE_UID`). Whop copies checkout metadata onto **payments** and **memberships**; webhooks resolve `firebase_uid` from **`data.metadata`** first, then **`data.membership?.metadata`**, so payment-only payloads still map to the correct Firestore user.
 
@@ -109,12 +109,12 @@ Files are uploaded **before** the Firestore write. If any upload fails, the orde
 ### Phase 2: Form Submission
 
 1. **Page** (`pages/gallery/request/[id].vue`): Loads the draft document from Firestore by doc ID; resolves the showcase template for preview; renders the form.
-2. On form submit (after validation), **`useDraftRequestSubmitFlow()`** runs: **`updateOrder`** keeps **`status` as `draft`** with full form, attachments, and layout, then **`fetchAccessFromServer()`**. If no access: **`openCheckout(WHOP_CHECKOUT_RETURN_PATH)`** and **`router.replace`** to **`/sites?tab=orders`**, **`requestLayoutStore.reset()`**; modal retry if checkout fails. If access: second **`updateOrder`** sets **`submitted`**, then **`/sites?tab=orders`**. **`/orders/[id]/edit`** uses the same composable for **draft**; **non-draft** updates still require access first (rules).
-3. **Composable** (`composables/useOrderUpdate.ts`): Uploads files to Storage, then calls `updateDoc` for the draft save and, when entitled, for `draft → submitted`.
+2. On form submit (after validation), **`useDraftRequestSubmitFlow()`** runs: **`updateOrder`** keeps **`status` as `draft`** with full form, attachments, and layout, then **`POST /api/orders/finalize-draft`** (session cookie, `{ orderId }`). The server verifies the order is **draft**, runs live access + membership policy, and only then **Admin-updates** **`status` to `submitted`**. If access is denied, response is **`{ ok: false, reason: 'subscription_required' }`** (HTTP 200); the UI shows the **access modal** — order stays **draft**. On **`{ ok: true }`**, **`requestLayoutStore.reset()`** and navigate to **`/sites?tab=orders`**. **`/orders/[id]/edit`** uses the same composable for **draft**; **non-draft** updates still use **`fetchAccessFromServer()`** + client `updateOrder` + rules.
+3. **Composable** (`composables/useOrderUpdate.ts`): Uploads files to Storage, then calls `updateDoc` for **draft** saves only; **`draft → submitted`** for the request flow is **not** done via client `updateDoc` (see finalize-draft above).
 4. **Resume after payment:** The user continues from **My Sites → Orders → Modify** (`/orders/{id}/edit`); data is read from Firestore, not from in-memory form state.
 5. **Page**: On error, shows inline error message (no `alert()`).
 
-The **builder** and **layout save** (`saveLayout`) do not require Whop access; only transitions that change service usage (submitting or updating a non-draft order) require `hasAccess` in Firestore rules.
+The **builder** and **layout save** (`saveLayout`) do not require Whop access. **Submitting** a template request uses **server** finalization (`finalize-draft`); **updating a non-draft** order still uses client writes gated by **`hasAccess`** in Firestore rules and **`fetchAccessFromServer()`** on the page.
 
 ### Layout Persistence
 
@@ -194,7 +194,9 @@ While **status stays `draft`**, the owner may update the order without Whop acce
 
 Configure a company (or app) webhook in the Whop dashboard pointing to **`POST /api/webhooks/whop`** on your deployed origin. Subscribe to **`membership.activated`**, **`membership.deactivated`**, and **`payment.succeeded`** so entitlement updates when metadata appears on the payment object before or without a full membership payload. The handler verifies the payload with the official **`@whop/sdk`** (Standard Webhooks) using **`NUXT_WHOP_WEBHOOK_SECRET`**. Never expose that secret to the client.
 
-**Metadata resolution:** For each event, the server resolves `firebase_uid` from **`data.metadata`**, then **`data.membership?.metadata`**. **`payment.succeeded`** grants access when a uid is found and upserts `users/{uid}/access/billing` with **`merge: true`** (idempotent). Membership activate/deactivate use the same helper.
+**Metadata resolution:** For each event, the server resolves `firebase_uid` from **`data.metadata`**, then **`data.membership?.metadata`**. **`payment.succeeded`** grants access when a uid is found and upserts `users/{uid}/access/billing` with **`merge: true`** (idempotent). Membership activate/deactivate use the same helper first.
+
+**`membership.deactivated` without metadata:** If checkout metadata is missing, the handler tries **Admin `collectionGroup` queries** on the `access` subcollection: match **`whopUserId`** to `data.user.id`, then **`whopMembershipId`** to `data.id` (membership id). Deploy **`firebase/firestore.indexes.json`** (`firebase deploy --only firestore:indexes`) so those queries are indexed.
 
 ---
 
@@ -206,9 +208,10 @@ Firestore and Storage rules are kept in the project under **`firebase/`** and ar
 
 | File | Purpose |
 |------|---------|
-| `firebase/firestore.rules` | Firestore security rules. `users/{userId}/orders/{orderId}` (owner-only; creation requires valid daily counter via `getAfter()`; submit and non-draft updates require Whop access per **Whop access and order writes** above), `users/{userId}/access/{docId}` (owner read; client write denied), `users/{userId}/requestLimits/{limitId}` (owner-only; count validation), `users/{userId}/reports/{reportId}` (client denied; server writes via Admin only); all other paths explicitly denied. |
+| `firebase/firestore.rules` | Firestore security rules. `users/{userId}/orders/{orderId}` (owner-only; **create** requires daily counter **and** either `status == draft` or (`submitted` **and** `hasWhopAccess`); submit and non-draft updates require Whop access per **Whop access and order writes** above), `users/{userId}/access/{docId}` (owner read; client write denied), `users/{userId}/requestLimits/{limitId}` (owner-only; count validation), `users/{userId}/reports/{reportId}` (client denied; server writes via Admin only); all other paths explicitly denied. |
+| `firebase/firestore.indexes.json` | Collection group indexes on `access` (`whopMembershipId`, `whopUserId`) for webhook billing lookup. Deploy with `firebase deploy --only firestore:indexes`. |
 | `firebase/storage.rules` | Storage security rules. Only `orders/{userId}/{orderId}/{fileName}` is allowed (owner-only). |
-| `firebase.json` (root) | Firebase CLI config; references `firebase/firestore.rules` and `firebase/storage.rules` for deployment. |
+| `firebase.json` (root) | Firebase CLI config; references `firebase/firestore.rules`, `firebase/firestore.indexes.json`, and `firebase/storage.rules` for deployment. |
 
 ### When Usage Changes
 
@@ -247,11 +250,15 @@ The Cursor rule **15-firebase-rules.mdc** enforces this: when editing rules or F
 | `server/api/reports/issue.post.ts` | Session verification + Admin Firestore `add()` for reports. |
 | `app/stores/whopAccess.ts` | Cached result of `GET /api/access/me`; reset on sign-out. |
 | `app/composables/useWhopAccess.ts` | `ensureLoaded`, `openCheckout`, `refresh` — single client entry for entitlement UX. |
-| `server/api/access/me.get.ts` | Session + Admin read of `access/billing`. |
+| `server/api/access/me.get.ts` | Session + Admin read; live Whop sync when API key + product/plan are set. |
+| `server/api/orders/finalize-draft.post.ts` | Session + Admin draft order + **`assertWhopProductAccess`** + Admin `status: submitted`. |
+| `server/utils/whop-assert-access.ts` | **`evaluateWhopProductAccess`** / **`assertWhopProductAccess`** — shared live `checkAccess` (no Firestore writes). |
 | `server/api/billing/checkout-session.post.ts` | Session + Whop `checkoutConfigurations.create` with `metadata.firebase_uid`. |
 | `server/api/webhooks/whop.post.ts` | Raw body + SDK unwrap + Admin `upsertAccessBilling`. |
 | `server/utils/whop-client.ts` | Constructs Whop SDK clients for API vs webhook verification. |
 | `server/utils/access-billing.ts` | Admin upsert for `access/billing`. |
+| `server/utils/whop-access-reconcile.ts` | Wraps **`evaluateWhopProductAccess`** + billing upserts for **`GET /api/access/me`**. |
+| `server/utils/access-billing-lookup.ts` | `collectionGroup` resolve Firebase uid for webhooks when metadata is missing. |
 
 ---
 
@@ -269,7 +276,7 @@ The Cursor rule **15-firebase-rules.mdc** enforces this: when editing rules or F
 ## Summary
 
 - Orders: Firestore `users/{userId}/orders/{orderId}` (status lifecycle: `draft` → `submitted` → admin stages; submit/non-draft updates gated by `users/{userId}/access/billing` in rules); Storage `orders/{userId}/{orderId}/{fileName}`.
-- Whop: `users/{userId}/access/billing` (server-only writes); `GET /api/access/me`, `POST /api/billing/checkout-session`, `POST /api/webhooks/whop`.
+- Whop: `users/{userId}/access/billing` (server-only writes; live `checkAccess` on `GET /api/access/me` when API + product id configured); `POST /api/billing/checkout-session`, `POST /api/webhooks/whop`.
 - Daily limit: Firestore `users/{userId}/requestLimits/daily` (counter with date; max 3 per day).
 - Issue reports: Firestore `users/{userId}/reports/{reportId}` via **Admin SDK** from `POST /api/reports/issue`; client Firestore rules deny this path.
 - Rules: `firebase/firestore.rules` and `firebase/storage.rules`; update them and docs when usage changes (see Cursor rule 15-firebase-rules).

@@ -1,0 +1,15 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "access",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [{ "fieldPath": "whopMembershipId", "order": "ASCENDING" }]
+    },
+    {
+      "collectionGroup": "access",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [{ "fieldPath": "whopUserId", "order": "ASCENDING" }]
+    }
+  ],
+  "fieldOverrides": []
+}

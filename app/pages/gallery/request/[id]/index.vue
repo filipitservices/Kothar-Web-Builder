@@ -372,12 +372,13 @@ async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
 
   try {
     const result = await submitDraftOrder({ userId: uid, order, formData, layout, updateOrder });
-    if (result.kind === 'checkout_failed') {
+    if (result.kind === 'subscription_required') {
       if (result.syncedOrder) {
         orderDoc.value = result.syncedOrder;
       }
       feedbackType.value = 'error';
-      feedbackMessage.value = 'Could not open checkout. Use Continue below or try again.';
+      feedbackMessage.value =
+        'Your draft is saved. A subscription is required to submit — use Continue below.';
       showAccessModal.value = true;
       return;
     }

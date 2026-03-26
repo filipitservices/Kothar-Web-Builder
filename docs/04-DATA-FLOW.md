@@ -664,15 +664,15 @@ function setField(name, value) {
 
 ## Whop access (subscription entitlement)
 
-**Store:** `stores/whopAccess.ts` holds the last result of **`GET /api/access/me`** (`hasAccess`, `pending`). It is reset on sign-out (`useAuth`). After the first successful fetch, `hasAccess` is a boolean (`true` or `false`), so a **cached** snapshot must not be used as the sole source for submit gating.
+**Store:** `stores/whopAccess.ts` holds the last result of **`GET /api/access/me`** (`hasAccess`, `pending`). It is reset on sign-out (`useAuth`). **Draft submission** does not rely on this store for the status transition (see **`finalize-draft`**). **Non-draft** order edits and **`ensureLoaded`** still use **`fetchAccessFromServer()`** for UX; **`GET /api/access/me`** revalidates billing when API keys and product/plan ids are set.
 
 **Composable:** `useWhopAccess()` exposes **`fetchAccessFromServer()`**, **`ensureLoaded()`**, **`refresh()`**, **`openCheckout(returnPath?)`**, and computed refs. Whop post-checkout URL is centralized as **`WHOP_CHECKOUT_RETURN_PATH`** in **`constants/access.ts`** (same origin + **`/sites?tab=orders`**).
 
-**Draft submit:** **`useDraftRequestSubmitFlow()`** (`composables/useDraftRequestSubmitFlow.ts`) performs the shared sequence: persist draft → **`fetchAccessFromServer()`** → open checkout + replace to `/sites` or second write to **`submitted`**. **Gallery request** and **draft** **`/orders/[id]/edit`** call it; **submitted** order edits still gate on access in the page only. Builder stays ungated.
+**Draft submit:** **`useDraftRequestSubmitFlow()`** (`composables/useDraftRequestSubmitFlow.ts`) persists the draft with **`updateOrder`**, then **`POST /api/orders/finalize-draft`** so **`draft → submitted`** is enforced on the server with live Whop **`checkAccess`** (not a second client `updateDoc`). If entitlement fails, the API returns **HTTP 200** with **`{ ok: false, reason: 'subscription_required' }`** (avoids spurious console errors); the UI shows the access modal and **does not** navigate as success — the order stays **draft**. On success **`{ ok: true }`**, navigate to orders. **Gallery request** and **draft** **`/orders/[id]/edit`** use it; **submitted** order edits still use **`fetchAccessFromServer()`** + client update + rules. Builder stays ungated.
 
 **Orders list (`stores/orders.ts`):** **`useOrdersSnapshotWhenFocused`** detaches on route unmount (**`detachSnapshotListener`**) but **keeps** cached rows; **`unsubscribeFromOrders()`** clears the list on empty **`userId`** or **sign-out** (`useAuth`).
 
-**Server truth:** Firestore `users/{uid}/access/billing` is written only by the webhook handler and Admin SDK (including optional reconcile on **`GET /api/access/me`** when configured); security rules on orders enforce the same `hasAccess` flag for draft→submitted and non-draft updates.
+**Server truth:** **`POST /api/orders/finalize-draft`** is the authoritative gate for **draft → submitted** (`evaluateWhopProductAccess` + membership cancel policy + Admin order update). Firestore `users/{uid}/access/billing` is still written by webhooks and **`GET /api/access/me`** sync for UI and for **non-draft** order updates that use client `updateDoc` + rules. Without a Whop API key, finalize cannot assert live access (**`{ ok: false }`**); set **`NUXT_WHOP_API_KEY`** and product/plan ids.
 
 ---
 

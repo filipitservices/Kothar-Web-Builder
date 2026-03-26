@@ -1,30 +1,24 @@
 /**
- * Shared draft → persist → Whop check → submit or checkout + /sites.
+ * Shared draft → persist → server finalize (Whop + membership policy) → submitted, or access modal.
  * Used by gallery request and orders edit (draft only). Non-draft updates stay on the page.
  */
 
-import { useRouter } from 'vue-router';
 import { useOrdersStore } from '~/stores/orders';
 import { useRequestLayoutStore } from '~/stores/requestLayout';
-import { useWhopAccessStore } from '~/stores/whopAccess';
-import { useWhopAccess } from '~/composables/useWhopAccess';
 import type { OrderUpdateParams } from '~/composables/useOrderUpdate';
 import { ROUTES } from '~/constants/routes';
-import { WHOP_CHECKOUT_RETURN_PATH } from '~/constants/access';
-import { ORDER_STATUS_DEFAULT } from '~/types/order';
+import type { FinalizeDraftResponse } from '~/types/finalizeDraft';
 import type { OrderWithId, OrderLayout } from '~/types/order';
 import type { TemplateRequestFormData } from '~/types/templateRequest';
 
 export type DraftSubmitResult =
   | { kind: 'submitted' }
-  | { kind: 'redirected_to_sites' }
-  | { kind: 'checkout_failed'; syncedOrder: OrderWithId | null };
+  /** Entitlement check failed; draft is saved — show access modal, do not navigate as success. */
+  | { kind: 'subscription_required'; syncedOrder: OrderWithId | null };
 
 export function useDraftRequestSubmitFlow() {
-  const router = useRouter();
   const ordersStore = useOrdersStore();
   const requestLayoutStore = useRequestLayoutStore();
-  const { fetchAccessFromServer, openCheckout } = useWhopAccess();
 
   async function submitDraftOrder(params: {
     userId: string;
@@ -46,29 +40,38 @@ export function useDraftRequestSubmitFlow() {
 
     const syncedOrder = await ordersStore.fetchOrder(userId, order.id);
 
-    await fetchAccessFromServer();
-
-    if (useWhopAccessStore().hasAccess !== true) {
-      try {
-        await openCheckout(WHOP_CHECKOUT_RETURN_PATH);
-      } catch {
-        return { kind: 'checkout_failed', syncedOrder };
+    try {
+      const res = await $fetch<FinalizeDraftResponse>('/api/orders/finalize-draft', {
+        method: 'POST',
+        body: { orderId: order.id },
+      });
+      if (res.ok === false && res.reason === 'subscription_required') {
+        return { kind: 'subscription_required', syncedOrder };
       }
-      requestLayoutStore.reset();
-      await router.replace({ path: ROUTES.sites, query: { tab: 'orders' } });
-      return { kind: 'redirected_to_sites' };
+    } catch (err: unknown) {
+      const statusCode =
+        err !== null &&
+        typeof err === 'object' &&
+        'statusCode' in err &&
+        typeof (err as { statusCode: unknown }).statusCode === 'number'
+          ? (err as { statusCode: number }).statusCode
+          : undefined;
+      const statusFromErr =
+        err !== null &&
+        typeof err === 'object' &&
+        'status' in err &&
+        typeof (err as { status: unknown }).status === 'number'
+          ? (err as { status: number }).status
+          : undefined;
+      const httpStatus = statusCode ?? statusFromErr;
+      /** Legacy/alternate deploys that still return 403 */
+      if (httpStatus === 403) {
+        return { kind: 'subscription_required', syncedOrder };
+      }
+      throw err;
     }
 
-    const basis = syncedOrder ?? order;
-    await updateOrder({
-      userId,
-      orderId: order.id,
-      formData,
-      existingAttachments: basis.attachments ?? [],
-      newFiles: undefined,
-      layout,
-      status: ORDER_STATUS_DEFAULT,
-    });
+    await ordersStore.fetchOrder(userId, order.id);
 
     requestLayoutStore.reset();
     await navigateTo({ path: ROUTES.sites, query: { tab: 'orders' } });

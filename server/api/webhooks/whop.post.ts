@@ -8,6 +8,7 @@
 import { assertMethod, getRequestHeaders, readRawBody } from 'h3';
 import { getWhopWebhookClient } from '../../utils/whop-client';
 import { upsertAccessBilling } from '../../utils/access-billing';
+import { findFirebaseUidByAccessBillingField } from '../../utils/access-billing-lookup';
 import { logger } from '../../utils/logger';
 import { WHOP_METADATA_FIREBASE_UID } from '~/constants/access';
 
@@ -112,18 +113,30 @@ export default defineEventHandler(async (event) => {
       if (!data?.id) {
         return { ok: true };
       }
-      const firebaseUid = extractFirebaseUidFromWebhookData(data);
+      let firebaseUid = extractFirebaseUidFromWebhookData(data);
+      const whopUserIdFromPayload =
+        data.user && typeof data.user.id === 'string' && data.user.id.length > 0
+          ? data.user.id
+          : null;
+      if (!firebaseUid && whopUserIdFromPayload) {
+        firebaseUid = await findFirebaseUidByAccessBillingField(
+          'whopUserId',
+          whopUserIdFromPayload
+        );
+      }
+      if (!firebaseUid) {
+        firebaseUid = await findFirebaseUidByAccessBillingField('whopMembershipId', data.id);
+      }
       if (!firebaseUid) {
         logger.warn(
-          '[Whop Webhook] membership.deactivated missing firebase_uid in data.metadata or data.membership.metadata'
+          '[Whop Webhook] membership.deactivated: could not resolve firebase_uid (metadata, whopUserId, or whopMembershipId lookup)'
         );
         return { ok: true };
       }
-      const whopUserId = data.user?.id ?? null;
       await upsertAccessBilling(firebaseUid, {
         hasAccess: false,
         whopMembershipId: data.id,
-        whopUserId: whopUserId ?? undefined,
+        whopUserId: whopUserIdFromPayload ?? undefined,
         source: 'webhook',
       });
     } else if (eventType === 'payment.succeeded') {

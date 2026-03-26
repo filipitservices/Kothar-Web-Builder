@@ -17,9 +17,12 @@ export function useWhopAccess() {
 
   /**
    * Always hits GET /api/access/me and updates the store. Use before submit.
+   * Returns the same payload written to the store so gates can use it directly (no Pinia timing).
    */
-  async function fetchAccessFromServer(): Promise<void> {
-    if (!authStore.isAuthenticated) return;
+  async function fetchAccessFromServer(): Promise<AccessMeResponse | null> {
+    if (!authStore.isAuthenticated) {
+      return null;
+    }
     store.isLoading = true;
     store.loadError = null;
     try {
@@ -28,9 +31,12 @@ export function useWhopAccess() {
         cache: 'no-store',
       });
       store.setFromResponse(res);
+      return res;
     } catch {
       store.loadError = 'Could not verify access.';
-      store.setFromResponse({ hasAccess: false, pending: true });
+      const fallback: AccessMeResponse = { hasAccess: false, pending: true };
+      store.setFromResponse(fallback);
+      return fallback;
     } finally {
       store.isLoading = false;
     }
