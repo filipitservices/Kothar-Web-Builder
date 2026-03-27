@@ -22,9 +22,6 @@
   },
   "functions": {
     "source": ".output/server",
-    "runtimeConfig": {
-      "NITRO_PORT": "8080",
-      "NITRO_HOST": "0.0.0.0"
-    }
+    "runtimeConfig": {}
   }
 }
