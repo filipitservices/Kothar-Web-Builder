@@ -4,7 +4,7 @@
       <div class="app-navbar__left">
         <!-- Plain <a> for logo: ensures identical SSR/client markup and avoids NuxtLink hydration mismatch -->
         <a
-          href="/"
+          :href="logoHref"
           class="app-navbar__logo"
           @click.prevent="goHome"
           @keydown.enter.prevent="goHome"
@@ -22,7 +22,10 @@
         </a>
       </div>
       <div class="app-navbar__right">
-        <UserMenu :show-name="showUserName" />
+        <UserMenu
+          v-if="showUserMenu"
+          :show-name="showUserName"
+        />
         <ClientOnly v-if="showCta">
           <NuxtLink
             v-if="isInitialized"
@@ -57,6 +60,8 @@ const showUserName = computed(() => {
 });
 
 const showCta = computed(() => route.path === '/');
+const showUserMenu = computed(() => isAuthenticated.value || !showCta.value);
+const logoHref = computed(() => isAuthenticated.value ? route.fullPath : '/');
 
 const ctaTo = computed(() =>
   isAuthenticated.value ? '/gallery' : '/login'
@@ -66,11 +71,16 @@ const ctaLabel = computed(() =>
   isAuthenticated.value ? 'Gallery' : 'Start Building'
 );
 
-/** SPA navigation for logo link; preserves SSR/client markup consistency (avoids NuxtLink hydration mismatch). */
+/**
+ * SPA navigation for logo link with explicit navigation intent:
+ * - guests: logo is home navigation
+ * - authenticated users: logo remains clickable but stays on current route
+ */
 function goHome(e?: Event) {
   const ev = e as (MouseEvent | KeyboardEvent) | undefined;
   if (ev && (ev.ctrlKey || ev.metaKey || ev.shiftKey)) return; // allow open in new tab
   e?.preventDefault();
-  navigateTo('/');
+  const target = isAuthenticated.value ? route.fullPath : '/';
+  navigateTo(target);
 }
 </script>

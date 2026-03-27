@@ -2,15 +2,15 @@
   <section class="sect sect--designers" aria-labelledby="sect-designers-title">
     <div class="sect-inner">
       <header class="sect-d-head">
-        <h2 id="sect-designers-title" class="sect-d-title">Our professional designers refine<br />and build it.</h2>
-        <p class="sect-d-lead">Real people polish your site. Structured process, quality checks, and clear handoff — no black box.</p>
+        <h2 id="sect-designers-title" class="sect-d-title">Designers turn your direction into a polished result.</h2>
+        <p class="sect-d-lead">You set the direction through templates and customization, then our team refines execution with a clear, accountable workflow.</p>
       </header>
       <div class="sect-d-process">
         <div class="sect-d-step">
           <span class="sect-d-step-num" aria-hidden="true">1</span>
           <div class="sect-d-step-content">
-            <strong class="sect-d-step-title">Refinement</strong>
-            <p class="sect-d-step-desc">Designers tune layout, typography, and spacing to your brand.</p>
+            <strong class="sect-d-step-title">Direction review</strong>
+            <p class="sect-d-step-desc">We align layout and messaging to your business goals.</p>
           </div>
           <span class="sect-d-step-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -20,8 +20,8 @@
         <div class="sect-d-step">
           <span class="sect-d-step-num" aria-hidden="true">2</span>
           <div class="sect-d-step-content">
-            <strong class="sect-d-step-title">Quality check</strong>
-            <p class="sect-d-step-desc">Every page is reviewed for consistency and clarity.</p>
+            <strong class="sect-d-step-title">Production pass</strong>
+            <p class="sect-d-step-desc">The team tightens hierarchy, consistency, and responsiveness.</p>
           </div>
           <span class="sect-d-step-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
@@ -31,8 +31,8 @@
         <div class="sect-d-step">
           <span class="sect-d-step-num" aria-hidden="true">3</span>
           <div class="sect-d-step-content">
-            <strong class="sect-d-step-title">Handoff</strong>
-            <p class="sect-d-step-desc">You get a live site and full control to edit anytime.</p>
+            <strong class="sect-d-step-title">Launch handoff</strong>
+            <p class="sect-d-step-desc">You receive a live site with editing control and ownership.</p>
           </div>
           <span class="sect-d-step-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
@@ -40,9 +40,9 @@
         </div>
       </div>
       <div class="sect-d-badges">
-        <span class="sect-d-badge">Structured workflow</span>
-        <span class="sect-d-badge">Human review</span>
-        <span class="sect-d-badge">Clear delivery</span>
+        <span class="sect-d-badge">Template + custom workflow</span>
+        <span class="sect-d-badge">Human production quality</span>
+        <span class="sect-d-badge">Clear launch ownership</span>
       </div>
     </div>
   </section>

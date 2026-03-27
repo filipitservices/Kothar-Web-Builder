@@ -30,6 +30,29 @@ export interface BusinessHoursEntry {
   hours: string;
 }
 
+export interface SiteService {
+  name: string;
+  description: string;
+}
+
+export interface SiteHeroContent {
+  headline: string;
+  subline: string;
+  ctaText: string;
+  imageUrl: string;
+}
+
+export interface SiteContact {
+  phone: string;
+  email: string;
+  address: string;
+}
+
+export interface SiteSeasonalAnnouncement {
+  enabled: boolean;
+  text: string;
+}
+
 export interface SiteDetails {
   id: string;
   businessName: string;
@@ -38,27 +61,15 @@ export interface SiteDetails {
   lastUpdatedAt: string;
   industry: string;
   /** Hero section */
-  hero: {
-    headline: string;
-    subline: string;
-    ctaText: string;
-    imageUrl: string;
-  };
+  hero: SiteHeroContent;
   /** Services or main offerings */
-  services: Array<{ name: string; description: string }>;
+  services: SiteService[];
   /** Contact */
-  contact: {
-    phone: string;
-    email: string;
-    address: string;
-  };
+  contact: SiteContact;
   /** Business hours (e.g. "Mon–Fri 9am–5pm") */
   businessHours: BusinessHoursEntry[];
   /** Seasonal or promotional announcement banner */
-  seasonalAnnouncement: {
-    enabled: boolean;
-    text: string;
-  };
+  seasonalAnnouncement: SiteSeasonalAnnouncement;
 }
 
 const INITIAL_SITE: SiteDetails = {
@@ -96,75 +107,103 @@ const INITIAL_SITE: SiteDetails = {
   },
 };
 
+interface SitePatch {
+  businessName?: string;
+  domainLabel?: string;
+  status?: SiteStatus;
+  industry?: string;
+  hero?: Partial<SiteHeroContent>;
+  services?: SiteService[];
+  contact?: Partial<SiteContact>;
+  businessHours?: BusinessHoursEntry[];
+  seasonalAnnouncement?: Partial<SiteSeasonalAnnouncement>;
+}
+
+function cloneBusinessHours(entries: BusinessHoursEntry[]): BusinessHoursEntry[] {
+  return entries.map((entry) => ({ ...entry }));
+}
+
+function cloneServices(services: SiteService[]): SiteService[] {
+  return services.map((service) => ({ ...service }));
+}
+
+function cloneSite(site: SiteDetails): SiteDetails {
+  return {
+    ...site,
+    hero: { ...site.hero },
+    services: cloneServices(site.services),
+    contact: { ...site.contact },
+    businessHours: cloneBusinessHours(site.businessHours),
+    seasonalAnnouncement: { ...site.seasonalAnnouncement },
+  };
+}
+
+function applySitePatch(current: SiteDetails, patch: SitePatch): SiteDetails {
+  return {
+    ...current,
+    ...patch,
+    hero: patch.hero ? { ...current.hero, ...patch.hero } : { ...current.hero },
+    services: patch.services ? cloneServices(patch.services) : cloneServices(current.services),
+    contact: patch.contact ? { ...current.contact, ...patch.contact } : { ...current.contact },
+    businessHours: patch.businessHours
+      ? cloneBusinessHours(patch.businessHours)
+      : cloneBusinessHours(current.businessHours),
+    seasonalAnnouncement: patch.seasonalAnnouncement
+      ? { ...current.seasonalAnnouncement, ...patch.seasonalAnnouncement }
+      : { ...current.seasonalAnnouncement },
+    lastUpdatedAt: new Date().toISOString(),
+  };
+}
+
 export const useSitesStore = defineStore('sites', () => {
-  const sites = ref<SiteDetails[]>([{ ...INITIAL_SITE }]);
+  const sites = ref<SiteDetails[]>([cloneSite(INITIAL_SITE)]);
+  const parseTime = (isoDate: string): number => {
+    const timestamp = Date.parse(isoDate);
+    return Number.isFinite(timestamp) ? timestamp : 0;
+  };
 
   const siteSummaries = computed<SiteSummary[]>(() =>
-    sites.value.map((s) => ({
-      id: s.id,
-      businessName: s.businessName,
-      domainLabel: s.domainLabel,
-      status: s.status,
-      lastUpdatedAt: s.lastUpdatedAt,
-      industry: s.industry,
-    }))
+    sites.value
+      .slice()
+      .sort((a, b) => parseTime(b.lastUpdatedAt) - parseTime(a.lastUpdatedAt))
+      .map((s) => ({
+        id: s.id,
+        businessName: s.businessName,
+        domainLabel: s.domainLabel,
+        status: s.status,
+        lastUpdatedAt: s.lastUpdatedAt,
+        industry: s.industry,
+      }))
   );
 
-  function getSiteById(id: string): SiteDetails | undefined {
+  function getSiteById(id: string): Readonly<SiteDetails> | undefined {
     return sites.value.find((s) => s.id === id);
   }
 
-  function updateSite(id: string, updates: Omit<Partial<SiteDetails>, 'id'>): void {
-    const index = sites.value.findIndex((s) => s.id === id);
-    if (index === -1) return;
-    const current = sites.value[index] as SiteDetails | undefined;
+  function updateSite(id: string, updates: SitePatch): void {
+    const current = sites.value.find((s) => s.id === id);
     if (!current) return;
-    const next: SiteDetails = {
-      id: current.id,
-      businessName: updates.businessName ?? current.businessName,
-      domainLabel: updates.domainLabel ?? current.domainLabel,
-      status: updates.status ?? current.status,
-      industry: updates.industry ?? current.industry,
-      hero: updates.hero ? { ...current.hero, ...updates.hero } : current.hero,
-      services: updates.services ? [...updates.services] : current.services,
-      contact: updates.contact ? { ...current.contact, ...updates.contact } : current.contact,
-      businessHours: updates.businessHours ? [...updates.businessHours] : current.businessHours,
-      seasonalAnnouncement: updates.seasonalAnnouncement
-        ? { ...current.seasonalAnnouncement, ...updates.seasonalAnnouncement }
-        : current.seasonalAnnouncement,
-      lastUpdatedAt: new Date().toISOString(),
-    };
-    sites.value = [
-      ...sites.value.slice(0, index),
-      next,
-      ...sites.value.slice(index + 1),
-    ];
+    sites.value = sites.value.map((site) => (site.id === id ? applySitePatch(site, updates) : site));
   }
 
-  function updateSiteHero(id: string, hero: Partial<SiteDetails['hero']>): void {
-    const site = getSiteById(id);
-    if (!site) return;
-    updateSite(id, { hero: { ...site.hero, ...hero } });
+  function updateSiteHero(id: string, hero: Partial<SiteHeroContent>): void {
+    updateSite(id, { hero });
   }
 
-  function updateSiteContact(id: string, contact: Partial<SiteDetails['contact']>): void {
-    const site = getSiteById(id);
-    if (!site) return;
-    updateSite(id, { contact: { ...site.contact, ...contact } });
+  function updateSiteContact(id: string, contact: Partial<SiteContact>): void {
+    updateSite(id, { contact });
   }
 
   function updateSiteBusinessHours(id: string, businessHours: BusinessHoursEntry[]): void {
-    updateSite(id, { businessHours: [...businessHours] });
+    updateSite(id, { businessHours });
   }
 
-  function updateSiteSeasonalAnnouncement(id: string, seasonalAnnouncement: Partial<SiteDetails['seasonalAnnouncement']>): void {
-    const site = getSiteById(id);
-    if (!site) return;
-    updateSite(id, { seasonalAnnouncement: { ...site.seasonalAnnouncement, ...seasonalAnnouncement } });
+  function updateSiteSeasonalAnnouncement(id: string, seasonalAnnouncement: Partial<SiteSeasonalAnnouncement>): void {
+    updateSite(id, { seasonalAnnouncement });
   }
 
-  function updateSiteServices(id: string, services: SiteDetails['services']): void {
-    updateSite(id, { services: [...services] });
+  function updateSiteServices(id: string, services: SiteService[]): void {
+    updateSite(id, { services });
   }
 
   /** User-friendly status label for UI */

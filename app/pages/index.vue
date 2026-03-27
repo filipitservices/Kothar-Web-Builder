@@ -3,7 +3,7 @@
     <!-- Hero Section -->
     <section class="hero-section">
       <div class="hero-content">
-        <h1 class="hero-title">Order Websites Visually</h1>
+        <h1 class="hero-title">From Template to Tailored Website</h1>
         <div class="hero-hl" role="status">
           <span class="hero-hl-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -11,10 +11,10 @@
               <path d="M9 12l2 2 4-4" />
             </svg>
           </span>
-          <p class="hero-hl-text">Own a small business? This was built for you.</p>
+          <p class="hero-hl-text">Built for small businesses that need speed without losing control.</p>
         </div>
         <p class="hero-subtitle">
-          Choose or layout a professional design yourself, tell us what your business needs — <b>get a polished website delivered fast</b>.
+          Start from a professional template, customize the direction with our guided workflow, and get a polished site delivered faster than generic builders.
         </p>
         <NuxtLink :to="isAuthenticated ? '/gallery' : '/login'" class="hero-cta">
           {{ isAuthenticated ? 'Open Gallery' : 'Get Started Free' }}
@@ -32,8 +32,8 @@
     <!-- CTA Section -->
     <section class="cta-section">
       <div class="cta-content">
-        <h2 class="cta-title">Ready to Build Your Website?</h2>
-        <p class="cta-subtitle">Create a professional site without code. Start now.</p>
+        <h2 class="cta-title">Ready to Launch With More Control?</h2>
+        <p class="cta-subtitle">Pick a strong starting point, refine what matters, and move to delivery faster.</p>
         <NuxtLink :to="isAuthenticated ? '/gallery' : '/login'" class="cta-button">
           {{ isAuthenticated ? 'Open Gallery' : 'Launch Builder' }}
         </NuxtLink>

@@ -2,8 +2,8 @@
   <section class="sect sect--ai" aria-labelledby="sect-ai-title">
     <div class="sect-inner">
       <header class="sect-ai-head">
-        <h2 id="sect-ai-title" class="sect-ai-title">Build or choose — both AI-assisted.</h2>
-        <p class="sect-ai-lead">Use the visual builder to construct and configure with AI, or browse our curated gallery of professional templates. Two distinct paths; AI enhances both.</p>
+        <h2 id="sect-ai-title" class="sect-ai-title">Choose a proven base, then shape it quickly.</h2>
+        <p class="sect-ai-lead">Start from curated templates or build visually. In both flows, guided assistance helps you move from idea to clear direction without busywork.</p>
       </header>
       <div class="sect-ai-flow">
         <div class="sect-ai-card">
@@ -12,7 +12,7 @@
           </span>
           <div class="sect-ai-card-body">
             <strong class="sect-ai-card-title">Visual builder</strong>
-            <span class="sect-ai-card-desc">Build and configure with AI assistance</span>
+            <span class="sect-ai-card-desc">Adjust structure and content with guided prompts</span>
           </div>
         </div>
         <div class="sect-ai-card">
@@ -21,7 +21,7 @@
           </span>
           <div class="sect-ai-card-body">
             <strong class="sect-ai-card-title">Template gallery</strong>
-            <span class="sect-ai-card-desc">Curated professional showcase designs</span>
+            <span class="sect-ai-card-desc">Start from layouts designed for real businesses</span>
           </div>
         </div>
         <div class="sect-ai-card">
@@ -29,8 +29,8 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/></svg>
           </span>
           <div class="sect-ai-card-body">
-            <strong class="sect-ai-card-title">AI-assisted guidance</strong>
-            <span class="sect-ai-card-desc">Guidance and refinement on either path</span>
+            <strong class="sect-ai-card-title">Guided refinement</strong>
+            <span class="sect-ai-card-desc">Clarify messaging and priorities before delivery</span>
           </div>
         </div>
         <div class="sect-ai-card">
@@ -38,13 +38,13 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
           </span>
           <div class="sect-ai-card-body">
-            <strong class="sect-ai-card-title">Your choice</strong>
-            <span class="sect-ai-card-desc">Build dynamically or pick a design</span>
+            <strong class="sect-ai-card-title">One connected flow</strong>
+            <span class="sect-ai-card-desc">Templates and customization work together</span>
           </div>
         </div>
       </div>
       <div class="sect-ai-bar">
-        <span class="sect-ai-bar-label">Two paths. AI enhances both.</span>
+        <span class="sect-ai-bar-label">Start faster. Refine with intent.</span>
         <div class="sect-ai-bar-line" aria-hidden="true"><span class="sect-ai-bar-dot"></span><span class="sect-ai-bar-dot"></span><span class="sect-ai-bar-dot"></span></div>
       </div>
     </div>

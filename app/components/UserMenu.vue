@@ -41,18 +41,20 @@
       </Transition>
     </template>
     
-    <NuxtLink v-else to="/login" class="signin">Sign In</NuxtLink>
+    <NuxtLink v-else :to="guestActionTo" class="signin">{{ guestActionLabel }}</NuxtLink>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useRoute } from 'vue-router';
 import { useAuth } from '~/composables/useAuth';
 import { ROUTES } from '~/constants/routes';
 
 withDefaults(defineProps<{ showName?: boolean }>(), { showName: false });
 
 const { currentUser, isAuthenticated, isLoading, signOut } = useAuth();
+const route = useRoute();
 const isOpen = ref(false);
 
 const name = computed(() => currentUser.value?.displayName || currentUser.value?.email?.split('@')[0] || 'User');
@@ -67,35 +69,38 @@ async function handleSignOut() {
   await signOut();
   navigateTo('/');
 }
+
+const guestActionTo = computed(() => route.path === '/login' ? ROUTES.home : '/login');
+const guestActionLabel = computed(() => route.path === '/login' ? 'Back Home' : 'Sign In');
 </script>
 
 <style scoped>
 .menu { position: relative; }
 .backdrop { position: fixed; inset: 0; z-index: 40; }
-.loader { width: 8px; height: 8px; background: #9ca3af; border-radius: 50%; animation: pulse 1.5s infinite; }
+.loader { width: 8px; height: 8px; background: var(--color-placeholder); border-radius: 50%; animation: pulse 1.5s infinite; }
 @keyframes pulse { 50% { opacity: .4; } }
 
 .trigger { display: flex; align-items: center; gap: .5rem; padding: .25rem .5rem .25rem .25rem; background: transparent; border: 1px solid transparent; border-radius: 9999px; cursor: pointer; }
-.trigger:hover, .trigger.open { background: #f3f4f6; border-color: #e5e7eb; }
+.trigger:hover, .trigger.open { background: var(--color-bg-subtle); border-color: var(--color-border); }
 
-.avatar { width: 32px; height: 32px; border-radius: 50%; overflow: hidden; background: #1e3a8a; color: #fff; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 600; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; overflow: hidden; background: var(--color-primary); color: var(--color-white); display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 600; }
 .avatar img { width: 100%; height: 100%; object-fit: cover; }
 
-.name { font-size: .875rem; font-weight: 500; color: #374151; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.arrow { width: 16px; height: 16px; color: #6b7280; transition: transform .15s; }
+.name { font-size: .875rem; font-weight: 500; color: var(--color-text-muted-dark); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.arrow { width: 16px; height: 16px; color: var(--color-text-muted); transition: transform .15s; }
 .trigger.open .arrow { transform: rotate(180deg); }
 
-.dropdown { position: absolute; top: calc(100% + 4px); right: 0; min-width: 200px; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0,0,0,.1); z-index: 50; padding: .75rem 1rem; }
-.dropdown-name { margin: 0; font-size: .875rem; font-weight: 600; color: #111827; }
-.dropdown-email { margin: .25rem 0 0; font-size: .75rem; color: #6b7280; }
-.dropdown hr { border: none; height: 1px; background: #e5e7eb; margin: .75rem 0; }
+.dropdown { position: absolute; top: calc(100% + 4px); right: 0; min-width: 200px; background: var(--color-white); border: 1px solid var(--color-border); border-radius: var(--radius-md); box-shadow: 0 10px 15px -3px rgba(0,0,0,.1); z-index: 50; padding: .75rem 1rem; }
+.dropdown-name { margin: 0; font-size: .875rem; font-weight: 600; color: var(--color-text); }
+.dropdown-email { margin: .25rem 0 0; font-size: .75rem; color: var(--color-text-muted); }
+.dropdown hr { border: none; height: 1px; background: var(--color-border); margin: .75rem 0; }
 
-.item { display: flex; align-items: center; gap: .5rem; width: 100%; padding: .5rem 0; background: transparent; border: none; font-size: .875rem; color: #374151; cursor: pointer; text-decoration: none; }
-.item:hover { color: #111827; }
-.item svg { width: 16px; height: 16px; color: #6b7280; }
+.item { display: flex; align-items: center; gap: .5rem; width: 100%; padding: .5rem 0; background: transparent; border: none; font-size: .875rem; color: var(--color-text-muted-dark); cursor: pointer; text-decoration: none; }
+.item:hover { color: var(--color-text); }
+.item svg { width: 16px; height: 16px; color: var(--color-text-muted); }
 
-.signin { display: inline-block; padding: .5rem 1rem; background: #1e3a8a; color: #fff; border-radius: 6px; font-size: .875rem; font-weight: 500; text-decoration: none; }
-.signin:hover { background: #1e2d7d; }
+.signin { display: inline-block; padding: .5rem 1rem; background: var(--color-primary); color: var(--color-white); border-radius: var(--radius-sm); font-size: .875rem; font-weight: 500; text-decoration: none; }
+.signin:hover { background: var(--color-primary-dark); }
 
 .dropdown-enter-active, .dropdown-leave-active { transition: opacity .15s, transform .15s; }
 .dropdown-enter-from, .dropdown-leave-to { opacity: 0; transform: translateY(-8px); }

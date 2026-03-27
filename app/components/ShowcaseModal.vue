@@ -170,19 +170,22 @@ const mobileScale = ref(1);
 
 const calculateScale = () => {
   if (!contentRef.value) return;
-  
-  const containerWidth = contentRef.value.clientWidth - 80; // Padding
-  const containerHeight = contentRef.value.clientHeight - 60; // Padding
-  
+
+  const isNarrowViewport = window.matchMedia('(max-width: 900px)').matches;
+  const horizontalPadding = isNarrowViewport ? 24 : 80;
+  const verticalPadding = isNarrowViewport ? 24 : 60;
+  const containerWidth = Math.max(0, contentRef.value.clientWidth - horizontalPadding);
+  const containerHeight = Math.max(0, contentRef.value.clientHeight - verticalPadding);
+
   // Desktop scale
   const desktopWidthScale = containerWidth / DESKTOP_NATURAL_WIDTH;
   const desktopHeightScale = containerHeight / (DESKTOP_NATURAL_HEIGHT + 60); // Include stand
-  scale.value = Math.min(1, desktopWidthScale, desktopHeightScale);
-  
+  scale.value = Math.max(0.25, Math.min(1, desktopWidthScale, desktopHeightScale));
+
   // Mobile scale
   const mobileWidthScale = containerWidth / MOBILE_NATURAL_WIDTH;
   const mobileHeightScale = containerHeight / MOBILE_NATURAL_HEIGHT;
-  mobileScale.value = Math.min(1, mobileWidthScale, mobileHeightScale);
+  mobileScale.value = Math.max(0.25, Math.min(1, mobileWidthScale, mobileHeightScale));
 };
 
 // Handlers
@@ -237,9 +240,8 @@ watch(viewMode, () => {
 
 /* Modal sizing for this specific use case */
 .show-modal {
-  max-width: 1200px;
-  height: calc(100vh - 3rem);
-  max-height: 900px;
+  max-width: min(1200px, calc(100vw - (2 * var(--space-lg))));
+  height: min(900px, calc(100dvh - var(--space-2xl)));
 }
 
 /* Header layout */
@@ -261,9 +263,9 @@ watch(viewMode, () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2.5rem;
+  padding: var(--space-xl);
   background: var(--color-bg-subtle);
-  overflow: hidden;
+  overflow: auto;
 }
 
 /* Loading overlay: does not change modal size; sits over body */
@@ -313,6 +315,7 @@ watch(viewMode, () => {
   justify-content: center;
   width: 100%;
   height: 100%;
+  min-height: 0;
 }
 
 /* Footer actions */
@@ -324,26 +327,57 @@ watch(viewMode, () => {
 
 /* Responsive */
 @media (max-width: 900px) {
+  .modal-overlay {
+    padding: 0;
+  }
+
   .show-modal {
-    max-width: none;
-    max-height: none;
-    height: 100vh;
+    max-width: 100%;
+    max-height: 100dvh;
+    height: 100dvh;
     border-radius: 0;
   }
 
   .modal-header {
     flex-wrap: wrap;
     gap: 0.75rem;
+    padding: var(--space-md);
+  }
+
+  .show-modal__actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .toggle-group {
+    flex: 1;
+  }
+
+  .toggle-group__btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .show-modal__body {
+    align-items: flex-start;
+    padding: var(--space-md);
+  }
+
+  .show-modal__device {
+    align-items: flex-start;
+    min-height: 100%;
   }
 
   .modal-footer {
     flex-direction: column;
     align-items: stretch;
     gap: 1rem;
+    padding: var(--space-md);
   }
 
   .show-modal__footer-actions {
     justify-content: stretch;
+    width: 100%;
   }
 
   .show-modal__footer-actions .btn {

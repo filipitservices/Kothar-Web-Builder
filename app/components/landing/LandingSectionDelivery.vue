@@ -2,35 +2,35 @@
   <section class="sect sect--delivery" aria-labelledby="sect-delivery-title">
     <div class="sect-inner">
       <header class="sect-del-head">
-        <h2 id="sect-delivery-title" class="sect-del-title">Your site. Your control.</h2>
-        <p class="sect-del-lead">Receive a complete, professionally built website. Edit content anytime, own your data, and keep full control — no lock-in.</p>
+        <h2 id="sect-delivery-title" class="sect-del-title">Delivery without platform lock-in.</h2>
+        <p class="sect-del-lead">You get a complete website built from your chosen direction, with the flexibility to keep editing and evolving after launch.</p>
       </header>
       <div class="sect-del-cards">
         <div class="sect-del-card">
           <span class="sect-del-card-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
           </span>
-          <strong class="sect-del-card-title">Full ownership</strong>
-          <p class="sect-del-card-desc">Your content and site stay yours. No vendor lock-in.</p>
+          <strong class="sect-del-card-title">Own the outcome</strong>
+          <p class="sect-del-card-desc">Your content, structure, and direction stay under your control.</p>
         </div>
         <div class="sect-del-card">
           <span class="sect-del-card-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
           </span>
-          <strong class="sect-del-card-title">Edit anytime</strong>
-          <p class="sect-del-card-desc">Change copy, images, and structure when you need to.</p>
+          <strong class="sect-del-card-title">Keep improving</strong>
+          <p class="sect-del-card-desc">Update copy, visuals, and priorities as your business changes.</p>
         </div>
         <div class="sect-del-card">
           <span class="sect-del-card-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           </span>
-          <strong class="sect-del-card-title">Ready to go live</strong>
-          <p class="sect-del-card-desc">Polished, responsive, and ready for real traffic.</p>
+          <strong class="sect-del-card-title">Built for launch</strong>
+          <p class="sect-del-card-desc">Delivered polished, responsive, and ready for real customers.</p>
         </div>
       </div>
       <div class="sect-del-outcome">
         <span class="sect-del-outcome-overline" aria-hidden="true">The outcome</span>
-        <p class="sect-del-outcome-text">From request to live site — fast, clear, and under your control.</p>
+        <p class="sect-del-outcome-text">Template speed plus tailored refinement, delivered as a site you fully control.</p>
       </div>
     </div>
   </section>
