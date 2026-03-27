@@ -51,7 +51,7 @@ export default defineNuxtConfig({
 
   // Nitro configuration for server-side
   nitro: {
-    preset: 'firebase',
+    preset: 'firebase_app_hosting',
     // Ensure firebase-admin is not bundled for client
     externals: {
       external: ['firebase-admin', '@whop/sdk']
