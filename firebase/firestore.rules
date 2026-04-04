@@ -26,8 +26,12 @@ service cloud.firestore {
     // When counter does not exist, allow (first request); otherwise getAfter validates post-transaction count.
     // Updates while status is draft → draft (e.g. layout save) do not require Whop access.
     // Submitting (draft → submitted) or editing a submitted+ order requires hasAccess on users/{uid}/access/billing.
+    // Delete: owner may remove draft orders only (not submitted / in-flight requests); not when locked.
     match /users/{userId}/orders/{orderId} {
       allow read: if request.auth != null && request.auth.uid == userId;
+      allow delete: if request.auth != null && request.auth.uid == userId
+        && resource.data.status == 'draft'
+        && resource.data.modificationLocked != true;
       allow update: if request.auth != null && request.auth.uid == userId
         && (
           (
@@ -58,7 +62,8 @@ service cloud.firestore {
 
     // Daily request creation limit counter.
     // Written atomically with order creation in a transaction.
-    // Count can only be 1 (new day or first request) or incremented by 1 (same day).
+    // Count can only be 1 (new day or first request) or incremented by 1 (same day),
+    // or decremented by 1 same day when a draft created that day is deleted (count may be 0).
     match /users/{userId}/requestLimits/{limitId} {
       allow read: if request.auth != null && request.auth.uid == userId;
       allow create: if request.auth != null && request.auth.uid == userId
@@ -70,6 +75,11 @@ service cloud.firestore {
         && (
           (request.resource.data.date != resource.data.date && request.resource.data.count == 1)
           || (request.resource.data.date == resource.data.date && request.resource.data.count == resource.data.count + 1)
+          || (
+            request.resource.data.date == resource.data.date
+            && request.resource.data.count == resource.data.count - 1
+            && request.resource.data.count >= 0
+          )
         );
     }
 

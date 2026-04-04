@@ -43,6 +43,7 @@
               :format-order-date="ordersStore.formatOrderDate"
               panel-id="sites-panel-orders"
               labelled-by="sites-tab-orders"
+              @delete-draft="onDeleteDraftRequest"
             />
           </div>
         </div>
@@ -73,6 +74,14 @@
       </template>
     </ClientOnly>
 
+    <DeleteDraftRequestModal
+      :open="draftToDelete !== null"
+      :template-name="draftToDelete?.templateName ?? 'this request'"
+      :deleting="deleteDraftLoading"
+      @close="dismissDeleteModal"
+      @confirm="confirmDeleteDraft"
+    />
+
     <footer class="sites-footer">
       <div class="sites-footer__inner">
         <p class="sites-footer__text">&copy; {{ new Date().getFullYear() }} {{ appConfig.appName }}. All rights reserved.</p>
@@ -84,6 +93,11 @@
 <script setup lang="ts">
 import '~/assets/css/sites.css';
 import { ROUTES } from '~/constants/routes';
+import type { OrderWithId } from '~/types/order';
+import DeleteDraftRequestModal from '~/components/DeleteDraftRequestModal.vue';
+import { deleteDraftRequest, DeleteDraftRequestError } from '~/composables/useDeleteDraftRequest';
+import { useToast } from '~/composables/useToast';
+import { useRequestLayoutStore } from '~/stores/requestLayout';
 
 definePageMeta({
   middleware: 'auth',
@@ -128,4 +142,39 @@ const authStore = useAuthStore();
 const userId = computed(() => authStore.uid ?? authStore.currentUser?.uid ?? '');
 
 useOrdersSnapshotWhenFocused(userId);
+
+const requestLayoutStore = useRequestLayoutStore();
+const toast = useToast();
+
+const draftToDelete = ref<OrderWithId | null>(null);
+const deleteDraftLoading = ref(false);
+
+function onDeleteDraftRequest(order: OrderWithId): void {
+  draftToDelete.value = order;
+}
+
+function dismissDeleteModal(): void {
+  draftToDelete.value = null;
+}
+
+async function confirmDeleteDraft(): Promise<void> {
+  const pending = draftToDelete.value;
+  const uid = userId.value;
+  if (!pending || !uid) return;
+
+  deleteDraftLoading.value = true;
+  try {
+    await deleteDraftRequest(uid, pending.id);
+    requestLayoutStore.reset();
+  } catch (err) {
+    toast.showError(
+      err instanceof DeleteDraftRequestError
+        ? err.message
+        : 'Could not delete this draft. Please try again.'
+    );
+  } finally {
+    deleteDraftLoading.value = false;
+    draftToDelete.value = null;
+  }
+}
 </script>

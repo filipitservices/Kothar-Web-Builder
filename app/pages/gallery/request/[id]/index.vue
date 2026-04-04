@@ -137,6 +137,7 @@
       @close="showAccessModal = false"
       @continue="onAccessContinue"
     />
+
   </div>
 </template>
 
@@ -157,6 +158,7 @@ import { useDraftRequestSubmitFlow } from '~/composables/useDraftRequestSubmitFl
 import { WHOP_CHECKOUT_RETURN_PATH } from '~/constants/access';
 import type { TemplateRequestFormData, ColorCustomization } from '~/types/templateRequest';
 import { useBuilderViewportSupport } from '~/composables/useBuilderViewportSupport';
+import { getAccountFirstName } from '~/utils/accountIdentity';
 
 definePageMeta({
   middleware: 'auth'
@@ -183,13 +185,7 @@ const userId = computed(() => authStore.uid ?? authStore.currentUser?.uid ?? '')
 
 useOrdersSnapshotWhenFocused(userId);
 
-const userName = computed(() => {
-  const user = authStore.currentUser;
-  if (!user) return '';
-  if (user.displayName) return user.displayName.split(' ')[0];
-  if (user.email) return user.email.split('@')[0];
-  return '';
-});
+const userName = computed(() => getAccountFirstName(authStore.currentUser));
 
 const orderDoc = ref<OrderWithId | null>(null);
 const originalTemplate = ref<ShowcaseTemplate | undefined>(undefined);

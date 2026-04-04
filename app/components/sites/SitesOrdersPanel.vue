@@ -1,6 +1,6 @@
 <!--
   SitesOrdersPanel — Panel listing template request orders.
-  Responsibility: Render order entries with status, edit state, and Modify action.
+  Responsibility: Render order entries with status, edit state, Modify, and draft Delete (emit).
   Data from orders store; no direct store mutation. Uses design tokens only.
 -->
 <template>
@@ -20,7 +20,7 @@
             <th scope="col" class="sites-th">Submitted</th>
             <th scope="col" class="sites-th">Status</th>
             <th scope="col" class="sites-th">Editing</th>
-            <th scope="col" class="sites-th"><span class="visually-hidden">Action</span></th>
+            <th scope="col" class="sites-th sites-th--actions">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -54,18 +54,45 @@
               </span>
               <span v-else class="sites-cell-ok">Editable</span>
             </td>
-            <td class="sites-td">
-              <NuxtLink
+            <td class="sites-td sites-td--order-actions">
+              <div
                 v-if="!order.modificationLocked"
-                :to="`/orders/${order.id}/edit`"
-                class="sites-action-link"
-                :aria-label="`Modify order: ${order.templateName}`"
+                class="sites-order-actions"
               >
-                Modify
-                <svg class="sites-action-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                </svg>
-              </NuxtLink>
+                <NuxtLink
+                  :to="`/orders/${order.id}/edit`"
+                  class="sites-action-link"
+                  :aria-label="`Modify order: ${order.templateName}`"
+                >
+                  Modify
+                  <svg class="sites-action-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                  </svg>
+                </NuxtLink>
+                <div class="sites-order-actions__slot" role="presentation">
+                  <button
+                    v-if="order.status === ORDER_STATUS_DRAFT && order.modificationLocked !== true"
+                    type="button"
+                    class="sites-icon-btn sites-icon-btn--danger"
+                    :title="`Remove draft: ${order.templateName}`"
+                    :aria-label="`Delete draft request: ${order.templateName}`"
+                    @click="emit('delete-draft', order)"
+                  >
+                    <svg
+                      class="sites-icon-btn__svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
               <span
                 v-else
                 class="sites-action-disabled"
@@ -83,7 +110,7 @@
 </template>
 
 <script setup lang="ts">
-import type { OrderWithId } from '~/types/order';
+import { ORDER_STATUS_DRAFT, type OrderWithId } from '~/types/order';
 
 defineOptions({ name: 'SitesOrdersPanel' });
 
@@ -95,5 +122,9 @@ defineProps<{
   getOrderStatusLabel: (status: string) => string;
   getOrderStatusClass: (status: string) => string;
   formatOrderDate: (createdAt: unknown) => string;
+}>();
+
+const emit = defineEmits<{
+  'delete-draft': [order: OrderWithId];
 }>();
 </script>

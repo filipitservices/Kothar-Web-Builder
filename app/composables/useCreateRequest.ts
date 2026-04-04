@@ -23,6 +23,7 @@ import type { ShowcaseTemplate } from '~/stores/showcase';
 import type { OrderLayout, OrderLayoutBlock, OrderWithId } from '~/types/order';
 import { ORDER_STATUS_DRAFT } from '~/types/order';
 import { showcaseSectionsToBlocks } from '~/stores/requestLayout';
+import { todayLocalDateKey } from '~/utils/requestLimitDate';
 
 export class CreateRequestError extends Error {
   public readonly limitExceeded: boolean;
@@ -39,14 +40,6 @@ export interface CreateRequestResult {
   orderId: string;
   /** Optional hydration object for the request page fast-path; not the canonical source of truth. */
   orderForHydration?: OrderWithId;
-}
-
-function getTodayDateString(): string {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, '0');
-  const d = String(now.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
 }
 
 function buildInitialLayout(template: ShowcaseTemplate): OrderLayout {
@@ -130,7 +123,7 @@ export function useCreateRequest(): UseCreateRequestReturn {
     }
 
     const db = getFirestore(app) as Firestore;
-    const today = getTodayDateString();
+    const today = todayLocalDateKey();
 
     const orderRef = doc(collection(db, 'users', userId, 'orders'));
     const orderId = orderRef.id;

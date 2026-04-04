@@ -818,10 +818,18 @@
 }
 ```
 
+**Emits**:
+```typescript
+{
+  'delete-draft': [order: OrderWithId];
+}
+```
+
 **Features**:
-- Table: Template, Submitted, Status, Editing, Modify action
-- Locked orders show "—" instead of Modify link
+- Table: Template, Submitted, Status, Editing, **Actions** (**Modify** + compact trash icon for deletable `draft` rows; fixed-width slot keeps rows aligned)
+- Locked orders show "—" instead of actions
 - SitesEmptyState when no orders
+- **Delete** is presentational only; parent (`pages/sites/index.vue`) confirms via **`DeleteDraftRequestModal`** and **`deleteDraftRequest()`**
 
 ---
 

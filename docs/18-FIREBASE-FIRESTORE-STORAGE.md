@@ -106,6 +106,15 @@ Files are uploaded **before** the Firestore write. If any upload fails, the orde
    - A counter update at `users/{userId}/requestLimits/daily` with today's date and incremented count (max 3 per day).
 3. **Gallery**: On success, navigates to `/gallery/request/{docId}`. On failure (limit exceeded or other), shows an inline error banner.
 
+### Discarding a draft (before submission)
+
+Only **`status: 'draft'`** orders may be deleted by the owner (`modificationLocked` must not be true). The client calls **`deleteDraftRequest()`** (`app/composables/useDeleteDraftRequest.ts`):
+
+1. **Firestore transaction:** Re-read the order; verify draft + not locked; **`deleteDoc`** the order; if **`requestLimits/daily`** exists and the order’s **`createdAt`** (local calendar day, same `YYYY-MM-DD` scheme as draft creation) matches the counter’s **`date`** and **`count > 0`**, decrement **`count`** by 1 (may become **0**). Rules enforce owner-only delete and counter decrement shape.
+2. **Storage:** After the transaction succeeds, **`listAll`** on **`orders/{userId}/{orderId}/`** and **`deleteObject`** each item so attachment blobs are not left behind. Failures are handled per composable (logged / surfaced); the Firestore document is already gone.
+
+**UI:** **`DeleteDraftRequestModal`** on **`/sites`** (My Sites → Orders). **`SitesOrdersPanel`** shows a compact **trash** control (draft-only, not locked) in a fixed-width **Actions** slot; the panel emits **`delete-draft`** and the page runs the composable. Confirmation uses the same modal shell as **`SubmissionAccessModal`** (no `window.confirm`).
+
 ### Phase 2: Form Submission
 
 1. **Page** (`pages/gallery/request/[id].vue`): Loads the draft document from Firestore by doc ID; resolves the showcase template for preview; renders the form.
@@ -131,11 +140,12 @@ A single counter document per user tracks daily request creation:
 | Field | Type | Description |
 |-------|------|-------------|
 | `date` | string | Date string in `YYYY-MM-DD` format. |
-| `count` | number | Number of requests created on that date (max 3). |
+| `count` | number | Number of requests created on that date (max 3); may be **0** after deleting same-day drafts. |
 
 The counter is written atomically with the order creation in a Firestore transaction. Security rules validate:
 - Counter can only be created with `count == 1`.
 - Counter can only be incremented by 1 on the same day, or reset to 1 on a new day.
+- On the same **`date`**, the owner may decrement **`count`** by 1 (down to **0**) when removing a draft whose **`createdAt`** falls on that day (client uses **`app/utils/requestLimitDate.ts`** to align local dates with creation).
 - Counter can never exceed 3.
 - Order creation requires the counter (via `getAfter()`) to show `count <= 3` after the transaction, or allows when the counter document does not yet exist (first request).
 
@@ -188,7 +198,7 @@ Security rules require `users/{userId}/access/billing` to exist with `hasAccess 
 - The order transitions **draft → submitted**, or  
 - The order is **not** in `draft` (e.g. the user updates a submitted request on `/orders/[id]/edit`).
 
-While **status stays `draft`**, the owner may update the order without Whop access (this covers **`saveLayout`** — typically `layout` and `updatedAt` only). The builder and request editor remain usable without a subscription; gating applies only to submission and to updates on non-draft orders.
+While **status stays `draft`**, the owner may update the order without Whop access (this covers **`saveLayout`** — typically `layout` and `updatedAt` only). The owner may also **delete** a draft order (rules: draft only, not locked) without Whop access. The builder and request editor remain usable without a subscription; gating applies only to submission and to updates on non-draft orders.
 
 ## Whop webhooks
 
@@ -208,7 +218,7 @@ Firestore and Storage rules are kept in the project under **`firebase/`** and ar
 
 | File | Purpose |
 |------|---------|
-| `firebase/firestore.rules` | Firestore security rules. `users/{userId}/orders/{orderId}` (owner-only; **create** requires daily counter **and** either `status == draft` or (`submitted` **and** `hasWhopAccess`); submit and non-draft updates require Whop access per **Whop access and order writes** above), `users/{userId}/access/{docId}` (owner read; client write denied), `users/{userId}/requestLimits/{limitId}` (owner-only; count validation), `users/{userId}/reports/{reportId}` (client denied; server writes via Admin only); all other paths explicitly denied. |
+| `firebase/firestore.rules` | Firestore security rules. `users/{userId}/orders/{orderId}` (owner-only; **create** requires daily counter **and** either `status == draft` or (`submitted` **and** `hasWhopAccess`); **delete** only if `status == draft` and `modificationLocked != true`; submit and non-draft updates require Whop access per **Whop access and order writes** above), `users/{userId}/access/{docId}` (owner read; client write denied), `users/{userId}/requestLimits/{limitId}` (owner-only; increment / new-day reset / same-day decrement by 1), `users/{userId}/reports/{reportId}` (client denied; server writes via Admin only); all other paths explicitly denied. |
 | `firebase/firestore.indexes.json` | Collection group indexes on `access` (`whopMembershipId`, `whopUserId`) for webhook billing lookup. Deploy with `firebase deploy --only firestore:indexes`. |
 | `firebase/storage.rules` | Storage security rules. Only `orders/{userId}/{orderId}/{fileName}` is allowed (owner-only). |
 | `firebase.json` (root) | Firebase CLI config; references `firebase/firestore.rules`, `firebase/firestore.indexes.json`, and `firebase/storage.rules` for deployment. |
@@ -237,7 +247,9 @@ The Cursor rule **15-firebase-rules.mdc** enforces this: when editing rules or F
 | `app/utils/orderValidation.ts` | `validateOrderRequest()`, `parseOrderDocument()` — runtime guards at Firestore boundary; use before accepting order data into store. |
 | `app/stores/orders.ts` | Subscribes to user orders; uses `parseOrderDocument()` in snapshot and `fetchOrder`; exposes list, `getOrderById`, `fetchOrder`, `detachSnapshotListener`, status/date helpers. |
 | `app/composables/useOrdersSnapshotWhenFocused.ts` | Subscribes while the tab is visible and the window has focus; detaches the listener when inactive to avoid idle WebChannel teardown noise. |
-| `app/composables/useCreateRequest.ts` | `createDraftRequest()`: batch write of draft order + daily counter. `saveLayout()`: persist layout to an existing order. |
+| `app/utils/requestLimitDate.ts` | `formatLocalDateKey(date)`, `todayLocalDateKey()` — shared local `YYYY-MM-DD` for daily limit create/delete. |
+| `app/composables/useCreateRequest.ts` | `createDraftRequest()`: transaction of draft order + daily counter. `saveLayout()`: persist layout to an existing order. |
+| `app/composables/useDeleteDraftRequest.ts` | `deleteDraftRequest()`: transaction deletes draft order + optional counter decrement; then Storage prefix cleanup under `orders/{userId}/{orderId}/`. |
 | `app/composables/useOrderSubmission.ts` | `submitOrder()`: upload files to Storage, then write order to Firestore (used for standalone submissions). |
 | `app/composables/useOrderUpdate.ts` | `updateOrder()`, `orderToFormData()`: update existing order (now supports `status` field for draft→submitted transition). |
 | `app/plugins/firebase.client.ts` | Initializes Firebase app and Auth; composables use `getFirebaseApp()` for Firestore and Storage. |
@@ -277,6 +289,6 @@ The Cursor rule **15-firebase-rules.mdc** enforces this: when editing rules or F
 
 - Orders: Firestore `users/{userId}/orders/{orderId}` (status lifecycle: `draft` → `submitted` → admin stages; submit/non-draft updates gated by `users/{userId}/access/billing` in rules); Storage `orders/{userId}/{orderId}/{fileName}`.
 - Whop: `users/{userId}/access/billing` (server-only writes; live `checkAccess` on `GET /api/access/me` when API + product id configured); `POST /api/billing/checkout-session`, `POST /api/webhooks/whop`.
-- Daily limit: Firestore `users/{userId}/requestLimits/daily` (counter with date; max 3 per day).
+- Daily limit: Firestore `users/{userId}/requestLimits/daily` (counter with date; max 3 per day; same-day decrement when a same-day draft is deleted).
 - Issue reports: Firestore `users/{userId}/reports/{reportId}` via **Admin SDK** from `POST /api/reports/issue`; client Firestore rules deny this path.
 - Rules: `firebase/firestore.rules` and `firebase/storage.rules`; update them and docs when usage changes (see Cursor rule 15-firebase-rules).

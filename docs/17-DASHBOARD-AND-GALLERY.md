@@ -65,7 +65,7 @@ The Gallery is the authenticated entry point, combining quick access to the buil
 
 ### Layout Structure
 
-The Gallery uses the **default** layout, which provides the global **AppNavbar** (logo, UserMenu with optional name, no CTA on this page).
+The Gallery uses the **default** layout, which provides the global **AppNavbar** (logo, **UserMenu** with inline account label when authenticated—same display rule as on every other default-layout page; see `app/utils/accountIdentity.ts`, no CTA on this page).
 
 The page is structured as a **PrimaryPageHero** (greeting + primary CTA to **My Sites**), a **templates showcase** block with distinct background contrast, and a minimal **footer**. All content is constrained by `--container-max`; spacing and typography use the global design tokens from `style.css`. The hero CTA uses the shared `ROUTES.sites` constant (`app/constants/routes.ts`) — label **Open My Sites**, headline **Manage your live sites**.
 
@@ -264,7 +264,8 @@ The page consists of two main pieces:
 
 1. **Draft creation** (dashboard): `useCreateRequest().createDraftRequest()` runs a single Firestore transaction that writes the draft order doc to `users/{uid}/orders/{newId}` (with `status: 'draft'`, initial layout from the template, empty business/contact fields) and updates the daily-limit counter. The modal shows a loading state until navigation completes. See **Template selection flow and performance** below.
 2. **Form filling** (request page): The page loads the draft by doc ID (or, when coming from the dashboard, may use navigation state for immediate paint; Firestore remains the canonical source). It resolves the template, initializes the request layout store, and renders the form. The user fills in details and optionally customizes the layout via the builder.
-3. **Submission**: On form submit, the page **saves the draft to Firestore first** (full form, attachments, layout; `status` remains `draft`), then checks Whop access. Without access: checkout opens in a new tab with **`redirect_url`** to **`/sites?tab=orders`**, and the current tab navigates there so data is never held only in memory. With access: a follow-up update sets `status: 'submitted'` and navigates to **`/sites?tab=orders`**. After payment, the user resumes via **Orders → Modify** (`/orders/{id}/edit`).
+3. **Discarding a draft** (optional): While `status` is still **`draft`** and the order is not locked, the user may use the **trash** control in the **Actions** column on **My Sites → Orders** (**SitesOrdersPanel**). The parent **`/sites`** page opens **`DeleteDraftRequestModal`** (no `window.confirm`). **`deleteDraftRequest()`** removes the Firestore document, decrements the daily-limit counter when the draft was created on the same local calendar day as the counter’s `date`, and deletes Storage objects under `orders/{uid}/{orderId}/`. On success, the list updates via the existing orders snapshot; **`requestLayoutStore`** is reset so no stale builder state remains.
+4. **Submission**: On form submit, the page **saves the draft to Firestore first** (full form, attachments, layout; `status` remains `draft`), then checks Whop access. Without access: checkout opens in a new tab with **`redirect_url`** to **`/sites?tab=orders`**, and the current tab navigates there so data is never held only in memory. With access: a follow-up update sets `status: 'submitted'` and navigates to **`/sites?tab=orders`**. After payment, the user resumes via **Orders → Modify** (`/orders/{id}/edit`).
 
 ### Error Handling
 
@@ -329,7 +330,7 @@ The same **TemplateRequestForm** is used on the order edit page (`app/pages/orde
 - **existingAttachments** — Order attachments already stored in Firestore/Storage. When present, the form shows a read-only "Current attachments" list (filename, size, and a Download link when `downloadURL` is available) above the file upload area. New files added via the upload area are appended on save.
 - **Submit section overrides** — The bottom section uses different copy for editing: title "Save your changes", description about updates being saved, button "Update request", and loading text "Saving...". The request form page keeps the default "Ready to get started?" / "Submit Request" copy.
 
-Locked orders (`modificationLocked === true`) redirect to `/sites`; the edit page does not render the form in that case.
+Locked orders (`modificationLocked === true`) redirect to `/sites`; the edit page does not render the form in that case. To discard a draft, use **My Sites → Orders** and the trash action in the table (see **Discarding a draft** above).
 
 ---
 
@@ -367,7 +368,7 @@ Landing page CTAs are auth-aware:
 
 ### UserMenu Dropdown
 
-The UserMenu dropdown includes **Gallery**, **My Live Sites** (`/sites`), **Report a problem** (`/report-issue`), and **Sign Out**. The report page is not linked from global nav elsewhere.
+The trigger shows an **inline account label** whenever the user is signed in (same algorithm as the dropdown title: `getAccountDisplayLabel` in `app/utils/accountIdentity.ts`). The dropdown includes **Gallery**, **My Live Sites** (`/sites`), **Report a problem** (`/report-issue`), and **Sign Out**. The report page is not linked from global nav elsewhere.
 
 ### My Sites Page (`/sites`)
 
@@ -380,7 +381,7 @@ The My Sites page is the authenticated hub for managing delivered websites and t
 - **PrimaryPageHero** — Page title, subtitle, and "Discover layout templates" CTA (links to `/gallery` via `ROUTES.gallery`)
 - **SitesTabList** — Tab list (role="tablist") with Live Sites and Orders; keyboard navigable (arrow keys)
 - **SitesLiveSitesPanel** — Table of delivered sites (business, domain, last update, status, Manage action)
-- **SitesOrdersPanel** — Table of template request orders (template, submitted date, status, editable/locked, Modify action)
+- **SitesOrdersPanel** — Table of template request orders (template, submitted date, status, editable/locked, **Actions**: **Modify** + trash icon for deletable drafts, fixed slot for alignment). Emits **`delete-draft`** to the parent; **`/sites`** owns **`DeleteDraftRequestModal`** and **`deleteDraftRequest()`**.
 - **SitesEmptyState** — Context-aware empty state; Orders empty state includes "Browse templates" CTA to Gallery
 
 **Data sources:** `stores/sites.ts` (live sites, in-memory demo data) and `stores/orders.ts` (Firestore `onSnapshot` via **`useOrdersSnapshotWhenFocused`**). The orders list is the **canonical** view of requests; route unmount detaches the listener but keeps the last snapshot in memory until sign-out clears the store. No direct store mutation from components; all data flows via props.

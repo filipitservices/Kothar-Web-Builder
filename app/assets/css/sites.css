@@ -152,6 +152,11 @@
   padding-right: var(--space-xl);
 }
 
+.sites-th--actions {
+  width: 1%;
+  white-space: nowrap;
+}
+
 .sites-row {
   transition: background 0.15s ease;
 }
@@ -175,6 +180,11 @@
 
 .sites-td:last-child {
   padding-right: var(--space-xl);
+}
+
+.sites-td--order-actions {
+  width: 1%;
+  white-space: nowrap;
 }
 
 .sites-cell-primary {
@@ -279,6 +289,53 @@
 .sites-action-icon {
   width: 1rem;
   height: 1rem;
+}
+
+.sites-order-actions {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+/* Fixed-width column so rows with/without draft delete stay aligned */
+.sites-order-actions__slot {
+  flex: 0 0 var(--space-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--space-xl);
+}
+
+.sites-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-xl);
+  height: var(--space-xl);
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.sites-icon-btn__svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.sites-icon-btn--danger:hover {
+  color: var(--color-error);
+  background: var(--color-error-tint);
+}
+
+.sites-icon-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring-primary);
 }
 
 .sites-action-disabled {

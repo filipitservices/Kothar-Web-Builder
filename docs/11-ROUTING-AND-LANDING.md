@@ -340,7 +340,7 @@ Builder-specific CSS preserved exactly:
 ### Global Navbar (AppNavbar)
 
 - **Single component**: `components/AppNavbar.vue`; styles in `assets/css/navbar.css`.
-- **Content**: Logo (Kothar → `/`), optional "Back to Gallery" on request page, **UserMenu**, and on landing only an auth-aware CTA (Start Building / Gallery).
+- **Content**: Logo (Kothar → `/`), optional "Back to Gallery" on request page, **UserMenu** (authenticated users always see the same inline account label on all default-layout routes; `app/utils/accountIdentity.ts`), and on landing only an auth-aware CTA (Start Building / Gallery).
 - **Auth**: Uses `useAuth()`; CTA is wrapped in `<ClientOnly>` with a placeholder to avoid hydration mismatch.
 
 ---

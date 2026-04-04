@@ -224,7 +224,7 @@ The app uses Nuxt 4 layouts for global structure:
 **AppNavbar** (`components/AppNavbar.vue`) is the single source of global navigation:
 - Logo (Kothar) links to `/`.
 - On `/gallery/request/*`, a "Back to Gallery" link is shown.
-- **UserMenu** is always shown (Sign In when guest; avatar and dropdown when authenticated). When authenticated: Gallery, **My Live Sites** (`/sites`), Sign Out.
+- **UserMenu** is always shown (Sign In when guest; avatar, **inline account label**, and dropdown when authenticated). The label uses **`getAccountDisplayLabel`** in `app/utils/accountIdentity.ts` everywhere—no route-based toggling. When authenticated: Gallery, **My Live Sites** (`/sites`), **Report a problem**, Sign Out.
 - On the landing page (`/`), an auth-aware CTA is shown: "Start Building" → `/login` when guest, "Gallery" → `/gallery` when authenticated.
 - Navbar styles live in `assets/css/navbar.css` and use global design tokens from `style.css`.
 

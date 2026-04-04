@@ -10,7 +10,7 @@
           <img v-if="currentUser?.photoURL" :src="currentUser.photoURL" :alt="name" />
           <span v-else>{{ initials }}</span>
         </span>
-        <span v-if="showName" class="name">{{ name }}</span>
+        <span class="name">{{ name }}</span>
         <svg class="arrow" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
         </svg>
@@ -50,14 +50,13 @@ import { ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuth } from '~/composables/useAuth';
 import { ROUTES } from '~/constants/routes';
-
-withDefaults(defineProps<{ showName?: boolean }>(), { showName: false });
+import { getAccountDisplayLabel } from '~/utils/accountIdentity';
 
 const { currentUser, isAuthenticated, isLoading, signOut } = useAuth();
 const route = useRoute();
 const isOpen = ref(false);
 
-const name = computed(() => currentUser.value?.displayName || currentUser.value?.email?.split('@')[0] || 'User');
+const name = computed(() => getAccountDisplayLabel(currentUser.value));
 
 const initials = computed(() => {
   const [a, b] = name.value.split(' ');

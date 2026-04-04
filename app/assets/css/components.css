@@ -69,6 +69,16 @@
   color: var(--color-text-muted-dark);
 }
 
+/* Destructive (confirm dialogs) */
+.btn--danger {
+  background: var(--color-error);
+  color: var(--color-white);
+}
+
+.btn--danger:hover:not(:disabled) {
+  filter: brightness(0.92);
+}
+
 /* Button Sizes */
 .btn--sm {
   padding: var(--space-sm) 0.875rem;

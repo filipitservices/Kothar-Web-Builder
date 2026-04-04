@@ -22,10 +22,7 @@
         </a>
       </div>
       <div class="app-navbar__right">
-        <UserMenu
-          v-if="showUserMenu"
-          :show-name="showUserName"
-        />
+        <UserMenu v-if="showUserMenu" />
         <ClientOnly v-if="showCta">
           <NuxtLink
             v-if="isInitialized"
@@ -53,11 +50,6 @@ import { useAuth } from '~/composables/useAuth';
 const route = useRoute();
 const { isAuthenticated, isInitialized } = useAuth();
 const appConfig = useAppConfig();
-
-const showUserName = computed(() => {
-  const path = route.path;
-  return path === '/gallery' || path.startsWith('/gallery/request');
-});
 
 const showCta = computed(() => route.path === '/');
 const showUserMenu = computed(() => isAuthenticated.value || !showCta.value);
