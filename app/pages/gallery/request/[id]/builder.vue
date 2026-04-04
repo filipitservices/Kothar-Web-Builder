@@ -1,16 +1,24 @@
 <template>
-  <BuilderEditor />
+  <BuilderEditor v-if="isReady && isSupported" />
+  <BuilderViewportFallback
+    v-else-if="isReady"
+    :min-width="minWidth"
+    :back-to="`/gallery/request/${route.params.id}`"
+    back-label="Back to request details"
+  />
 </template>
 
 <script setup lang="ts">
 import { onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import BuilderEditor from '~/components/BuilderEditor.vue';
+import BuilderViewportFallback from '~/components/BuilderViewportFallback.vue';
 import { useAuthStore } from '~/stores/auth';
 import { useOrdersStore } from '~/stores/orders';
 import { useShowcaseStore } from '~/stores/showcase';
 import { useRequestLayoutStore } from '~/stores/requestLayout';
 import type { OrderWithId } from '~/types/order';
+import { useBuilderViewportSupport } from '~/composables/useBuilderViewportSupport';
 
 definePageMeta({
   middleware: 'auth',
@@ -25,6 +33,7 @@ const authStore = useAuthStore();
 const ordersStore = useOrdersStore();
 const showcaseStore = useShowcaseStore();
 const requestLayoutStore = useRequestLayoutStore();
+const { minWidth, isReady, isSupported } = useBuilderViewportSupport();
 
 function getOrderIdFromRoute(): string | null {
   const id = route.params.id;

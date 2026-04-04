@@ -57,6 +57,8 @@ Routes are protected using Nuxt 4 route middleware:
 - `/orders/[id]/builder` - Builder for a specific order (requires auth; redirects away when context is invalid)
 - `/report-issue` - Report app issues (requires authentication via `auth` middleware; entry from **UserMenu → Report a problem** only, not global nav)
 
+**Viewport support rule:** The request/order builder is intentionally enabled only on larger screens (`>1024px`). On smaller viewports, those routes render a branded fallback state and do not render editor UI.
+
 **Guest-Only Routes:**
 - `/login` - Redirects authenticated users away via `guest` middleware
 - `/reset-password` - Redirects authenticated users away via `guest` middleware
@@ -114,7 +116,7 @@ Routes are implicitly defined by file structure. No manual `vue-router` config r
 - **Gallery → Builder**: Builder hero card with `<NuxtLink to="/builder">`
 - **Gallery → Template Preview**: Click template card → ShowcaseModal opens in-page
 - **Template Preview → Request**: "Choose This Design" → creates a draft request in Firebase → navigates to `/gallery/request/:id` (Firebase doc ID)
-- **Request → Builder**: "Customize page layout" → navigates to `/builder?orderId=:id` (enables layout rehydration after refresh)
+- **Request → Builder**: "Customize page layout" → navigates to `/gallery/request/:id/builder` or `/orders/:id/builder` (ID-scoped rehydration). On smaller screens the action is non-interactive and explains that the visual editor requires a larger viewport.
 - **Request → Gallery**: Back link or "Choose different design" link
 - **UserMenu (authenticated)**: Gallery, **My Live Sites** (`/sites`), **Report a problem** (`/report-issue`), Sign Out
 - **Sites list → Site control panel**: "Manage site" → `/sites/:id`

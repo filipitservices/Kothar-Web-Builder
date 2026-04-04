@@ -289,7 +289,7 @@ TemplateRequestForm
 - Back link: Returns to `/gallery` (templates section)
 - "Choose a different design" link: Returns to `/gallery`
 - "Build your own" link: Goes to the Gallery templates section (`/gallery#templates`)
-- "Customize page layout" button: Goes to `/gallery/request/{orderId}/builder` so layout edits persist across refresh and are always tied to the current request
+- "Customize page layout" button: Goes to `/gallery/request/{orderId}/builder` so layout edits persist across refresh and are always tied to the current request. On smaller screens, the control is shown as unavailable with inline guidance (the builder is intentionally disabled there).
 
 ### Layout
 

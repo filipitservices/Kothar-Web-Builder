@@ -12,7 +12,7 @@
         <PrimaryPageHero
           title-id="sites-welcome-title"
           title="My Sites"
-          subtitle="Manage your live websites and track template requests. Make updates, adjust content, or request changes from our team."
+          subtitle="Manage your live websites and track requests."
           cta-headline="Discover layout templates"
           cta-label="Open Gallery"
           :cta-to="ROUTES.gallery"

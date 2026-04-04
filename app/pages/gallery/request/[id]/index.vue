@@ -72,6 +72,8 @@
                 <button
                   type="button"
                   class="req-builder-link"
+                  :class="{ 'req-builder-link--disabled': !isBuilderSupported }"
+                  :disabled="!isBuilderSupported"
                   @click="openBuilder"
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true">
@@ -79,11 +81,22 @@
                     <line x1="3" y1="9" x2="21" y2="9"/>
                     <line x1="9" y1="21" x2="9" y2="9"/>
                   </svg>
-                  Customize page layout
+                  <span class="req-builder-link__content">
+                    <span class="req-builder-link__title">Open visual layout editor</span>
+                    <span class="req-builder-link__subtitle" v-if="isBuilderSupported">
+                      Fine-tune blocks and page structure
+                    </span>
+                    <span class="req-builder-link__subtitle" v-else>
+                      Available on screens wider than {{ minWidth - 1 }}px
+                    </span>
+                  </span>
                   <span v-if="layoutCustomized" class="req-layout-badge">Modified</span>
                 </button>
-                <NuxtLink to="/gallery" class="change-template-link">
-                  Choose a different design →
+                <NuxtLink to="/gallery" class="change-template-link" aria-label="Back to Gallery templates">
+                  <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M9.707 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 011.414 1.414L6.414 8H16a1 1 0 110 2H6.414l3.293 3.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                  </svg>
+                  Back to Gallery templates
                 </NuxtLink>
               </div>
             </div>
@@ -143,6 +156,7 @@ import { useWhopAccess } from '~/composables/useWhopAccess';
 import { useDraftRequestSubmitFlow } from '~/composables/useDraftRequestSubmitFlow';
 import { WHOP_CHECKOUT_RETURN_PATH } from '~/constants/access';
 import type { TemplateRequestFormData, ColorCustomization } from '~/types/templateRequest';
+import { useBuilderViewportSupport } from '~/composables/useBuilderViewportSupport';
 
 definePageMeta({
   middleware: 'auth'
@@ -159,6 +173,7 @@ const requestLayoutStore = useRequestLayoutStore();
 const { updateOrder } = useOrderUpdate();
 const { ensureLoaded, openCheckout } = useWhopAccess();
 const { submitDraftOrder } = useDraftRequestSubmitFlow();
+const { minWidth, isReady: viewportReady, isSupported: viewportSupported } = useBuilderViewportSupport();
 
 const showAccessModal = ref(false);
 const accessCheckoutLoading = ref(false);
@@ -212,6 +227,7 @@ const containerStyle = computed(() => ({
 }));
 
 const layoutCustomized = computed(() => requestLayoutStore.isCustomized);
+const isBuilderSupported = computed(() => !viewportReady.value || viewportSupported.value);
 
 function calculateViewportScale(): void {
   const container = previewContainerRef.value;
@@ -336,6 +352,11 @@ function handleProgressUpdate(progress: { completed: number; total: number }): v
 }
 
 function openBuilder(): void {
+  if (!isBuilderSupported.value) {
+    feedbackType.value = 'error';
+    feedbackMessage.value = `The visual layout editor is available on screens wider than ${minWidth - 1}px.`;
+    return;
+  }
   const id = requestId.value;
   if (!id) return;
   router.push({ path: `/gallery/request/${id}/builder` });
