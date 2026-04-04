@@ -200,10 +200,11 @@ Modal overlay for previewing complete showcase templates with device simulation.
 
 ### Device Frames
 
-Desktop frame dimensions: `700px × 550px`  
-Mobile frame dimensions: `330px × 600px`
+**Gallery modal (this component):** Desktop preview uses a **16:9** viewport inside the device chrome (`aspect-ratio: 16 / 9`), with a fluid max width of **`60rem`** so the frame scales with the modal. Scaling is computed from the laid-out frame size so content is not clipped.
 
-Frame styling matches existing ScreenCard component for visual consistency.
+**Mobile** in the modal: `330px × 600px` (unchanged).
+
+**Builder `ScreenCard`:** Desktop remains **`700px × 550px`** and mobile **`330px × 600px`** — see `app/assets/css/components.css`; the modal does not change those globals.
 
 ---
 
@@ -264,7 +265,7 @@ The page consists of two main pieces:
 
 1. **Draft creation** (dashboard): `useCreateRequest().createDraftRequest()` runs a single Firestore transaction that writes the draft order doc to `users/{uid}/orders/{newId}` (with `status: 'draft'`, initial layout from the template, empty business/contact fields) and updates the daily-limit counter. The modal shows a loading state until navigation completes. See **Template selection flow and performance** below.
 2. **Form filling** (request page): The page loads the draft by doc ID (or, when coming from the dashboard, may use navigation state for immediate paint; Firestore remains the canonical source). It resolves the template, initializes the request layout store, and renders the form. The user fills in details and optionally customizes the layout via the builder.
-3. **Discarding a draft** (optional): While `status` is still **`draft`** and the order is not locked, the user may use the **trash** control in the **Actions** column on **My Sites → Orders** (**SitesOrdersPanel**). The parent **`/sites`** page opens **`DeleteDraftRequestModal`** (no `window.confirm`). **`deleteDraftRequest()`** removes the Firestore document, decrements the daily-limit counter when the draft was created on the same local calendar day as the counter’s `date`, and deletes Storage objects under `orders/{uid}/{orderId}/`. On success, the list updates via the existing orders snapshot; **`requestLayoutStore`** is reset so no stale builder state remains.
+3. **Discarding a draft** (optional): While `status` is still **`draft`** and the order is not locked, the user may use the **trash** control in the **Actions** column on **My Sites → Orders** (**SitesOrdersPanel**). The parent **`/sites`** page opens **`DeleteDraftRequestModal`** (no `window.confirm`). **`deleteDraftRequest()`** removes the Firestore document and deletes Storage objects under `orders/{uid}/{orderId}/`. The daily creation counter is **unchanged**. On success, the list updates via the existing orders snapshot; **`requestLayoutStore`** is reset so no stale builder state remains.
 4. **Submission**: On form submit, the page **saves the draft to Firestore first** (full form, attachments, layout; `status` remains `draft`), then checks Whop access. Without access: checkout opens in a new tab with **`redirect_url`** to **`/sites?tab=orders`**, and the current tab navigates there so data is never held only in memory. With access: a follow-up update sets `status: 'submitted'` and navigates to **`/sites?tab=orders`**. After payment, the user resumes via **Orders → Modify** (`/orders/{id}/edit`).
 
 ### Error Handling

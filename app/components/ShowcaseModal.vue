@@ -73,12 +73,13 @@
             <span class="show-modal__loading-text">Preparing your request…</span>
           </div>
           <div class="show-modal__device">
-            <div 
-              v-if="viewMode === 'desktop'" 
-              class="device-frame device-frame--desktop"
+            <div
+              v-if="viewMode === 'desktop'"
+              ref="desktopFrameRef"
+              class="device-frame device-frame--desktop device-frame--gallery-desktop"
               :style="{ transform: `scale(${scale})`, transformOrigin: 'top center' }"
             >
-              <div class="screen-content" ref="desktopContentRef">
+              <div class="screen-content screen-content--gallery-desktop" ref="desktopContentRef">
                 <ShowcaseRenderer 
                   v-if="template" 
                   :template="template" 
@@ -134,7 +135,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import type { ShowcaseTemplate } from '~/stores/showcase';
 import ShowcaseRenderer from '~/components/showcase/ShowcaseRenderer.vue';
 
@@ -157,12 +158,13 @@ const viewMode = ref<'desktop' | 'mobile'>('desktop');
 const contentRef = ref<HTMLElement | null>(null);
 const desktopContentRef = ref<HTMLElement | null>(null);
 const mobileContentRef = ref<HTMLElement | null>(null);
+/** Desktop device chrome (Gallery modal); measured for scale — 16:9 viewport inside. */
+const desktopFrameRef = ref<HTMLElement | null>(null);
 
-// Natural frame dimensions (matching ScreenCard from the builder)
-const DESKTOP_NATURAL_WIDTH = 700;
-const DESKTOP_NATURAL_HEIGHT = 550;
 const MOBILE_NATURAL_WIDTH = 330;
 const MOBILE_NATURAL_HEIGHT = 600;
+/** Approximate space below desktop frame for stand pseudo-element + margin (scale denominator). */
+const DESKTOP_STAND_ALLOWANCE_PX = 56;
 
 // Scaling
 const scale = ref(1);
@@ -177,12 +179,19 @@ const calculateScale = () => {
   const containerWidth = Math.max(0, contentRef.value.clientWidth - horizontalPadding);
   const containerHeight = Math.max(0, contentRef.value.clientHeight - verticalPadding);
 
-  // Desktop scale
-  const desktopWidthScale = containerWidth / DESKTOP_NATURAL_WIDTH;
-  const desktopHeightScale = containerHeight / (DESKTOP_NATURAL_HEIGHT + 60); // Include stand
-  scale.value = Math.max(0.25, Math.min(1, desktopWidthScale, desktopHeightScale));
+  // Desktop: 16:9 chrome measured from layout (unscaled offset* excludes transform)
+  const desk = desktopFrameRef.value;
+  if (desk) {
+    const naturalW = desk.offsetWidth;
+    const naturalH = desk.offsetHeight;
+    if (naturalW > 0 && naturalH > 0) {
+      const desktopWidthScale = containerWidth / naturalW;
+      const desktopHeightScale = containerHeight / (naturalH + DESKTOP_STAND_ALLOWANCE_PX);
+      scale.value = Math.max(0.25, Math.min(1, desktopWidthScale, desktopHeightScale));
+    }
+  }
 
-  // Mobile scale
+  // Mobile scale (unchanged — builder-aligned device frame)
   const mobileWidthScale = containerWidth / MOBILE_NATURAL_WIDTH;
   const mobileHeightScale = containerHeight / MOBILE_NATURAL_HEIGHT;
   mobileScale.value = Math.max(0.25, Math.min(1, mobileWidthScale, mobileHeightScale));
@@ -210,7 +219,7 @@ onMounted(() => {
   document.addEventListener('keydown', handleKeydown);
   // Calculate initial scale after DOM settles
   requestAnimationFrame(() => {
-    calculateScale();
+    requestAnimationFrame(() => calculateScale());
   });
   window.addEventListener('resize', calculateScale);
 });
@@ -224,7 +233,7 @@ onUnmounted(() => {
 // Recalculate on view mode change
 watch(viewMode, () => {
   requestAnimationFrame(() => {
-    calculateScale();
+    requestAnimationFrame(() => calculateScale());
   });
 });
 </script>
@@ -315,6 +324,23 @@ watch(viewMode, () => {
   justify-content: center;
   width: 100%;
   height: 100%;
+  min-height: 0;
+}
+
+/*
+ * Gallery modal only: 16:9 preview viewport (builder ScreenCard stays 700×550 in components.css).
+ */
+.device-frame--desktop.device-frame--gallery-desktop {
+  width: min(100%, 60rem);
+  max-width: 100%;
+  height: auto;
+  margin-bottom: var(--space-xl);
+  box-sizing: border-box;
+}
+
+.device-frame--desktop.device-frame--gallery-desktop .screen-content--gallery-desktop {
+  aspect-ratio: 16 / 9;
+  width: 100%;
   min-height: 0;
 }
 

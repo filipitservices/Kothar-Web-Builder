@@ -28,7 +28,7 @@ After changing rules, **update documentation** per documentation-integrity: `doc
 
 ## Current App Usage
 
-- **Firestore:** `users/{userId}/orders/{orderId}` (template request orders; owner read/update/create with counter rules and Whop gating on submit/non-draft updates; **owner delete allowed only for `status == draft` and not `modificationLocked`**), `users/{userId}/access/{docId}` (Whop entitlement — owner read; **client write denied**), `users/{userId}/requestLimits/{limitId}` (daily counter; same-day **decrement by 1** when discarding a draft), `users/{userId}/reports/{reportId}` (issue reports — **client denied**; writes only via Admin SDK from `POST /api/reports/issue`). Catch-all deny for everything else.
+- **Firestore:** `users/{userId}/orders/{orderId}` (template request orders; owner read/update/create with counter rules and Whop gating on submit/non-draft updates; **owner delete allowed only for `status == draft` and not `modificationLocked`**), `users/{userId}/access/{docId}` (Whop entitlement — owner read; **client write denied**), `users/{userId}/requestLimits/{limitId}` (daily **creation** counter per calendar date; **no decrement** on draft delete), `users/{userId}/reports/{reportId}` (issue reports — **client denied**; writes only via Admin SDK from `POST /api/reports/issue`). Catch-all deny for everything else.
 - **Storage:** Only `orders/{userId}/{orderId}/{fileName}` is used (order attachments). Owner-only read/write.
 
 Any new collection or path must be added to the rules explicitly; the catch-all deny in Firestore must remain so that only intended paths are allowed.

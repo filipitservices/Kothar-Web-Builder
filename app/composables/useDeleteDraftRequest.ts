@@ -1,5 +1,6 @@
 /**
- * Deletes a draft order: Firestore transaction (optional daily counter −1) + Storage prefix cleanup.
+ * Deletes a draft order: Firestore transaction (order doc only) + Storage prefix cleanup.
+ * Daily creation counter at requestLimits/daily is not modified (creations count toward the limit even after delete).
  */
 
 import { FirebaseError } from 'firebase/app';
@@ -13,7 +14,6 @@ import {
 } from 'firebase/storage';
 import { getFirebaseApp } from '~/plugins/firebase.client';
 import { ORDER_STATUS_DRAFT } from '~/types/order';
-import { formatLocalDateKey } from '~/utils/requestLimitDate';
 import { logger } from '~/utils/logger';
 
 export class DeleteDraftRequestError extends Error {
@@ -21,20 +21,6 @@ export class DeleteDraftRequestError extends Error {
     super(message, options);
     this.name = 'DeleteDraftRequestError';
   }
-}
-
-function firestoreTimeToDate(value: unknown): Date | null {
-  if (value == null) return null;
-  if (typeof (value as { toDate?: () => Date }).toDate === 'function') {
-    const d = (value as { toDate: () => Date }).toDate();
-    return Number.isNaN(d.getTime()) ? null : d;
-  }
-  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
-  if (typeof value === 'string') {
-    const d = new Date(value);
-    return Number.isNaN(d.getTime()) ? null : d;
-  }
-  return null;
 }
 
 async function deleteStoragePrefix(
@@ -67,7 +53,6 @@ export async function deleteDraftRequest(userId: string, orderId: string): Promi
 
   const db = getFirestore(app);
   const orderRef = doc(db, 'users', userId, 'orders', orderId);
-  const counterRef = doc(db, 'users', userId, 'requestLimits', 'daily');
 
   try {
     await runTransaction(db, async (tx) => {
@@ -81,16 +66,6 @@ export async function deleteDraftRequest(userId: string, orderId: string): Promi
         throw new DeleteDraftRequestError('This request cannot be deleted while it is locked.');
       }
 
-      const counterSnap = await tx.get(counterRef);
-      if (counterSnap.exists()) {
-        const c = counterSnap.data();
-        const orderDate = firestoreTimeToDate(data.createdAt);
-        const dateStr = typeof c.date === 'string' ? c.date : '';
-        const count = typeof c.count === 'number' ? c.count : 0;
-        if (orderDate && dateStr && count > 0 && formatLocalDateKey(orderDate) === dateStr) {
-          tx.update(counterRef, { date: dateStr, count: count - 1 });
-        }
-      }
       tx.delete(orderRef);
     });
   } catch (err) {

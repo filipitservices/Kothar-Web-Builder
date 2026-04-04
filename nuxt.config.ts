@@ -30,7 +30,9 @@ export default defineNuxtConfig({
     whopProductId: '', // NUXT_WHOP_PRODUCT_ID
     /** Whop company id (required for members.list email reconcile) — server only */
     whopCompanyId: '', // NUXT_WHOP_COMPANY_ID
-    
+    /** Secret for POST /api/cron/cleanup-abandoned-drafts (x-cron-secret or Bearer) — server only */
+    abandonedDraftCronSecret: '', // NUXT_ABANDONED_DRAFT_CRON_SECRET
+
     // Public - safe to expose, embedded in client bundle
     // These are read from environment variables prefixed with NUXT_PUBLIC_
     public: {

@@ -84,6 +84,15 @@
   background: var(--color-white);
 }
 
+/* One-line policy note under tabs (draft retention); tokens only */
+.sites-draft-hint {
+  margin: 0 0 var(--space-lg);
+  max-width: 40rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
 .sites-tab-count {
   display: inline-flex;
   align-items: center;

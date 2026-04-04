@@ -60,10 +60,9 @@ service cloud.firestore {
         );
     }
 
-    // Daily request creation limit counter.
-    // Written atomically with order creation in a transaction.
-    // Count can only be 1 (new day or first request) or incremented by 1 (same day),
-    // or decremented by 1 same day when a draft created that day is deleted (count may be 0).
+    // Daily request creation limit counter (cumulative creations per local calendar date).
+    // Written atomically with order creation in a transaction. Deleting a draft does not change count.
+    // Count can only be 1 (new day or first request of that day) or incremented by 1 (same day).
     match /users/{userId}/requestLimits/{limitId} {
       allow read: if request.auth != null && request.auth.uid == userId;
       allow create: if request.auth != null && request.auth.uid == userId
@@ -75,11 +74,6 @@ service cloud.firestore {
         && (
           (request.resource.data.date != resource.data.date && request.resource.data.count == 1)
           || (request.resource.data.date == resource.data.date && request.resource.data.count == resource.data.count + 1)
-          || (
-            request.resource.data.date == resource.data.date
-            && request.resource.data.count == resource.data.count - 1
-            && request.resource.data.count >= 0
-          )
         );
     }
 

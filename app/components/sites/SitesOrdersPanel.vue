@@ -71,7 +71,7 @@
                 </NuxtLink>
                 <div class="sites-order-actions__slot" role="presentation">
                   <button
-                    v-if="order.status === ORDER_STATUS_DRAFT && order.modificationLocked !== true"
+                    v-if="order.status === ORDER_STATUS_DRAFT && !order.modificationLocked"
                     type="button"
                     class="sites-icon-btn sites-icon-btn--danger"
                     :title="`Remove draft: ${order.templateName}`"

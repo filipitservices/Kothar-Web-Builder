@@ -31,8 +31,8 @@
         <div class="modal-body delete-draft-request-modal__body">
           <p class="text-muted">
             This removes your saved progress for
-            <strong class="delete-draft-request-modal__name">{{ templateName }}</strong>
-            and frees your daily request slot if this draft was created today. This cannot be undone.
+            <strong class="delete-draft-request-modal__name">{{ templateName }}</strong>.
+            Your daily request creation limit is unchanged. This cannot be undone.
           </p>
         </div>
         <div class="modal-footer delete-draft-request-modal__footer">

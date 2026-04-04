@@ -25,7 +25,6 @@
               :sites-count="sitesStore.siteSummaries.length"
               :orders-count="ordersStore.orders.length"
             />
-
             <SitesLiveSitesPanel
               :sites="sitesStore.siteSummaries"
               :visible="activeTab === 'sites'"
@@ -45,6 +44,10 @@
               labelled-by="sites-tab-orders"
               @delete-draft="onDeleteDraftRequest"
             />
+
+            <p class="sites-draft-hint" v-show="activeTab === 'orders'">
+              Draft requests that stay empty and unused may be removed automatically after 24 hours.
+            </p>
           </div>
         </div>
       </main>

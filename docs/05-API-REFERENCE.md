@@ -225,7 +225,7 @@ blocks.importData(data);
 
 **Purpose**: Draft persist → **`POST /api/orders/finalize-draft`** (authoritative Whop `checkAccess` + Admin status update) → on denial, **`{ ok: false, reason: 'subscription_required' }`** (HTTP 200) and access modal; on **`{ ok: true }`**, navigate to `/sites?tab=orders`. Used by the gallery request page and **`/orders/[id]/edit`** for **draft** orders only.
 
-**Server routes**: **`POST /api/orders/finalize-draft`** (body `{ orderId }`; session; **`evaluateWhopProductAccess`** + membership policy; returns **`{ ok: true }`** or **`{ ok: false, reason: 'subscription_required' }`**). `GET /api/access/me` (billing snapshot + **`syncBillingAccessFromWhop`** for UI; same underlying `evaluateWhopProductAccess` logic as finalize). `POST /api/billing/checkout-session`. Webhooks: `POST /api/webhooks/whop`. For **`GET /api/access/me`**, client **`$fetch`** uses cache-busting and `cache: 'no-store'`.
+**Server routes**: **`POST /api/orders/finalize-draft`** (body `{ orderId }`; session; **`evaluateWhopProductAccess`** + membership policy; returns **`{ ok: true }`** or **`{ ok: false, reason: 'subscription_required' }`**). `GET /api/access/me` (billing snapshot + **`syncBillingAccessFromWhop`** for UI; same underlying `evaluateWhopProductAccess` logic as finalize). `POST /api/billing/checkout-session`. Webhooks: `POST /api/webhooks/whop`. **`POST /api/cron/cleanup-abandoned-drafts`** (scheduled job only; **`NUXT_ABANDONED_DRAFT_CRON_SECRET`** via **`x-cron-secret`** or **`Authorization: Bearer`**; Firebase Admin deletes stale pristine drafts — see **`docs/18-FIREBASE-FIRESTORE-STORAGE.md`**). For **`GET /api/access/me`**, client **`$fetch`** uses cache-busting and `cache: 'no-store'`.
 
 ---
 
