@@ -44,6 +44,15 @@ export const useUnsavedChangesStore = defineStore('unsavedChanges', () => {
     allowNext.value = true;
   }
 
+  /**
+   * Session intentionally ended (sign-out). Close any open unsaved dialog so the user is
+   * not left behind a modal. Navigation is allowed because the router guard bypasses when
+   * `auth` reports no user (do not set `allowNext` here — it could remain stale after login).
+   */
+  function prepareForAuthTerminatedNavigation(): void {
+    closeModalStay();
+  }
+
   function consumeAllowNext(): void {
     allowNext.value = false;
   }
@@ -73,6 +82,7 @@ export const useUnsavedChangesStore = defineStore('unsavedChanges', () => {
     register,
     unregister,
     requestAllowNext,
+    prepareForAuthTerminatedNavigation,
     consumeAllowNext,
     openIntercept,
     closeModalStay,

@@ -22,8 +22,11 @@
 
 import type { MeResponse } from '~/types/auth';
 import { logger } from '~/utils/logger';
+import { useAuthStore } from '~/stores/auth';
 
 export default defineNuxtRouteMiddleware(async (to, _from) => {
+  const authStore = useAuthStore();
+
   // Check authentication status via server API
   // useRequestFetch forwards cookies during SSR, $fetch handles client-side
   try {
@@ -39,7 +42,9 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
     }
 
     if (!response.user) {
-      // Not authenticated - redirect to login
+      // Align client store with server before redirect so unsaved-changes router guard
+      // does not block the login redirect while the UI still thinks the user is signed in.
+      authStore.clearUser();
       return navigateTo({
         path: '/login',
         query: { redirect: to.fullPath }
@@ -47,7 +52,6 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
     }
 
     // Populate auth store so pages (e.g. builder without navbar) have uid without mounting useAuth()
-    const authStore = useAuthStore();
     authStore.setUser(response.user);
 
     // User is authenticated - allow navigation
@@ -56,7 +60,7 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
   } catch (error) {
     logger.warn('[Auth Middleware] Session check failed:', error);
 
-    // On error, redirect to login for safety
+    authStore.clearUser();
     return navigateTo({
       path: '/login',
       query: { redirect: to.fullPath }

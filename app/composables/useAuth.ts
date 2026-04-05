@@ -37,6 +37,7 @@ import { getFirebaseAuth } from '~/plugins/firebase.client';
 import { useAuthStore } from '~/stores/auth';
 import { useOrdersStore } from '~/stores/orders';
 import { useWhopAccessStore } from '~/stores/whopAccess';
+import { useUnsavedChangesStore } from '~/stores/unsavedChanges';
 import type { AuthUser, AuthError, MeResponse, SessionCreateResponse } from '~/types/auth';
 
 /**
@@ -348,6 +349,7 @@ export function useAuth(): UseAuthReturn {
       authStore.setLoading(false);
       useWhopAccessStore().reset();
       useOrdersStore().unsubscribeFromOrders();
+      useUnsavedChangesStore().prepareForAuthTerminatedNavigation();
       
     } catch (error) {
       // Even if server logout fails, clear local state
@@ -355,6 +357,7 @@ export function useAuth(): UseAuthReturn {
       authStore.setLoading(false);
       useWhopAccessStore().reset();
       useOrdersStore().unsubscribeFromOrders();
+      useUnsavedChangesStore().prepareForAuthTerminatedNavigation();
       logger.warn('[Auth] Sign out error:', error);
     }
   }

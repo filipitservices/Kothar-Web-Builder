@@ -4,6 +4,9 @@
  * Not used on `/sites/[id]`: hero/announcement update the store immediately while business
  * hours use a separate “Save hours” action — a single dirty flag would be misleading until
  * persistence semantics are unified.
+ *
+ * Auth termination (sign-out) bypasses the prompt via `prepareForAuthTerminatedNavigation()`
+ * in `useAuth` and via the unsaved guard’s unauthenticated check (see plugin).
  */
 import { onMounted, onUnmounted, useId, type MaybeRefOrGetter } from 'vue';
 import { useUnsavedChangesStore } from '~/stores/unsavedChanges';
