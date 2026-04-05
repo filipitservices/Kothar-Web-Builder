@@ -140,10 +140,10 @@ type ShowcaseCategory =
 
 ```typescript
 interface ShowcaseSection {
-  type: 'hero' | 'services' | 'about' | 'features' | 'testimonials' | 
+  type: 'nav' | 'hero' | 'services' | 'about' | 'features' | 'testimonials' | 
         'team' | 'pricing' | 'gallery' | 'contact' | 'cta' | 'faq' | 
         'stats' | 'process' | 'trust' | 'location';
-  data: Record<string, any>;
+  data: Record<string, unknown>;
 }
 
 interface ShowcaseTemplate {
@@ -218,6 +218,7 @@ Renders all sections of a showcase template. Used in both the preview modal and 
 
 | Type | Description |
 |------|-------------|
+| `nav` | Top navigation bar (preview-only controls; maps to the builder **Navigation** block). Templates start with this section. |
 | `hero` | Full-width hero with headline, subheadline, CTA |
 | `services` | Grid of service cards with icons |
 | `about` | About section with content text |
@@ -232,6 +233,8 @@ Renders all sections of a showcase template. Used in both the preview modal and 
 | `trust` | Trust badges and certifications |
 | `stats` | Key statistics display |
 | `features` | Feature highlights |
+
+**Request / builder layout:** `showcaseSectionsToBlocks()` in `stores/requestLayout.ts` converts showcase sections to builder blocks. If the first section is `nav`, it is mapped to a `navbar` block and **no extra** synthetic navbar is prepended (avoids duplicate Navigation blocks). If the first section is not `nav`, a synthetic navbar block is still prepended for backward compatibility.
 
 ### Props
 

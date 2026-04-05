@@ -32,6 +32,7 @@ import AboutSection from './sections/AboutSection.vue';
 import FeaturesSection from './sections/FeaturesSection.vue';
 import ContactSection from './sections/ContactSection.vue';
 import FaqSection from './sections/FaqSection.vue';
+import NavSection from './sections/NavSection.vue';
 
 interface ShowcaseRendererProps {
   template: ShowcaseTemplate;
@@ -42,6 +43,7 @@ const props = defineProps<ShowcaseRendererProps>();
 
 // Section type to component mapping
 const sectionComponents: Record<string, Component> = {
+  nav: NavSection,
   hero: HeroSection,
   trust: TrustSection,
   services: ServicesSection,

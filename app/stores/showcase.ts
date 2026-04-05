@@ -28,8 +28,78 @@ export type ShowcaseCategory =
   | 'hospitality'
   | 'retail';
 
+/** Visual / structural preset for showcase preview navbars (`NavSection.vue`). */
+export type ShowcaseNavVariant =
+  | 'tradePhone'
+  | 'tradeQuote'
+  | 'lawHeritage'
+  | 'accountingClean'
+  | 'consultingBold'
+  | 'photoEditorial'
+  | 'agencyDark'
+  | 'healthcareWarm'
+  | 'restaurant'
+  | 'retailBoutique';
+
+export interface ShowcaseNavLink {
+  label: string;
+}
+
+export interface NavSectionData {
+  variant: ShowcaseNavVariant;
+  brandLabel: string;
+  links: ShowcaseNavLink[];
+  cta?: { label: string };
+  phone?: string;
+  tagline?: string;
+}
+
+const SHOWCASE_NAV_VARIANTS: readonly ShowcaseNavVariant[] = [
+  'tradePhone',
+  'tradeQuote',
+  'lawHeritage',
+  'accountingClean',
+  'consultingBold',
+  'photoEditorial',
+  'agencyDark',
+  'healthcareWarm',
+  'restaurant',
+  'retailBoutique'
+] as const;
+
+export function isNavSectionData(
+  data: Record<string, unknown>
+): data is NavSectionData & Record<string, unknown> {
+  const variant = data.variant;
+  if (typeof variant !== 'string' || !SHOWCASE_NAV_VARIANTS.includes(variant as ShowcaseNavVariant)) {
+    return false;
+  }
+  if (typeof data.brandLabel !== 'string') return false;
+  if (!Array.isArray(data.links)) return false;
+  return data.links.every(
+    (item): item is ShowcaseNavLink =>
+      item !== null && typeof item === 'object' && typeof (item as ShowcaseNavLink).label === 'string'
+  );
+}
+
 export interface ShowcaseSection {
-  type: 'hero' | 'services' | 'about' | 'features' | 'testimonials' | 'team' | 'pricing' | 'gallery' | 'contact' | 'cta' | 'faq' | 'stats' | 'process' | 'trust' | 'location';
+  type:
+    | 'nav'
+    | 'hero'
+    | 'services'
+    | 'about'
+    | 'features'
+    | 'testimonials'
+    | 'team'
+    | 'pricing'
+    | 'gallery'
+    | 'contact'
+    | 'cta'
+    | 'faq'
+    | 'stats'
+    | 'process'
+    | 'trust'
+    | 'location';
   data: Record<string, unknown>;
 }
 
@@ -71,6 +141,21 @@ export const useShowcaseStore = defineStore('showcase', () => {
         text: '#1e293b'
       },
       sections: [
+        {
+          type: 'nav',
+          data: {
+            variant: 'tradePhone',
+            brandLabel: 'Elite Plumbing',
+            tagline: '24/7 Emergency',
+            links: [
+              { label: 'Services' },
+              { label: 'Service Area' },
+              { label: 'Reviews' },
+              { label: 'Contact' }
+            ],
+            phone: '(555) 123-4567'
+          }
+        },
         {
           type: 'hero',
           data: {
@@ -163,6 +248,20 @@ export const useShowcaseStore = defineStore('showcase', () => {
       },
       sections: [
         {
+          type: 'nav',
+          data: {
+            variant: 'tradeQuote',
+            brandLabel: 'Premier Electric',
+            links: [
+              { label: 'Residential' },
+              { label: 'Commercial' },
+              { label: 'Safety' },
+              { label: 'About' }
+            ],
+            cta: { label: 'Free Quote' }
+          }
+        },
+        {
           type: 'hero',
           data: {
             headline: 'Expert Electrical Services for Every Need',
@@ -243,6 +342,21 @@ export const useShowcaseStore = defineStore('showcase', () => {
       },
       sections: [
         {
+          type: 'nav',
+          data: {
+            variant: 'lawHeritage',
+            brandLabel: 'Smith & Associates',
+            tagline: 'Attorneys at Law',
+            links: [
+              { label: 'Practice Areas' },
+              { label: 'Attorneys' },
+              { label: 'Results' },
+              { label: 'Contact' }
+            ],
+            cta: { label: 'Consultation' }
+          }
+        },
+        {
           type: 'hero',
           data: {
             headline: 'Dedicated Legal Advocacy for You',
@@ -322,6 +436,20 @@ export const useShowcaseStore = defineStore('showcase', () => {
       },
       sections: [
         {
+          type: 'nav',
+          data: {
+            variant: 'accountingClean',
+            brandLabel: 'ClearPath CPA',
+            links: [
+              { label: 'Services' },
+              { label: 'Industries' },
+              { label: 'Resources' },
+              { label: 'Contact' }
+            ],
+            cta: { label: 'Schedule a Call' }
+          }
+        },
+        {
           type: 'hero',
           data: {
             headline: 'Clear Financial Guidance for Your Business',
@@ -398,6 +526,20 @@ export const useShowcaseStore = defineStore('showcase', () => {
       },
       sections: [
         {
+          type: 'nav',
+          data: {
+            variant: 'consultingBold',
+            brandLabel: 'Apex Consulting',
+            links: [
+              { label: 'Expertise' },
+              { label: 'Approach' },
+              { label: 'Case Studies' },
+              { label: 'Insights' }
+            ],
+            cta: { label: 'Book a Call' }
+          }
+        },
+        {
           type: 'hero',
           data: {
             headline: 'Transform Your Business. Accelerate Growth.',
@@ -466,6 +608,20 @@ export const useShowcaseStore = defineStore('showcase', () => {
         text: '#262626'
       },
       sections: [
+        {
+          type: 'nav',
+          data: {
+            variant: 'photoEditorial',
+            brandLabel: 'Lens & Light',
+            links: [
+              { label: 'Portfolio' },
+              { label: 'Services' },
+              { label: 'Investment' },
+              { label: 'Journal' },
+              { label: 'Book' }
+            ]
+          }
+        },
         {
           type: 'hero',
           data: {
@@ -545,6 +701,20 @@ export const useShowcaseStore = defineStore('showcase', () => {
       },
       sections: [
         {
+          type: 'nav',
+          data: {
+            variant: 'agencyDark',
+            brandLabel: 'Pixel Perfect',
+            links: [
+              { label: 'Work' },
+              { label: 'Services' },
+              { label: 'Studio' },
+              { label: 'Contact' }
+            ],
+            cta: { label: 'Start a Project' }
+          }
+        },
+        {
           type: 'hero',
           data: {
             headline: 'We Create Brands That Stand Out',
@@ -614,6 +784,21 @@ export const useShowcaseStore = defineStore('showcase', () => {
         text: '#1e293b'
       },
       sections: [
+        {
+          type: 'nav',
+          data: {
+            variant: 'healthcareWarm',
+            brandLabel: 'Bright Smile Dental',
+            links: [
+              { label: 'Services' },
+              { label: 'Our Team' },
+              { label: 'Patients' },
+              { label: 'Location' }
+            ],
+            cta: { label: 'Book Appointment' },
+            phone: '(555) 678-9012'
+          }
+        },
         {
           type: 'hero',
           data: {
@@ -692,6 +877,20 @@ export const useShowcaseStore = defineStore('showcase', () => {
       },
       sections: [
         {
+          type: 'nav',
+          data: {
+            variant: 'restaurant',
+            brandLabel: 'Harvest Table',
+            links: [
+              { label: 'Menu' },
+              { label: 'Our Story' },
+              { label: 'Private Events' },
+              { label: 'Visit' }
+            ],
+            cta: { label: 'Reserve' }
+          }
+        },
+        {
           type: 'hero',
           data: {
             headline: 'Farm Fresh. Locally Sourced. Deliciously Crafted.',
@@ -765,6 +964,20 @@ export const useShowcaseStore = defineStore('showcase', () => {
         text: '#1c1917'
       },
       sections: [
+        {
+          type: 'nav',
+          data: {
+            variant: 'retailBoutique',
+            brandLabel: 'Artisan Home',
+            links: [
+              { label: 'Shop' },
+              { label: 'Collections' },
+              { label: 'Our Story' },
+              { label: 'Visit' }
+            ],
+            cta: { label: 'New Arrivals' }
+          }
+        },
         {
           type: 'hero',
           data: {

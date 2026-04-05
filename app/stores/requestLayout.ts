@@ -21,6 +21,7 @@ import type { OrderLayout, OrderLayoutBlock } from '~/types/order';
 /* -------------------------------------------------------------------------- */
 
 const SECTION_TO_BLOCK: Record<string, { type: BlockType; label: string }> = {
+  nav:          { type: 'navbar',      label: 'Navigation' },
   hero:         { type: 'hero',        label: 'Hero Section' },
   services:     { type: 'services',    label: 'Services' },
   about:        { type: 'text',        label: 'About' },
@@ -51,15 +52,18 @@ function sectionToBlock(section: ShowcaseSection): BlockItem {
 
 /**
  * Convert a ShowcaseTemplate's sections array into builder BlockItem[].
- * Prepends a navbar block and appends a footer block to match builder
- * conventions (showcase templates omit these because ShowcaseRenderer
- * handles them implicitly).
+ * Prepends a navbar block when the showcase does not already start with a
+ * `nav` section, and appends a footer block to match builder conventions.
  */
 export function showcaseSectionsToBlocks(sections: ShowcaseSection[]): BlockItem[] {
-  const nav: BlockItem = { id: generateBlockId('navbar'), type: 'navbar', label: 'Navigation' };
   const content = sections.map(sectionToBlock);
   const footer: BlockItem = { id: generateBlockId('footer'), type: 'footer', label: 'Footer' };
-  return [nav, ...content, footer];
+  const needsSyntheticNav = sections[0]?.type !== 'nav';
+  if (needsSyntheticNav) {
+    const nav: BlockItem = { id: generateBlockId('navbar'), type: 'navbar', label: 'Navigation' };
+    return [nav, ...content, footer];
+  }
+  return [...content, footer];
 }
 
 /* -------------------------------------------------------------------------- */
