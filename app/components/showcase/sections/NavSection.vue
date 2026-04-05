@@ -1,39 +1,39 @@
 <template>
   <nav
-    class="show-nav"
-    :class="[`show-nav--${resolved.variant}`, viewMode === 'mobile' && 'show-nav--previewMobile']"
+    class="sn"
+    :class="[`sn-${resolved.variant}`, viewMode === 'mobile' && 'sn-tight']"
     aria-label="Primary"
   >
-    <div class="show-nav__inner">
-      <div class="show-nav__brand">
-        <span class="show-nav__wordmark">{{ resolved.brandLabel }}</span>
-        <span v-if="resolved.tagline" class="show-nav__tagline">{{ resolved.tagline }}</span>
+    <div class="sn-in">
+      <div class="sn-brand">
+        <span class="sn-mark">{{ resolved.brandLabel }}</span>
+        <span v-if="resolved.tagline" class="sn-tag">{{ resolved.tagline }}</span>
       </div>
 
-      <ul class="show-nav__links" role="list">
+      <ul class="sn-links" role="list">
         <li v-for="(link, i) in resolved.links" :key="i" role="none">
-          <button type="button" class="show-nav__link">
+          <button type="button" class="sn-item">
             {{ link.label }}
           </button>
         </li>
       </ul>
 
-      <button type="button" class="show-nav__menuHint" tabindex="-1" aria-hidden="true">
+      <button type="button" class="sn-menu" tabindex="-1" aria-hidden="true">
         Menu
       </button>
 
-      <div class="show-nav__actions">
+      <div class="sn-act">
         <button
           v-if="resolved.phone"
           type="button"
-          class="show-nav__phone"
+          class="sn-tel"
         >
           {{ resolved.phone }}
         </button>
         <button
           v-if="resolved.cta"
           type="button"
-          class="show-nav__cta"
+          class="sn-go"
         >
           {{ resolved.cta.label }}
         </button>
