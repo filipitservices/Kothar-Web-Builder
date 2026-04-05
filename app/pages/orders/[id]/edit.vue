@@ -93,6 +93,7 @@
               v-if="originalTemplate && initialFormData"
               ref="templateFormRef"
               :template="originalTemplate"
+              :color-ui-reset-scope-id="orderId"
               :initial-form-data="initialFormData"
               :existing-attachments="orderRef?.attachments ?? []"
               submit-title="Save your changes"

@@ -237,7 +237,7 @@ export const useShowcaseStore = defineStore('showcase', () => {
       colorScheme: {
         primary: '#1e3a5f',
         secondary: '#b8860b',
-        accent: '#1e3a5f',
+        accent: '#c9a227',
         background: '#fafafa',
         text: '#1f2937'
       },
@@ -316,7 +316,7 @@ export const useShowcaseStore = defineStore('showcase', () => {
       colorScheme: {
         primary: '#166534',
         secondary: '#1e40af',
-        accent: '#059669',
+        accent: '#ea580c',
         background: '#ffffff',
         text: '#1e293b'
       },
@@ -608,7 +608,7 @@ export const useShowcaseStore = defineStore('showcase', () => {
       category: 'healthcare',
       colorScheme: {
         primary: '#0891b2',
-        secondary: '#0d9488',
+        secondary: '#4f46e5',
         accent: '#fbbf24',
         background: '#ffffff',
         text: '#1e293b'

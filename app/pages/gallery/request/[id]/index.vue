@@ -121,6 +121,7 @@
               v-if="originalTemplate && formBaseline"
               ref="templateFormRef"
               :template="originalTemplate"
+              :color-ui-reset-scope-id="requestId"
               :initial-form-data="formBaseline"
               :is-submitting="isSubmitting"
               :show-progress="false"

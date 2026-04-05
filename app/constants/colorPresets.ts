@@ -1,15 +1,19 @@
 /**
  * Color Presets
- * 
+ *
  * Curated color palettes for quick selection in the template request form.
- * Derived from professional design systems and industry standards.
+ * Showcase templates that use a preset should keep colorScheme in sync with
+ * `getPresetColorsById(presetId)` to avoid drift.
  */
 
-import type { ColorPreset, ColorDefinition } from '~/types/templateRequest';
+import type { ColorCustomization, ColorPreset, ColorDefinition } from '~/types/templateRequest';
 
 /**
  * Curated color presets for quick selection.
  * Each preset is designed for specific industries/moods.
+ *
+ * Contract (showcase `.show-btn--primary`): accent = CTA fill, primary = CTA label color —
+ * they must contrast. Primary also drives hero gradients and section headings.
  */
 export const COLOR_PRESETS: readonly ColorPreset[] = [
   {
@@ -43,7 +47,7 @@ export const COLOR_PRESETS: readonly ColorPreset[] = [
     colors: {
       primary: '#1e3a5f',
       secondary: '#b8860b',
-      accent: '#1e3a5f',
+      accent: '#c9a227',
       background: '#fafafa',
       text: '#1f2937'
     }
@@ -55,7 +59,7 @@ export const COLOR_PRESETS: readonly ColorPreset[] = [
     colors: {
       primary: '#166534',
       secondary: '#1e40af',
-      accent: '#059669',
+      accent: '#ea580c',
       background: '#ffffff',
       text: '#1e293b'
     }
@@ -90,7 +94,7 @@ export const COLOR_PRESETS: readonly ColorPreset[] = [
     description: 'Clean & caring',
     colors: {
       primary: '#0891b2',
-      secondary: '#0d9488',
+      secondary: '#4f46e5',
       accent: '#fbbf24',
       background: '#ffffff',
       text: '#1e293b'
@@ -110,6 +114,8 @@ export const COLOR_PRESETS: readonly ColorPreset[] = [
   }
 ] as const;
 
+export type ColorPresetId = (typeof COLOR_PRESETS)[number]['id'];
+
 /**
  * Color definitions for the custom picker UI.
  * Defines which colors are editable and their display labels.
@@ -123,28 +129,81 @@ export const COLOR_DEFINITIONS: readonly ColorDefinition[] = [
 ] as const;
 
 /**
- * Find a preset that matches the given colors.
+ * Canonical lowercase #rrggbb or null if invalid.
+ */
+export function normalizeHexColor(hex: string): string | null {
+  const t = hex.trim();
+  if (!/^#[0-9A-Fa-f]{6}$/.test(t)) {
+    return null;
+  }
+  return t.toLowerCase();
+}
+
+/**
+ * Normalize a full color customization object; returns null if any channel is invalid.
+ */
+export function normalizeColorCustomization(
+  colors: ColorCustomization
+): ColorCustomization | null {
+  const primary = normalizeHexColor(colors.primary);
+  const secondary = normalizeHexColor(colors.secondary);
+  const accent = normalizeHexColor(colors.accent);
+  const background = normalizeHexColor(colors.background);
+  const text = normalizeHexColor(colors.text);
+  if (!primary || !secondary || !accent || !background || !text) {
+    return null;
+  }
+  return { primary, secondary, accent, background, text };
+}
+
+/**
+ * True if both customize objects match on all five channels after normalization.
+ */
+export function sameColorCustomization(a: ColorCustomization, b: ColorCustomization): boolean {
+  const na = normalizeColorCustomization(a);
+  const nb = normalizeColorCustomization(b);
+  if (!na || !nb) {
+    return false;
+  }
+  return (
+    na.primary === nb.primary &&
+    na.secondary === nb.secondary &&
+    na.accent === nb.accent &&
+    na.background === nb.background &&
+    na.text === nb.text
+  );
+}
+
+/**
+ * Find a preset that matches the given colors (canonical hex equality).
  * Returns the preset ID if found, null otherwise.
  */
-export function findMatchingPreset(colors: {
-  primary: string;
-  secondary: string;
-  accent: string;
-  background: string;
-  text: string;
-}): string | null {
+export function findMatchingPreset(colors: ColorCustomization): string | null {
+  const normalized = normalizeColorCustomization(colors);
+  if (!normalized) {
+    return null;
+  }
   for (const preset of COLOR_PRESETS) {
+    const c = preset.colors;
     if (
-      preset.colors.primary === colors.primary &&
-      preset.colors.secondary === colors.secondary &&
-      preset.colors.accent === colors.accent &&
-      preset.colors.background === colors.background &&
-      preset.colors.text === colors.text
+      c.primary === normalized.primary &&
+      c.secondary === normalized.secondary &&
+      c.accent === normalized.accent &&
+      c.background === normalized.background &&
+      c.text === normalized.text
     ) {
       return preset.id;
     }
   }
   return null;
+}
+
+/**
+ * Returns a copy of preset colors by id, or undefined if unknown.
+ */
+export function getPresetColorsById(id: string): ColorCustomization | undefined {
+  const preset = COLOR_PRESETS.find((p) => p.id === id);
+  return preset ? { ...preset.colors } : undefined;
 }
 
 /**

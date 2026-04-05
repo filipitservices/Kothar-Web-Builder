@@ -286,6 +286,27 @@ TemplateRequestForm
 
 **State:** Form draft in `useTemplateRequestForm`; page seeds once via `initialFormData` → `hydrateFormData`. Updates via `updateField`. Children are controlled (`modelValue` / `update:modelValue`).
 
+### Design customization (color presets)
+
+**Sources of truth**
+
+- **Curated presets:** `app/constants/colorPresets.ts` exports `COLOR_PRESETS` (ids, labels, and five-channel `ColorCustomization` objects).
+- **Showcase defaults:** `app/stores/showcase.ts` embeds `colorScheme` per template. Templates that are meant to match a preset should keep those hex values aligned with the preset (see `getPresetColorsById` in `colorPresets.ts` when authoring).
+
+**Preset matching (reliable, not fuzzy)**
+
+- Hex values are compared in **canonical form**: trimmed, `#` + six hex digits, **lowercase** (`normalizeHexColor` / `normalizeColorCustomization`).
+- A palette **is** a preset only if all five channels match a preset exactly after normalization (`findMatchingPreset`). There is no approximate or ΔE matching.
+
+**Showcase CTA contract**
+
+- In `app/assets/css/showcase.css`, `.show-btn--primary` uses **`accent` as the button background** and **`primary` as the button text color**. Those two roles must contrast (do not set `accent` equal to `primary`).
+
+**Color Scheme UI (Presets vs Custom tab)**
+
+- `TemplateRequestForm` passes **`colorUiResetScopeId`** (the Firestore order / request document id) and a derived **`colorUiResetKey`** into `ColorSchemePicker`.
+- When that key changes (baseline hydration from `initialFormData`, or a change of showcase `template.id`), the picker sets the active tab to **Presets** if the current `colorCustomization` matches a curated preset, otherwise **Custom**. The tab does **not** follow live edits to colors (no watcher on `colors` alone), so manual tweaks are not overridden while the user works.
+
 ### Navigation (gallery request page only)
 
 - Back link: Returns to `/gallery` (templates section)
@@ -327,6 +348,7 @@ Validation is centralized in `useTemplateRequestValidation` (see `app/composable
 
 The same **TemplateRequestForm** is used on the order edit page (`app/pages/orders/[id]/edit.vue`) with:
 
+- **colorUiResetScopeId** — Same order document id as the route param; used with hydration to reset the Design Customization tab logic (see **Design customization** above).
 - **initialFormData** — Form prefilled from the order (via `orderToFormData` from `useOrderUpdate`).
 - **existingAttachments** — Order attachments already stored in Firestore/Storage. When present, the form shows a read-only "Current attachments" list (filename, size, and a Download link when `downloadURL` is available) above the file upload area. New files added via the upload area are appended on save.
 - **Submit section overrides** — The bottom section uses different copy for editing: title "Save your changes", description about updates being saved, button "Update request", and loading text "Saving...". The request form page keeps the default "Ready to get started?" / "Submit Request" copy.

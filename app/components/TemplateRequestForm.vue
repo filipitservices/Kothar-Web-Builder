@@ -18,6 +18,7 @@
       <ColorSchemePicker
         :colors="formData.colorCustomization"
         :default-colors="defaultColors"
+        :color-ui-reset-key="colorUiResetKey"
         @update:colors="handleColorsUpdate"
         @reset="handleColorsReset"
       />
@@ -320,6 +321,11 @@ export type { ColorCustomization, TemplateRequestFormData } from '~/types/templa
 
 interface Props {
   template: ShowcaseTemplate;
+  /**
+   * Stable id for this form session (e.g. Firestore order/request document id).
+   * Used with template id and hydration so ColorSchemePicker resets its Presets/Custom tab when appropriate.
+   */
+  colorUiResetScopeId: string;
   isSubmitting?: boolean;
   showProgress?: boolean;
   /** Prefill form (e.g. for order edit); applied once when provided. */
@@ -372,12 +378,30 @@ const {
   hydrateFormData
 } = useTemplateRequestForm(templateRef, uploadedFiles);
 
+/** Bumped when server baseline hydrates or showcase template changes — drives ColorSchemePicker tab reset. */
+const colorUiHydrationGeneration = ref(0);
+
 watch(
   () => props.initialFormData,
   (data) => {
-    if (data) hydrateFormData(data);
+    if (data) {
+      hydrateFormData(data);
+      colorUiHydrationGeneration.value += 1;
+    }
   },
   { immediate: true }
+);
+
+watch(
+  () => props.template.id,
+  () => {
+    colorUiHydrationGeneration.value += 1;
+  }
+);
+
+const colorUiResetKey = computed(
+  () =>
+    `${props.colorUiResetScopeId}:${props.template.id}:${colorUiHydrationGeneration.value}`
 );
 
 const { errors, validateField, validateAll, clearFieldError } =

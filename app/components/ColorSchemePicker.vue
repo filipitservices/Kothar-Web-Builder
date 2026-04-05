@@ -40,6 +40,8 @@
           type="button"
           class="color-preset-card"
           :class="{ 'color-preset-card--selected': selectedPresetId === preset.id }"
+          :style="selectedPresetId === preset.id ? presetSelectedSurfaceStyle(preset) : undefined"
+          :aria-pressed="selectedPresetId === preset.id"
           @click="selectPreset(preset)"
         >
           <div class="color-preset-swatches">
@@ -68,8 +70,12 @@
             <span class="color-preset-name">{{ preset.name }}</span>
             <span class="color-preset-description">{{ preset.description }}</span>
           </div>
-          <div v-if="selectedPresetId === preset.id" class="color-preset-check">
-            <svg viewBox="0 0 20 20" fill="currentColor">
+          <div
+            v-if="selectedPresetId === preset.id"
+            class="color-preset-check"
+            aria-hidden="true"
+          >
+            <svg viewBox="0 0 20 20" fill="currentColor" class="color-preset-check__icon">
               <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
             </svg>
           </div>
@@ -129,13 +135,25 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import type { ColorCustomization, ColorPreset, ColorMode } from '~/types/templateRequest';
-import { COLOR_PRESETS, COLOR_DEFINITIONS, findMatchingPreset, isValidHexColor } from '~/constants/colorPresets';
+import {
+  COLOR_PRESETS,
+  COLOR_DEFINITIONS,
+  findMatchingPreset,
+  isValidHexColor,
+  sameColorCustomization,
+  normalizeColorCustomization
+} from '~/constants/colorPresets';
 
 interface Props {
   /** Current color values */
   colors: ColorCustomization;
   /** Default colors to reset to */
   defaultColors: ColorCustomization;
+  /**
+   * When this value changes (hydration, template change, scope id), Presets vs Custom tab
+   * re-syncs from whether `colors` match a curated preset — not while the user edits colors.
+   */
+  colorUiResetKey: string;
 }
 
 interface Emits {
@@ -156,18 +174,38 @@ const colorMode = ref<ColorMode>('presets');
  */
 const selectedPresetId = computed(() => findMatchingPreset(props.colors));
 
+watch(
+  () => props.colorUiResetKey,
+  () => {
+    colorMode.value =
+      findMatchingPreset(props.colors) !== null ? 'presets' : 'custom';
+  },
+  { immediate: true }
+);
+
 /**
  * Check if colors have been changed from defaults
  */
 const hasChanges = computed(() => {
-  return (
-    props.colors.primary !== props.defaultColors.primary ||
-    props.colors.secondary !== props.defaultColors.secondary ||
-    props.colors.accent !== props.defaultColors.accent ||
-    props.colors.background !== props.defaultColors.background ||
-    props.colors.text !== props.defaultColors.text
-  );
+  const cur = normalizeColorCustomization(props.colors);
+  const def = normalizeColorCustomization(props.defaultColors);
+  if (!cur || !def) {
+    return true;
+  }
+  return !sameColorCustomization(cur, def);
 });
+
+/**
+ * Subtle selected-card wash derived from the preset itself (low contrast; static only).
+ */
+function presetSelectedSurfaceStyle(preset: ColorPreset): Record<string, string> {
+  const { primary, accent, background } = preset.colors;
+  return {
+    '--preset-surface-a': `color-mix(in srgb, ${primary} 10%, transparent)`,
+    '--preset-surface-b': `color-mix(in srgb, ${accent} 8%, transparent)`,
+    '--preset-surface-mid': `color-mix(in srgb, ${background} 40%, transparent)`
+  };
+}
 
 /**
  * Set color mode
@@ -276,6 +314,7 @@ function handleReset(): void {
   cursor: pointer;
   text-align: left;
   position: relative;
+  isolation: isolate;
   transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 }
 
@@ -287,23 +326,51 @@ function handleReset(): void {
 .color-preset-card--selected {
   border-color: var(--color-primary);
   background: var(--color-primary-tint);
-  box-shadow: 0 0 0 1px var(--color-primary);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-primary) 32%, transparent),
+    var(--focus-ring-primary);
 }
 
 .color-preset-card--selected:hover {
   border-color: var(--color-primary);
   background: var(--color-primary-tint);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-primary) 40%, transparent),
+    var(--focus-ring-primary);
+}
+
+.color-preset-card--selected::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    145deg,
+    var(--preset-surface-a, transparent),
+    var(--preset-surface-mid, transparent) 50%,
+    var(--preset-surface-b, transparent)
+  );
+  pointer-events: none;
 }
 
 .color-preset-card:focus-visible {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.08);
+  box-shadow: var(--focus-ring-primary);
+}
+
+.color-preset-card--selected:focus-visible {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-primary) 40%, transparent),
+    var(--focus-ring-primary);
 }
 
 .color-preset-swatches {
   display: flex;
   gap: 4px;
+  position: relative;
+  z-index: 1;
 }
 
 .preset-swatch {
@@ -325,6 +392,8 @@ function handleReset(): void {
   display: flex;
   flex-direction: column;
   gap: 0.125rem;
+  position: relative;
+  z-index: 1;
 }
 
 .color-preset-name {
@@ -344,14 +413,23 @@ function handleReset(): void {
   position: absolute;
   top: var(--space-sm);
   right: var(--space-sm);
-  width: 1.25rem;
-  height: 1.25rem;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--color-text) 6%, transparent);
   color: var(--color-primary);
 }
 
-.color-preset-check svg {
-  width: 100%;
-  height: 100%;
+.color-preset-check__icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
 }
 
 /* ==========================================================================
@@ -379,21 +457,21 @@ function handleReset(): void {
   align-items: center;
   gap: 0.375rem;
   padding: 0.375rem 0.75rem;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
   font-size: 0.8125rem;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--color-text-muted);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
   flex-shrink: 0;
 }
 
 .color-reset-btn:hover {
-  border-color: #d1d5db;
-  color: #374151;
-  background: #f9fafb;
+  border-color: var(--color-border-hover);
+  color: var(--color-text-muted-dark);
+  background: var(--color-bg-muted);
 }
 
 .color-reset-btn svg {
@@ -437,10 +515,10 @@ function handleReset(): void {
   width: 100%;
   aspect-ratio: 1;
   border-radius: 10px;
-  border: 3px solid #fff;
-  box-shadow: 
-    0 0 0 1px rgba(0, 0, 0, 0.1),
-    0 2px 6px rgba(0, 0, 0, 0.08);
+  border: 3px solid var(--color-bg);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-text) 12%, transparent),
+    0 2px 6px color-mix(in srgb, var(--color-text) 8%, transparent);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -466,9 +544,9 @@ function handleReset(): void {
 
 .color-custom-control:focus-within .color-custom-swatch {
   transform: scale(1.05);
-  box-shadow: 
-    0 0 0 2px #1e3a8a,
-    0 0 0 4px rgba(30, 58, 138, 0.15);
+  box-shadow:
+    0 0 0 2px var(--color-primary),
+    0 0 0 4px color-mix(in srgb, var(--color-primary) 18%, transparent);
 }
 
 .color-custom-meta {
@@ -482,7 +560,7 @@ function handleReset(): void {
 .color-custom-label {
   font-size: 0.6875rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--color-text-muted-dark);
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
@@ -490,7 +568,7 @@ function handleReset(): void {
 .color-custom-value {
   font-size: 0.6875rem;
   font-weight: 500;
-  color: #9ca3af;
+  color: var(--color-placeholder);
   font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace;
   text-transform: uppercase;
 }
