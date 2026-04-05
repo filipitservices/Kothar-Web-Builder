@@ -5,6 +5,7 @@
 
 import { useOrdersStore } from '~/stores/orders';
 import { useRequestLayoutStore } from '~/stores/requestLayout';
+import { useUnsavedChangesStore } from '~/stores/unsavedChanges';
 import type { OrderUpdateParams } from '~/composables/useOrderUpdate';
 import { ROUTES } from '~/constants/routes';
 import type { FinalizeDraftResponse } from '~/types/finalizeDraft';
@@ -74,6 +75,7 @@ export function useDraftRequestSubmitFlow() {
     await ordersStore.fetchOrder(userId, order.id);
 
     requestLayoutStore.reset();
+    useUnsavedChangesStore().requestAllowNext();
     await navigateTo({ path: ROUTES.sites, query: { tab: 'orders' } });
     return { kind: 'submitted' };
   }

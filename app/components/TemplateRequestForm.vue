@@ -448,6 +448,19 @@ watch(
   },
   { immediate: true }
 );
+
+/** Same shape as @submit payload; used by parent for unsaved-changes detection. */
+function getSnapshotForDirtyCheck(): TemplateRequestFormData {
+  return {
+    ...formData.value,
+    brandAssets: uploadedFiles.value.map((f) => f.name),
+    files: [...uploadedFiles.value]
+  };
+}
+
+defineExpose({
+  getSnapshotForDirtyCheck
+});
 </script>
 
 <style src="~/assets/css/components.css"></style>

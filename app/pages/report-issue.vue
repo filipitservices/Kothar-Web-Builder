@@ -87,12 +87,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useAuth } from '~/composables/useAuth';
 import { useIssueReport, IssueReportSubmissionError } from '~/composables/useIssueReport';
 import { ROUTES } from '~/constants/routes';
 import { ISSUE_REPORT_CATEGORIES, type IssueReportCategory } from '~/types/issueReport';
 import { issueReportCategoryLabel } from '~/utils/issueReportValidation';
+import { useUnsavedChanges } from '~/composables/useUnsavedChanges';
 
 definePageMeta({
   middleware: 'auth',
@@ -104,12 +105,32 @@ const { currentUser } = useAuth();
 const { submitReport } = useIssueReport();
 const appConfig = useAppConfig();
 
-const category = ref<IssueReportCategory>('bug');
+const INITIAL_CATEGORY: IssueReportCategory = 'bug';
+
+const category = ref<IssueReportCategory>(INITIAL_CATEGORY);
 const message = ref('');
 const submitting = ref(false);
 const success = ref(false);
 const formError = ref<string | null>(null);
 const submittedId = ref('');
+
+const isReportFormDirty = computed(() => {
+  if (success.value || submitting.value) return false;
+  return (
+    message.value.trim() !== '' || category.value !== INITIAL_CATEGORY
+  );
+});
+
+function discardReportForm(): void {
+  message.value = '';
+  category.value = INITIAL_CATEGORY;
+  formError.value = null;
+}
+
+useUnsavedChanges({
+  isDirty: isReportFormDirty,
+  onDiscard: discardReportForm,
+});
 
 async function handleSubmit(): Promise<void> {
   formError.value = null;

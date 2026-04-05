@@ -5,11 +5,14 @@
     </NuxtLayout>
     <ClientOnly>
       <ToastContainer />
+      <UnsavedChangesDialog />
     </ClientOnly>
   </div>
 </template>
 
 <script setup lang="ts">
+import UnsavedChangesDialog from '~/components/UnsavedChangesDialog.vue';
+
 const appConfig = useAppConfig();
 
 useHead({

@@ -286,7 +286,7 @@ TemplateRequestForm
 
 **State:** Form draft in `useTemplateRequestForm`; page seeds once via `initialFormData` → `hydrateFormData`. Updates via `updateField`. Children are controlled (`modelValue` / `update:modelValue`).
 
-### Navigation
+### Navigation (gallery request page only)
 
 - Back link: Returns to `/gallery` (templates section)
 - "Choose a different design" link: Returns to `/gallery`
@@ -332,6 +332,8 @@ The same **TemplateRequestForm** is used on the order edit page (`app/pages/orde
 - **Submit section overrides** — The bottom section uses different copy for editing: title "Save your changes", description about updates being saved, button "Update request", and loading text "Saving...". The request form page keeps the default "Ready to get started?" / "Submit Request" copy.
 
 Locked orders (`modificationLocked === true`) redirect to `/sites`; the edit page does not render the form in that case. To discard a draft, use **My Sites → Orders** and the trash action in the table (see **Discarding a draft** above).
+
+**Exit navigation:** Unlike the gallery request page, order edit does **not** send users back to the Gallery from the preview column. The back link targets **`/sites?tab=orders`** with the label **“Back to your sites”**, matching the usual entry path (**Orders → Modify**).
 
 ---
 

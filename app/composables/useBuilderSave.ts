@@ -54,6 +54,7 @@ export function useBuilderSave(options: UseBuilderSaveOptions): UseBuilderSaveRe
     try {
       const layout = requestLayoutStore.getLayoutForSubmission();
       await saveLayout(uid, orderId, layout);
+      requestLayoutStore.syncLayoutBaselineFromCurrent();
       saveStatus.value = 'saved';
       saveStatusTimer = setTimeout(() => {
         saveStatus.value = 'idle';

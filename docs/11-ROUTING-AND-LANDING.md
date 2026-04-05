@@ -117,12 +117,15 @@ Routes are implicitly defined by file structure. No manual `vue-router` config r
 - **Gallery → Template Preview**: Click template card → ShowcaseModal opens in-page
 - **Template Preview → Request**: "Choose This Design" → creates a draft request in Firebase → navigates to `/gallery/request/:id` (Firebase doc ID)
 - **Request → Builder**: "Customize page layout" → navigates to `/gallery/request/:id/builder` or `/orders/:id/builder` (ID-scoped rehydration). On smaller screens the action is non-interactive and explains that the visual editor requires a larger viewport.
-- **Request → Gallery**: Back link or "Choose different design" link
+- **Request → Gallery**: On `/gallery/request/:id`, back link or "Choose different design" link returns to `/gallery` (templates)
+- **Order edit → My Sites**: On `/orders/:id/edit`, the preview-column back link goes to **`/sites?tab=orders`** (“Back to your sites”) so users return to the Orders tab after **Modify**, not to the Gallery
 - **UserMenu (authenticated)**: Gallery, **My Live Sites** (`/sites`), **Report a problem** (`/report-issue`), Sign Out
 - **Sites list → Site control panel**: "Manage site" → `/sites/:id`
 - **Site control panel → Sites list**: "Back to your sites" → `/sites`
 - **Any page → Landing**: Logo link with `<NuxtLink to="/">`
 - **Unauthenticated → Login**: Automatic redirect via `auth` middleware
+
+**Unsaved changes:** Editable routes (`/gallery/request/:id`, `/orders/:id/edit`, both ID-scoped builders, `/report-issue`) register with a central Pinia store (`stores/unsavedChanges.ts`). A client-only router guard cancels navigation when dirty and opens **`UnsavedChangesDialog`** (design-system modal in `app.vue`). The same store drives `beforeunload` for tab close/refresh. Successful submits call `requestAllowNext()` before `navigateTo` so the guard does not block intentional exits. **`/sites/:id`** is intentionally excluded until live-site persistence semantics are unified (see `composables/useUnsavedChanges.ts`).
 
 **Product rule:** Live sites (managed at `/sites` and `/sites/:id`) are **not** rebuilt via the builder. The builder is for design selection and the request flow only. Delivered sites are managed in the Live Sites area.
 

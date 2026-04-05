@@ -85,6 +85,27 @@ export const useRequestLayoutStore = defineStore('requestLayout', () => {
   /** Route to navigate back to when leaving the builder. */
   const returnRoute = ref<string | null>(null);
 
+  /**
+   * JSON fingerprint of the last persisted / accepted layout (load or successful save).
+   * Used for unsaved-changes detection; do not confuse with isCustomized (template deviation).
+   */
+  const persistedLayoutFingerprint = ref<string | null>(null);
+
+  function fingerprintFromLayout(layout: OrderLayout): string {
+    return JSON.stringify(layout);
+  }
+
+  /** Call after init, successful builder save, or successful order submit while staying on page. */
+  function syncLayoutBaselineFromCurrent(): void {
+    persistedLayoutFingerprint.value = fingerprintFromLayout(getLayoutForSubmission());
+  }
+
+  function isLayoutDirtyVsBaseline(): boolean {
+    const baseline = persistedLayoutFingerprint.value;
+    if (baseline === null) return false;
+    return fingerprintFromLayout(getLayoutForSubmission()) !== baseline;
+  }
+
   /* -- Derived ------------------------------------------------------------ */
 
   const isCustomized = computed<boolean>(() => {
@@ -105,6 +126,7 @@ export const useRequestLayoutStore = defineStore('requestLayout', () => {
     sourceOrderId.value = null;
     returnRoute.value = returnTo;
     active.value = true;
+    syncLayoutBaselineFromCurrent();
   }
 
   /** Initialize from an existing order's saved layout (edit flow). */
@@ -127,6 +149,7 @@ export const useRequestLayoutStore = defineStore('requestLayout', () => {
     sourceOrderId.value = orderId;
     returnRoute.value = returnTo;
     active.value = true;
+    syncLayoutBaselineFromCurrent();
   }
 
   /**
@@ -145,6 +168,7 @@ export const useRequestLayoutStore = defineStore('requestLayout', () => {
     sourceOrderId.value = orderId;
     returnRoute.value = returnTo;
     active.value = true;
+    syncLayoutBaselineFromCurrent();
   }
 
   /** Replace the current block list (called by the builder on drag changes). */
@@ -177,6 +201,7 @@ export const useRequestLayoutStore = defineStore('requestLayout', () => {
     sourceOrderId.value = null;
     returnRoute.value = null;
     active.value = false;
+    persistedLayoutFingerprint.value = null;
   }
 
   return {
@@ -193,6 +218,8 @@ export const useRequestLayoutStore = defineStore('requestLayout', () => {
     updateBlocks,
     setReturnRoute,
     getLayoutForSubmission,
+    syncLayoutBaselineFromCurrent,
+    isLayoutDirtyVsBaseline,
     reset,
   };
 });

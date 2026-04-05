@@ -101,12 +101,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, type Ref } from 'vue';
+import { ref, computed, watch, onUnmounted, type Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useDrawing } from '~/composables/useDrawing';
 import { useTemplateApplication } from '~/composables/useTemplateApplication';
 import { useBuilderSave } from '~/composables/useBuilderSave';
 import { useRequestLayoutStore } from '~/stores/requestLayout';
+import { useBuilderEphemeralStore } from '~/stores/builderEphemeral';
 import { useAuthStore } from '~/stores/auth';
 import { useCreateRequest } from '~/composables/useCreateRequest';
 import ScreensPanel from '~/components/ScreensPanel.vue';
@@ -123,6 +124,7 @@ defineOptions({ name: 'BuilderEditor' });
 const router = useRouter();
 const authStore = useAuthStore();
 const requestLayoutStore = useRequestLayoutStore();
+const builderEphemeral = useBuilderEphemeralStore();
 const { saveLayout } = useCreateRequest();
 
 const { isSaving, saveStatus, saveLabel, handleSaveLayout } = useBuilderSave({
@@ -161,6 +163,23 @@ const {
   updateDesktopDrawingState,
   updateMobileDrawingState,
 } = useDrawing();
+
+/**
+ * Drawing annotations are not persisted on the order layout; treat as unsaved for leave guards.
+ */
+watch(
+  [desktopStrokes, mobileStrokes],
+  () => {
+    const hasMarks =
+      desktopStrokes.value.length > 0 || mobileStrokes.value.length > 0;
+    builderEphemeral.setDrawingHasUnsavedMarks(hasMarks);
+  },
+  { deep: true }
+);
+
+onUnmounted(() => {
+  builderEphemeral.reset();
+});
 
 const dummyMobileList: Ref<BlockItem[]> = ref([]);
 const { applyTemplate } = useTemplateApplication({

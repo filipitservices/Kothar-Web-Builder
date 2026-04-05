@@ -118,8 +118,10 @@
             </div>
 
             <TemplateRequestForm
-              v-if="originalTemplate"
+              v-if="originalTemplate && formBaseline"
+              ref="templateFormRef"
               :template="originalTemplate"
+              :initial-form-data="formBaseline"
               :is-submitting="isSubmitting"
               :show-progress="false"
               @color-change="handleColorChange"
@@ -149,6 +151,7 @@ import { useAuthStore } from '~/stores/auth';
 import { useOrdersStore } from '~/stores/orders';
 import { useRequestLayoutStore } from '~/stores/requestLayout';
 import { useOrderUpdate } from '~/composables/useOrderUpdate';
+import { useUnsavedChanges } from '~/composables/useUnsavedChanges';
 import type { OrderWithId } from '~/types/order';
 import ShowcaseRenderer from '~/components/showcase/ShowcaseRenderer.vue';
 import TemplateRequestForm from '~/components/TemplateRequestForm.vue';
@@ -158,6 +161,7 @@ import { useDraftRequestSubmitFlow } from '~/composables/useDraftRequestSubmitFl
 import { WHOP_CHECKOUT_RETURN_PATH } from '~/constants/access';
 import type { TemplateRequestFormData, ColorCustomization } from '~/types/templateRequest';
 import { useBuilderViewportSupport } from '~/composables/useBuilderViewportSupport';
+import { areTemplateRequestSnapshotsEqual } from '~/utils/templateRequestFormEquality';
 import { getAccountFirstName } from '~/utils/accountIdentity';
 
 definePageMeta({
@@ -172,7 +176,7 @@ const showcaseStore = useShowcaseStore();
 const authStore = useAuthStore();
 const ordersStore = useOrdersStore();
 const requestLayoutStore = useRequestLayoutStore();
-const { updateOrder } = useOrderUpdate();
+const { orderToFormData, updateOrder } = useOrderUpdate();
 const { ensureLoaded, openCheckout } = useWhopAccess();
 const { submitDraftOrder } = useDraftRequestSubmitFlow();
 const { minWidth, isReady: viewportReady, isSupported: viewportSupported } = useBuilderViewportSupport();
@@ -188,6 +192,8 @@ useOrdersSnapshotWhenFocused(userId);
 const userName = computed(() => getAccountFirstName(authStore.currentUser));
 
 const orderDoc = ref<OrderWithId | null>(null);
+/** Server baseline for unsaved detection; hydrated into TemplateRequestForm via :initial-form-data */
+const formBaseline = ref<TemplateRequestFormData | null>(null);
 const originalTemplate = ref<ShowcaseTemplate | undefined>(undefined);
 const previewTemplate = ref<ShowcaseTemplate | undefined>(undefined);
 const loadError = ref(false);
@@ -224,6 +230,62 @@ const containerStyle = computed(() => ({
 
 const layoutCustomized = computed(() => requestLayoutStore.isCustomized);
 const isBuilderSupported = computed(() => !viewportReady.value || viewportSupported.value);
+
+interface TemplateRequestFormExpose {
+  getSnapshotForDirtyCheck: () => TemplateRequestFormData;
+}
+
+const templateFormRef = ref<TemplateRequestFormExpose | null>(null);
+
+const isEditsDirty = computed(() => {
+  if (!formBaseline.value || !templateFormRef.value || isSubmitting.value) {
+    return false;
+  }
+  const formDirty = !areTemplateRequestSnapshotsEqual(
+    templateFormRef.value.getSnapshotForDirtyCheck(),
+    formBaseline.value
+  );
+  const layoutDirty = requestLayoutStore.isLayoutDirtyVsBaseline();
+  return formDirty || layoutDirty;
+});
+
+async function discardUnsaved(): Promise<void> {
+  const uid = userId.value;
+  const order = orderDoc.value;
+  const template = originalTemplate.value;
+  if (!uid || !order || !template) return;
+
+  const refreshed = await ordersStore.fetchOrder(uid, order.id);
+  if (!refreshed) return;
+
+  orderDoc.value = refreshed;
+  formBaseline.value = orderToFormData(refreshed);
+
+  const colors =
+    refreshed.projectDetails?.colorCustomization ?? template.colorScheme;
+  previewTemplate.value = createPreviewTemplate(template, colors);
+
+  const returnTo = `/gallery/request/${refreshed.id}`;
+  if (refreshed.layout) {
+    requestLayoutStore.initFromOrderLayout(
+      refreshed.layout,
+      refreshed.id,
+      template.sections,
+      returnTo
+    );
+  } else {
+    requestLayoutStore.initFromTemplateForOrder(
+      template,
+      refreshed.id,
+      returnTo
+    );
+  }
+}
+
+useUnsavedChanges({
+  isDirty: isEditsDirty,
+  onDiscard: discardUnsaved,
+});
 
 function calculateViewportScale(): void {
   const container = previewContainerRef.value;
@@ -263,6 +325,7 @@ async function loadRequestFromFirebase(): Promise<void> {
   }
 
   orderDoc.value = order;
+  formBaseline.value = orderToFormData(order);
 
   const template = showcaseStore.getTemplateById(order.templateId);
   if (!template) {
@@ -392,6 +455,8 @@ async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
     if (result.kind === 'subscription_required') {
       if (result.syncedOrder) {
         orderDoc.value = result.syncedOrder;
+        formBaseline.value = orderToFormData(result.syncedOrder);
+        requestLayoutStore.syncLayoutBaselineFromCurrent();
       }
       feedbackType.value = 'error';
       feedbackMessage.value =

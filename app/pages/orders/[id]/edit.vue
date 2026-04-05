@@ -61,11 +61,15 @@
                   </span>
                   <span v-if="layoutCustomized" class="req-layout-badge">Modified</span>
                 </button>
-                <NuxtLink to="/gallery" class="change-template-link" aria-label="Back to Gallery templates">
+                <NuxtLink
+                  :to="{ path: ROUTES.sites, query: { tab: 'orders' } }"
+                  class="change-template-link"
+                  aria-label="Back to your sites, Orders tab"
+                >
                   <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14" aria-hidden="true">
                     <path fill-rule="evenodd" d="M9.707 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 011.414 1.414L6.414 8H16a1 1 0 110 2H6.414l3.293 3.293a1 1 0 010 1.414z" clip-rule="evenodd" />
                   </svg>
-                  Back to Gallery templates
+                  Back to your sites
                 </NuxtLink>
               </div>
             </div>
@@ -87,6 +91,7 @@
 
             <TemplateRequestForm
               v-if="originalTemplate && initialFormData"
+              ref="templateFormRef"
               :template="originalTemplate"
               :initial-form-data="initialFormData"
               :existing-attachments="orderRef?.attachments ?? []"
@@ -132,6 +137,9 @@ import { useWhopAccess } from '~/composables/useWhopAccess';
 import { useDraftRequestSubmitFlow } from '~/composables/useDraftRequestSubmitFlow';
 import { WHOP_CHECKOUT_RETURN_PATH } from '~/constants/access';
 import { useBuilderViewportSupport } from '~/composables/useBuilderViewportSupport';
+import { useUnsavedChanges } from '~/composables/useUnsavedChanges';
+import { useUnsavedChangesStore } from '~/stores/unsavedChanges';
+import { areTemplateRequestSnapshotsEqual } from '~/utils/templateRequestFormEquality';
 
 definePageMeta({
   middleware: 'auth'
@@ -188,6 +196,57 @@ const containerStyle = computed(() => ({
 
 const layoutCustomized = computed(() => requestLayoutStore.isCustomized);
 const isBuilderSupported = computed(() => !viewportReady.value || viewportSupported.value);
+
+interface TemplateRequestFormExpose {
+  getSnapshotForDirtyCheck: () => TemplateRequestFormData;
+}
+
+const templateFormRef = ref<TemplateRequestFormExpose | null>(null);
+
+const isEditsDirty = computed(() => {
+  if (!initialFormData.value || !templateFormRef.value || isSubmitting.value) {
+    return false;
+  }
+  const formDirty = !areTemplateRequestSnapshotsEqual(
+    templateFormRef.value.getSnapshotForDirtyCheck(),
+    initialFormData.value
+  );
+  const layoutDirty = requestLayoutStore.isLayoutDirtyVsBaseline();
+  return formDirty || layoutDirty;
+});
+
+async function discardUnsaved(): Promise<void> {
+  const uid = userId.value;
+  if (!uid) return;
+  const id = orderId.value;
+  const refreshed = await ordersStore.fetchOrder(uid, id);
+  const template = originalTemplate.value;
+  if (!refreshed || !template) return;
+
+  orderRef.value = refreshed;
+  initialFormData.value = orderToFormData(refreshed);
+  previewTemplate.value = createPreviewTemplate(
+    template,
+    refreshed.projectDetails.colorCustomization
+  );
+
+  const returnTo = `/orders/${id}/edit`;
+  if (refreshed.layout) {
+    requestLayoutStore.initFromOrderLayout(
+      refreshed.layout,
+      refreshed.id,
+      template.sections,
+      returnTo
+    );
+  } else {
+    requestLayoutStore.initFromTemplateForOrder(template, refreshed.id, returnTo);
+  }
+}
+
+useUnsavedChanges({
+  isDirty: isEditsDirty,
+  onDiscard: discardUnsaved,
+});
 
 function createPreviewTemplate(
   base: ShowcaseTemplate,
@@ -336,6 +395,7 @@ async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
       });
 
       requestLayoutStore.reset();
+      useUnsavedChangesStore().requestAllowNext();
       await navigateTo({ path: ROUTES.sites, query: { tab: 'orders' } });
     } catch (err) {
       feedbackType.value = 'error';
@@ -354,6 +414,8 @@ async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
     if (result.kind === 'subscription_required') {
       if (result.syncedOrder) {
         orderRef.value = result.syncedOrder;
+        initialFormData.value = orderToFormData(result.syncedOrder);
+        requestLayoutStore.syncLayoutBaselineFromCurrent();
       }
       feedbackType.value = 'error';
       feedbackMessage.value =

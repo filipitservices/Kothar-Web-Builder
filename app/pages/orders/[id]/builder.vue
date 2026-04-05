@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, watch } from 'vue';
+import { computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import BuilderEditor from '~/components/BuilderEditor.vue';
 import BuilderViewportFallback from '~/components/BuilderViewportFallback.vue';
@@ -17,8 +17,10 @@ import { useAuthStore } from '~/stores/auth';
 import { useOrdersStore } from '~/stores/orders';
 import { useShowcaseStore } from '~/stores/showcase';
 import { useRequestLayoutStore } from '~/stores/requestLayout';
+import { useBuilderEphemeralStore } from '~/stores/builderEphemeral';
 import type { OrderWithId } from '~/types/order';
 import { useBuilderViewportSupport } from '~/composables/useBuilderViewportSupport';
+import { useUnsavedChanges } from '~/composables/useUnsavedChanges';
 
 definePageMeta({
   middleware: 'auth',
@@ -33,6 +35,7 @@ const authStore = useAuthStore();
 const ordersStore = useOrdersStore();
 const showcaseStore = useShowcaseStore();
 const requestLayoutStore = useRequestLayoutStore();
+const builderEphemeral = useBuilderEphemeralStore();
 const { minWidth, isReady, isSupported } = useBuilderViewportSupport();
 
 function getOrderIdFromRoute(): string | null {
@@ -42,7 +45,11 @@ function getOrderIdFromRoute(): string | null {
   return trimmed.length ? trimmed : null;
 }
 
-async function initialiseLayoutFromOrder(orderId: string, uid: string): Promise<void> {
+async function initialiseLayoutFromOrder(
+  orderId: string,
+  uid: string,
+  force = false
+): Promise<void> {
   let order: OrderWithId | null = ordersStore.getOrderById(orderId) ?? null;
   if (!order) {
     order = await ordersStore.fetchOrder(uid, orderId);
@@ -61,7 +68,11 @@ async function initialiseLayoutFromOrder(orderId: string, uid: string): Promise<
 
   const returnTo = `/orders/${orderId}/edit`;
 
-  if (!requestLayoutStore.active || requestLayoutStore.sourceOrderId !== order.id) {
+  if (
+    force ||
+    !requestLayoutStore.active ||
+    requestLayoutStore.sourceOrderId !== order.id
+  ) {
     if (order.layout) {
       requestLayoutStore.initFromOrderLayout(
         order.layout,
@@ -76,6 +87,25 @@ async function initialiseLayoutFromOrder(orderId: string, uid: string): Promise<
     requestLayoutStore.setReturnRoute(returnTo);
   }
 }
+
+async function discardUnsavedAndRehydrate(): Promise<void> {
+  builderEphemeral.reset();
+  const orderId = getOrderIdFromRoute();
+  const uid = authStore.uid ?? authStore.currentUser?.uid ?? null;
+  if (!orderId || !uid) return;
+  await initialiseLayoutFromOrder(orderId, uid, true);
+}
+
+const isDirty = computed(
+  () =>
+    requestLayoutStore.isLayoutDirtyVsBaseline() ||
+    builderEphemeral.drawingHasUnsavedMarks
+);
+
+useUnsavedChanges({
+  isDirty,
+  onDiscard: discardUnsavedAndRehydrate,
+});
 
 async function ensureOrderContext(): Promise<void> {
   const orderId = getOrderIdFromRoute();
