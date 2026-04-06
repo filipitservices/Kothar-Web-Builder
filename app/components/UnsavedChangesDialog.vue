@@ -33,7 +33,7 @@
         </div>
         <div class="modal-body unsaved-changes-dialog__body">
           <p id="unsaved-changes-desc" class="text-muted">
-            You have unsaved changes. If you leave now, that progress may be lost.
+            You have an in-progress request. If you leave now, unsaved progress may be lost.
           </p>
         </div>
         <div class="modal-footer unsaved-changes-dialog__footer">

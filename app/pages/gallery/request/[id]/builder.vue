@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import BuilderEditor from '~/components/BuilderEditor.vue';
 import BuilderViewportFallback from '~/components/BuilderViewportFallback.vue';
@@ -18,7 +18,7 @@ import { useOrdersStore } from '~/stores/orders';
 import { useShowcaseStore } from '~/stores/showcase';
 import { useRequestLayoutStore } from '~/stores/requestLayout';
 import { useBuilderEphemeralStore } from '~/stores/builderEphemeral';
-import type { OrderWithId } from '~/types/order';
+import type { OrderStatus, OrderWithId } from '~/types/order';
 import { useBuilderViewportSupport } from '~/composables/useBuilderViewportSupport';
 import { useUnsavedChanges } from '~/composables/useUnsavedChanges';
 
@@ -37,6 +37,7 @@ const showcaseStore = useShowcaseStore();
 const requestLayoutStore = useRequestLayoutStore();
 const builderEphemeral = useBuilderEphemeralStore();
 const { minWidth, isReady, isSupported } = useBuilderViewportSupport();
+const orderStatus = ref<OrderStatus | null>(null);
 
 function getOrderIdFromRoute(): string | null {
   const id = route.params.id;
@@ -56,9 +57,11 @@ async function initialiseLayoutFromOrder(
   }
 
   if (!order) {
+    orderStatus.value = null;
     await router.replace('/gallery');
     return;
   }
+  orderStatus.value = order.status;
 
   const template = showcaseStore.getTemplateById(order.templateId);
   if (!template) {
@@ -101,9 +104,11 @@ const isDirty = computed(
     requestLayoutStore.isLayoutDirtyVsBaseline() ||
     builderEphemeral.drawingHasUnsavedMarks
 );
+const hasUnsavedSession = computed(() => orderStatus.value === 'draft');
 
 useUnsavedChanges({
   isDirty,
+  hasUnsavedSession,
   onDiscard: discardUnsavedAndRehydrate,
 });
 

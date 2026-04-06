@@ -11,23 +11,33 @@
 
 import { useUnsavedChangesStore } from '~/stores/unsavedChanges';
 import { useAuthStore } from '~/stores/auth';
+import { getEditingFlowScope, isLeavingEditingFlow } from '~/utils/editingFlowScope';
 
 export default defineNuxtPlugin(() => {
   const router = useRouter();
   const unsaved = useUnsavedChangesStore();
   const authStore = useAuthStore();
 
-  router.beforeEach((to) => {
+  router.beforeEach((to, from) => {
     if (!authStore.isAuthenticated) {
       unsaved.closeModalStay();
       unsaved.consumeAllowNext();
       return true;
     }
-    if (!unsaved.hasUnsaved) {
+    if (!unsaved.active) {
       return true;
     }
     if (unsaved.allowNext) {
       unsaved.consumeAllowNext();
+      return true;
+    }
+
+    const fromScope = getEditingFlowScope(from);
+    const shouldPrompt =
+      fromScope.kind === 'editing'
+        ? isLeavingEditingFlow(from, to) && unsaved.shouldPromptOnLeaveFlow
+        : unsaved.hasDirtyEdits;
+    if (!shouldPrompt) {
       return true;
     }
     unsaved.openIntercept(to);
@@ -35,7 +45,7 @@ export default defineNuxtPlugin(() => {
   });
 
   const onBeforeUnload = (e: BeforeUnloadEvent) => {
-    if (!unsaved.hasUnsaved) return;
+    if (!unsaved.shouldPromptOnLeaveFlow) return;
     e.preventDefault();
     e.returnValue = '';
   };

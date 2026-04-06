@@ -674,6 +674,21 @@ function setField(name, value) {
 
 **Server truth:** **`POST /api/orders/finalize-draft`** is the authoritative gate for **draft → submitted** (`evaluateWhopProductAccess` + membership cancel policy + Admin order update). Firestore `users/{uid}/access/billing` is still written by webhooks and **`GET /api/access/me`** sync for UI and for **non-draft** order updates that use client `updateDoc` + rules. Without a Whop API key, finalize cannot assert live access (**`{ ok: false }`**); set **`NUXT_WHOP_API_KEY`** and product/plan ids.
 
+## Unsaved Navigation Data Flow
+
+`stores/unsavedChanges.ts` is the single source of truth for route-leave prompting. Active editors register via `useUnsavedChanges()` with:
+
+- `isDirty`: diff-based form/layout/builder edits
+- `hasUnsavedSession`: draft-session state (`order.status === 'draft'`)
+- `onDiscard`: page-specific rehydrate/reset action
+
+The guard (`app/plugins/unsaved-changes-guard.client.ts`) classifies navigation intent via `app/utils/editingFlowScope.ts`:
+
+- same editing scope (`/gallery/request/:id` ↔ `/gallery/request/:id/builder`, `/orders/:id/edit` ↔ `/orders/:id/builder`) -> allow without prompt
+- leaving editing scope -> prompt when `hasDirtyEdits || hasUnsavedSession`
+
+This keeps untouched drafts protected on external exits while preventing false prompts on internal edit/builder transitions.
+
 ---
 
 ## Data Flow Summary

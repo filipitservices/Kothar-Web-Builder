@@ -13,6 +13,7 @@ import { useUnsavedChangesStore } from '~/stores/unsavedChanges';
 
 export interface UseUnsavedChangesOptions {
   isDirty: MaybeRefOrGetter<boolean>;
+  hasUnsavedSession: MaybeRefOrGetter<boolean>;
   onDiscard: () => void | Promise<void>;
 }
 
@@ -28,6 +29,7 @@ export function useUnsavedChanges(options: UseUnsavedChangesOptions): void {
     store.register({
       id,
       isDirty: options.isDirty,
+      hasUnsavedSession: options.hasUnsavedSession,
       onDiscard: options.onDiscard,
     });
   });

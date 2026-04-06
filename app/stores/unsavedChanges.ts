@@ -10,6 +10,7 @@ import type { RouteLocationNormalized } from 'vue-router';
 export interface UnsavedRegistration {
   id: string;
   isDirty: MaybeRefOrGetter<boolean>;
+  hasUnsavedSession: MaybeRefOrGetter<boolean>;
   onDiscard: () => void | Promise<void>;
 }
 
@@ -19,11 +20,19 @@ export const useUnsavedChangesStore = defineStore('unsavedChanges', () => {
   const pendingTo = shallowRef<RouteLocationNormalized | null>(null);
   const allowNext = ref(false);
 
-  const hasUnsaved = computed(() => {
+  const hasDirtyEdits = computed(() => {
     const reg = active.value;
     if (!reg) return false;
     return toValue(reg.isDirty);
   });
+
+  const hasUnsavedSession = computed(() => {
+    const reg = active.value;
+    if (!reg) return false;
+    return toValue(reg.hasUnsavedSession);
+  });
+
+  const shouldPromptOnLeaveFlow = computed(() => hasDirtyEdits.value || hasUnsavedSession.value);
 
   function register(reg: UnsavedRegistration): void {
     active.value = reg;
@@ -78,7 +87,9 @@ export const useUnsavedChangesStore = defineStore('unsavedChanges', () => {
     modalOpen,
     pendingTo,
     allowNext,
-    hasUnsaved,
+    hasDirtyEdits,
+    hasUnsavedSession,
+    shouldPromptOnLeaveFlow,
     register,
     unregister,
     requestAllowNext,

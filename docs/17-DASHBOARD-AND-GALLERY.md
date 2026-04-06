@@ -270,6 +270,7 @@ The page consists of two main pieces:
 2. **Form filling** (request page): The page loads the draft by doc ID (or, when coming from the dashboard, may use navigation state for immediate paint; Firestore remains the canonical source). It resolves the template, initializes the request layout store, and renders the form. The user fills in details and optionally customizes the layout via the builder.
 3. **Discarding a draft** (optional): While `status` is still **`draft`** and the order is not locked, the user may use the **trash** control in the **Actions** column on **My Sites → Orders** (**SitesOrdersPanel**). The parent **`/sites`** page opens **`DeleteDraftRequestModal`** (no `window.confirm`). **`deleteDraftRequest()`** removes the Firestore document and deletes Storage objects under `orders/{uid}/{orderId}/`. The daily creation counter is **unchanged**. On success, the list updates via the existing orders snapshot; **`requestLayoutStore`** is reset so no stale builder state remains.
 4. **Submission**: On form submit, the page **saves the draft to Firestore first** (full form, attachments, layout; `status` remains `draft`), then checks Whop access. Without access: checkout opens in a new tab with **`redirect_url`** to **`/sites?tab=orders`**, and the current tab navigates there so data is never held only in memory. With access: a follow-up update sets `status: 'submitted'` and navigates to **`/sites?tab=orders`**. After payment, the user resumes via **Orders → Modify** (`/orders/{id}/edit`).
+5. **Leave-intent behavior**: Request edit and builder pages are one editing scope per `orderId`. Moving between details and builder for the same id does not trigger discard prompts. Leaving this scope (to gallery/sites/other areas) triggers the unsaved dialog when there are dirty edits or when the order is still an unsubmitted draft.
 
 ### Error Handling
 
@@ -309,6 +310,10 @@ TemplateRequestForm
 
 - `TemplateRequestForm` passes **`colorUiResetScopeId`** (the Firestore order / request document id) and a derived **`colorUiResetKey`** into `ColorSchemePicker`.
 - When that key changes (baseline hydration from `initialFormData`, or a change of showcase `template.id`), the picker sets the active tab to **Presets** if the current `colorCustomization` matches a curated preset, otherwise **Custom**. The tab does **not** follow live edits to colors (no watcher on `colors` alone), so manual tweaks are not overridden while the user works.
+
+**Selectable options (industry, goals, years)**
+
+Selected chips for **IndustryCardGrid**, **YearsInBusinessInput**, and **GoalSelector** (`.form-option--selected`) reuse the same gradient wash and shadow treatment as selected color preset cards. `app/utils/colorSurfaceWash.ts` exports `selectionSurfaceCustomProperties(colors)` to set `--preset-surface-*` on the selected element; `app/assets/css/components.css` applies the shared `::before` gradient and borders/shadows to both `.form-option--selected` and `.color-preset-card--selected`. `TemplateRequestForm` passes `formData.colorCustomization` as `selectionSurfaceColors` so the wash stays aligned with the user’s current palette. **ColorSchemePicker** calls the same helper for preset buttons.
 
 ### Navigation (gallery request page only)
 
@@ -442,7 +447,7 @@ Request orders follow a two-phase lifecycle:
 
 2. **Form submission** (on request page): When the user fills out the form and submits, the existing draft is updated to `status: 'submitted'` with all form data, uploaded attachments, and the current layout. This is handled by `useOrderUpdate().updateOrder()` with a `status` parameter.
 
-**Layout persistence:** The builder's Save button writes the current layout to the draft document in Firebase via `useCreateRequest().saveLayout()`. This ensures layout changes survive page refresh, navigation, and browser close. The request page loads the persisted layout from the document on mount. When opening the builder from the request page, the app navigates to `/builder?orderId={orderId}` so the builder can rehydrate from Firebase after a refresh.
+**Layout persistence:** The builder's Save button writes the current layout to the draft document in Firebase via `useCreateRequest().saveLayout()`. This ensures layout changes survive page refresh, navigation, and browser close. The request page loads the persisted layout from the document on mount. Builder navigation stays ID-scoped (`/gallery/request/{orderId}/builder` or `/orders/{orderId}/builder`) so the editor always rehydrates from the same order context.
 
 **Daily limit:** Each user can create at most 3 requests per day. This is enforced by Firestore security rules using a counter document at `users/{userId}/requestLimits/daily`. The counter is read and written inside the same transaction as the order document (single round-trip).
 

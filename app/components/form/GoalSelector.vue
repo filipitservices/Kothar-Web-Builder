@@ -9,6 +9,11 @@
           'form-option--selected': modelValue.includes(goal.value),
           'form-option--read-only': readOnly
         }"
+        :style="
+          modelValue.includes(goal.value)
+            ? selectionSurfaceCustomProperties(selectionSurfaceColors)
+            : undefined
+        "
       >
         <input
           type="checkbox"
@@ -35,6 +40,8 @@
 
 <script setup lang="ts">
 import { h, type FunctionalComponent } from 'vue';
+import type { ColorCustomization } from '~/types/templateRequest';
+import { selectionSurfaceCustomProperties } from '~/utils/colorSurfaceWash';
 
 interface GoalOption {
   value: string;
@@ -45,6 +52,8 @@ const props = withDefaults(
   defineProps<{
     goals: readonly GoalOption[];
     modelValue: string[];
+    /** Drives the selected-option gradient wash (same system as color presets). */
+    selectionSurfaceColors: ColorCustomization;
     readOnly?: boolean;
   }>(),
   {
@@ -139,6 +148,8 @@ function getIconComponent(value: string): FunctionalComponent {
 }
 
 .goal-card__icon {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -166,6 +177,8 @@ function getIconComponent(value: string): FunctionalComponent {
 }
 
 .goal-card__label {
+  position: relative;
+  z-index: 1;
   flex: 1;
   min-width: 0;
   font-size: 0.875rem;
@@ -175,6 +188,8 @@ function getIconComponent(value: string): FunctionalComponent {
 }
 
 .goal-card__check {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;

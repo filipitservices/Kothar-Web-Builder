@@ -40,7 +40,11 @@
           type="button"
           class="color-preset-card"
           :class="{ 'color-preset-card--selected': selectedPresetId === preset.id }"
-          :style="selectedPresetId === preset.id ? presetSelectedSurfaceStyle(preset) : undefined"
+          :style="
+            selectedPresetId === preset.id
+              ? selectionSurfaceCustomProperties(preset.colors)
+              : undefined
+          "
           :aria-pressed="selectedPresetId === preset.id"
           @click="selectPreset(preset)"
         >
@@ -143,6 +147,7 @@ import {
   sameColorCustomization,
   normalizeColorCustomization
 } from '~/constants/colorPresets';
+import { selectionSurfaceCustomProperties } from '~/utils/colorSurfaceWash';
 
 interface Props {
   /** Current color values */
@@ -194,18 +199,6 @@ const hasChanges = computed(() => {
   }
   return !sameColorCustomization(cur, def);
 });
-
-/**
- * Subtle selected-card wash derived from the preset itself (low contrast; static only).
- */
-function presetSelectedSurfaceStyle(preset: ColorPreset): Record<string, string> {
-  const { primary, accent, background } = preset.colors;
-  return {
-    '--preset-surface-a': `color-mix(in srgb, ${primary} 10%, transparent)`,
-    '--preset-surface-b': `color-mix(in srgb, ${accent} 8%, transparent)`,
-    '--preset-surface-mid': `color-mix(in srgb, ${background} 40%, transparent)`
-  };
-}
 
 /**
  * Set color mode
@@ -318,53 +311,12 @@ function handleReset(): void {
   transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 }
 
-.color-preset-card:hover {
+.color-preset-card:hover:not(.color-preset-card--selected) {
   border-color: var(--color-border-hover);
   background: var(--color-bg-muted);
 }
 
-.color-preset-card--selected {
-  border-color: var(--color-primary);
-  background: var(--color-primary-tint);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--color-primary) 32%, transparent),
-    var(--focus-ring-primary);
-}
-
-.color-preset-card--selected:hover {
-  border-color: var(--color-primary);
-  background: var(--color-primary-tint);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--color-primary) 40%, transparent),
-    var(--focus-ring-primary);
-}
-
-.color-preset-card--selected::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  border-radius: inherit;
-  background: linear-gradient(
-    145deg,
-    var(--preset-surface-a, transparent),
-    var(--preset-surface-mid, transparent) 50%,
-    var(--preset-surface-b, transparent)
-  );
-  pointer-events: none;
-}
-
-.color-preset-card:focus-visible {
-  outline: none;
-  border-color: var(--color-primary);
-  box-shadow: var(--focus-ring-primary);
-}
-
-.color-preset-card--selected:focus-visible {
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--color-primary) 40%, transparent),
-    var(--focus-ring-primary);
-}
+/* Selected state, gradient wash, focus: shared with `.form-option--selected` in components.css */
 
 .color-preset-swatches {
   display: flex;

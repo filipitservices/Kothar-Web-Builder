@@ -216,6 +216,8 @@ const isEditsDirty = computed(() => {
   return formDirty || layoutDirty;
 });
 
+const hasUnsavedSession = computed(() => orderRef.value?.status === 'draft');
+
 async function discardUnsaved(): Promise<void> {
   const uid = userId.value;
   if (!uid) return;
@@ -246,6 +248,7 @@ async function discardUnsaved(): Promise<void> {
 
 useUnsavedChanges({
   isDirty: isEditsDirty,
+  hasUnsavedSession,
   onDiscard: discardUnsaved,
 });
 

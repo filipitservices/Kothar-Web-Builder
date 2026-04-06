@@ -129,6 +129,7 @@ function discardReportForm(): void {
 
 useUnsavedChanges({
   isDirty: isReportFormDirty,
+  hasUnsavedSession: false,
   onDiscard: discardReportForm,
 });
 

@@ -53,6 +53,7 @@
         <label class="form-label">Industry / Type <span class="required">*</span></label>
         <IndustryCardGrid
           :model-value="formData.industry"
+          :selection-surface-colors="formData.colorCustomization"
           :read-only="readOnly"
           label="Industry / Type"
           @update:model-value="handleFieldInput('industry', $event)"
@@ -64,6 +65,7 @@
         <label class="form-label">Years in Business</label>
         <YearsInBusinessInput
           :model-value="formData.yearsInBusiness"
+          :selection-surface-colors="formData.colorCustomization"
           :read-only="readOnly"
           @update:model-value="handleFieldInput('yearsInBusiness', $event)"
           @blur="handleBlur('yearsInBusiness')"
@@ -187,6 +189,7 @@
         <GoalSelector
           :model-value="formData.goals"
           :goals="WEBSITE_GOALS"
+          :selection-surface-colors="formData.colorCustomization"
           :read-only="readOnly"
           @update:model-value="handleFieldInput('goals', $event)"
         />
