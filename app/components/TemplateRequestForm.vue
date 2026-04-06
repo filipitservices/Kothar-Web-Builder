@@ -161,7 +161,6 @@
           :model-value="formData.industry"
           :custom-value="formData.customIndustry"
           :custom-value-error="!!errors.customIndustry"
-          :selection-surface-colors="formData.colorCustomization"
           :read-only="readOnly"
           label="Industry / Type"
           @update:model-value="handleIndustryChange"
@@ -262,7 +261,6 @@
           :model-value="formData.goals"
           :goals="WEBSITE_GOALS"
           :max-selection="3"
-          :selection-surface-colors="formData.colorCustomization"
           :read-only="readOnly"
           @update:model-value="handleFieldInput('goals', $event)"
         />

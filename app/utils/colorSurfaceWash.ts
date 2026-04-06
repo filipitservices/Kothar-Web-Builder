@@ -1,9 +1,12 @@
 import type { ColorCustomization } from '~/types/templateRequest';
 
 /**
- * CSS custom properties for the subtle selected-surface gradient wash
- * (shared by color preset cards and form selectable options).
- * Low contrast; pairs with global rules in `components.css`.
+ * CSS custom properties for the selected color **preset** card wash in
+ * `ColorSchemePicker` only. Uses the preset’s own primary / accent / background.
+ *
+ * Other selectable cards (industry, goals, request categories) use layered
+ * section-themed washes from `FormSection.vue` (`:deep(.form-option--selected)`),
+ * not the user’s palette, so they stay visually distinct from the Color Scheme UI.
  */
 export function selectionSurfaceCustomProperties(
   colors: ColorCustomization

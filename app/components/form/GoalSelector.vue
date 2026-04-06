@@ -10,11 +10,6 @@
           'form-option--read-only': readOnly,
           'form-option--disabled': isAtLimit && !modelValue.includes(goal.value)
         }"
-        :style="
-          modelValue.includes(goal.value)
-            ? selectionSurfaceCustomProperties(selectionSurfaceColors)
-            : undefined
-        "
       >
         <input
           type="checkbox"
@@ -44,8 +39,6 @@
 
 <script setup lang="ts">
 import { h, computed, type FunctionalComponent } from 'vue';
-import type { ColorCustomization } from '~/types/templateRequest';
-import { selectionSurfaceCustomProperties } from '~/utils/colorSurfaceWash';
 
 interface GoalOption {
   value: string;
@@ -56,8 +49,6 @@ const props = withDefaults(
   defineProps<{
     goals: readonly GoalOption[];
     modelValue: string[];
-    /** Drives the selected-option gradient wash (same system as color presets). */
-    selectionSurfaceColors: ColorCustomization;
     readOnly?: boolean;
     /** Maximum number of goals that can be selected. Undefined = no limit. */
     maxSelection?: number;

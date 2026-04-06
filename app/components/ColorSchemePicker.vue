@@ -316,7 +316,7 @@ function handleReset(): void {
   background: var(--color-bg-muted);
 }
 
-/* Selected state, gradient wash, focus: shared with `.form-option--selected` in components.css */
+/* Selected preset: gradient wash from `selectionSurfaceCustomProperties` + rules in `components.css` */
 
 .color-preset-swatches {
   display: flex;

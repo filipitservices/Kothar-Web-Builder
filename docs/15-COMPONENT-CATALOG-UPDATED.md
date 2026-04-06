@@ -506,7 +506,7 @@ const { getField, setField, isLocalValue, mergedData } = useBlockData(props.bloc
 
 **Features**:
 - Each category has an SVG icon + label
-- Uses `.form-option` / `.form-option--selected` patterns
+- Uses `.form-option` / `.form-option--selected` patterns; selected chrome is themed by parent **`FormSection`** (`variant="requests"`), not the user color palette
 - No max limit (unlike GoalSelector)
 
 ---
@@ -514,16 +514,18 @@ const { getField, setField, isLocalValue, mergedData } = useBlockData(props.bloc
 ### GoalSelector (updated)
 **File**: [form/GoalSelector.vue](../app/components/form/GoalSelector.vue)
 
-**Updated props**: Added `maxSelection?: number` (set to 3 from parent)
+**Props**: `goals`, `modelValue`, `readOnly?`, `maxSelection?` (3 on the request form)
 - Disables unselected cards when limit is reached
 - Shows "X / 3 selected" hint text
+- Selected-card wash/border: parent **`FormSection`** (`variant="target"`), not user palette colors
 
 ---
 
 ### IndustryCardGrid (updated)
 **File**: [form/IndustryCardGrid.vue](../app/components/form/IndustryCardGrid.vue)
 
-**Updated props**: Added `customValue?: string`, `customValueError?: boolean`
-**New emits**: `update:customValue`, `customBlur`
+**Props**: `modelValue`, `customValue?`, `customValueError?`, `options?`, `name?`, `label?`, `readOnly?` — selected-card styling comes from parent **`FormSection`** (`variant="business"`).
+
+**Emits**: `update:modelValue`, `update:customValue`, `customBlur`
 - Shows a text input below the grid when "Other" is selected
 - Custom input validated at form level (rejects nonsense via blocklist)

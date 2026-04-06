@@ -455,7 +455,7 @@
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
 }
 
-/* Form selectable option + color preset cards – shared selected wash (see `selectionSurfaceCustomProperties`) */
+/* Selectable option cards + color preset cards (preset wash is `.color-preset-card--selected` only) */
 .form-option {
   position: relative;
   isolation: isolate;
@@ -474,7 +474,7 @@
   box-shadow: var(--focus-ring-primary);
 }
 
-.form-option--selected,
+/* Color Scheme presets only: wash follows the selected palette (inline --preset-surface-* from `selectionSurfaceCustomProperties`). */
 .color-preset-card--selected {
   border-color: var(--color-primary);
   background: var(--color-primary-tint);
@@ -483,7 +483,6 @@
     var(--focus-ring-primary);
 }
 
-.form-option--selected:hover:not(.form-option--read-only),
 .color-preset-card--selected:hover {
   border-color: var(--color-primary);
   background: var(--color-primary-tint);
@@ -492,7 +491,6 @@
     var(--focus-ring-primary);
 }
 
-.form-option--selected::before,
 .color-preset-card--selected::before {
   content: '';
   position: absolute;
@@ -514,13 +512,59 @@
   box-shadow: var(--focus-ring-primary);
 }
 
-.color-preset-card--selected:focus-visible,
-.form-option--selected:focus-within {
+.color-preset-card--selected:focus-visible {
   outline: none;
   border-color: var(--color-primary);
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--color-primary) 40%, transparent),
     var(--focus-ring-primary);
+}
+
+/*
+ * Other selectable cards (industry, goals, request categories): base selected chrome.
+ * Layered “cloud” wash and section borders live on `FormSection` variants (`:deep(.form-option--selected)`).
+ * Fallback below when a card is not inside a themed section.
+ */
+.form-option--selected {
+  border-color: color-mix(in srgb, var(--color-primary) 26%, var(--color-border));
+  background: var(--color-bg);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-primary) 12%, transparent),
+    0 8px 24px color-mix(in srgb, var(--color-primary) 6%, transparent);
+}
+
+.form-option--selected:hover:not(.form-option--read-only) {
+  border-color: color-mix(in srgb, var(--color-primary) 32%, var(--color-border-hover));
+  background: var(--color-bg);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-primary) 16%, transparent),
+    0 10px 28px color-mix(in srgb, var(--color-primary) 8%, transparent);
+}
+
+.form-option--selected::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 125% 82% at 16% 24%, color-mix(in srgb, var(--color-primary-tint) 38%, transparent) 0%, transparent 56%),
+    radial-gradient(ellipse 92% 74% at 88% 70%, color-mix(in srgb, var(--color-accent-warm-tint) 32%, transparent) 0%, transparent 52%),
+    linear-gradient(
+      172deg,
+      var(--color-white) 0%,
+      color-mix(in srgb, var(--color-white) 99%, var(--color-primary-tint)) 48%,
+      var(--color-white) 100%
+    );
+}
+
+.form-option--selected:focus-within {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-primary) 22%, transparent),
+    0 0 0 3px color-mix(in srgb, var(--color-primary) 9%, transparent);
 }
 
 .form-option--read-only {

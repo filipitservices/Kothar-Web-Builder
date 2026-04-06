@@ -10,11 +10,6 @@
           'form-option--selected': modelValue === option.value,
           'form-option--read-only': readOnly
         }"
-        :style="
-          modelValue === option.value
-            ? selectionSurfaceCustomProperties(selectionSurfaceColors)
-            : undefined
-        "
       >
         <input
           type="radio"
@@ -52,9 +47,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { ColorCustomization } from '~/types/templateRequest';
 import { INDUSTRY_OPTIONS } from '~/constants/formOptions';
-import { selectionSurfaceCustomProperties } from '~/utils/colorSurfaceWash';
 
 interface IndustryOption {
   value: string;
@@ -68,8 +61,6 @@ const props = withDefaults(
     customValue?: string;
     /** Whether the custom value has a validation error. */
     customValueError?: boolean;
-    /** Drives the selected-option gradient wash (same system as color presets). */
-    selectionSurfaceColors: ColorCustomization;
     options?: readonly IndustryOption[];
     name?: string;
     label?: string;

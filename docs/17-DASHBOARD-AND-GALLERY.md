@@ -313,7 +313,11 @@ TemplateRequestForm
 
 **Selectable options (industry, goals, request categories)**
 
-Selected chips for **IndustryCardGrid**, **GoalSelector**, and **RequestCategorySelector** (`.form-option--selected`) reuse the same gradient wash and shadow treatment as selected color preset cards. `app/utils/colorSurfaceWash.ts` exports `selectionSurfaceCustomProperties(colors)` to set `--preset-surface-*` on the selected element; `app/assets/css/components.css` applies the shared `::before` gradient and borders/shadows to both `.form-option--selected` and `.color-preset-card--selected`. `TemplateRequestForm` passes `formData.colorCustomization` as `selectionSurfaceColors` so the wash stays aligned with the user’s current palette. **ColorSchemePicker** calls the same helper for preset buttons. **GoalSelector** supports a `maxSelection` prop (set to 3) that disables unselected cards when the limit is reached. **IndustryCardGrid** shows a text input for the custom industry description when "Other" is selected.
+Selected **color preset** cards in **ColorSchemePicker** use `selectionSurfaceCustomProperties(preset.colors)` so the wash reflects that preset’s primary, accent, and background (`app/utils/colorSurfaceWash.ts`, `--preset-surface-*` on the card; `components.css` `.color-preset-card--selected`).
+
+Selected cards elsewhere (**IndustryCardGrid**, **GoalSelector**, **RequestCategorySelector** — `.form-option--selected`) do **not** use the user’s palette. They get section-scoped borders and a mostly-white layered radial/linear wash from **`FormSection`** variants (`:deep(.form-option--selected)`), using complementary mixes of each section’s tokens (e.g. Business: primary + warm mist; Goals: success + primary + warm wisps; Additional Requests: primary-dark + warm + success hints). **GoalSelector** supports `maxSelection` (3 on the request form). **IndustryCardGrid** shows the custom industry field when "Other" is selected.
+
+**Form controls inside sections** inherit `--fs-field-border`, `--fs-field-border-hover`, and `--fs-field-focus` from the parent `FormSection` so inputs, textareas, icon inputs, location, tags, and related dropdowns read as part of the same themed band—not generic gray.
 
 ### Navigation (gallery request page only)
 
