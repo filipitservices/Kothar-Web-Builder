@@ -442,3 +442,88 @@ const { getField, setField, isLocalValue, mergedData } = useBlockData(props.bloc
 - [03-BLOCK-SYSTEM.md](03-BLOCK-SYSTEM.md) - Block lifecycle and patterns
 - [04-DATA-FLOW.md](04-DATA-FLOW.md) - State management details
 - [14-SMB-REFINEMENT-SUMMARY.md](14-SMB-REFINEMENT-SUMMARY.md) - Recent changes
+
+---
+
+## Template Request Form Components
+
+### TemplateRequestForm
+**File**: [TemplateRequestForm.vue](../app/components/TemplateRequestForm.vue)
+
+**Purpose**: Shared form component for both request editing pages (`/gallery/request/[id]` and `/orders/[id]/edit`)
+
+**Section structure** (6 sections):
+1. **Design Customization** — `ColorSchemePicker` (unchanged)
+2. **Branding** — Logos subsection (`FileUploadArea` for images) + Branding Material subsection (`FileUploadArea` for all formats + existing attachments list)
+3. **Business Info** — Business name, Preferred URL (with availability disclaimer), Location (`LocationInput` with Photon verification), Industry (`IndustryCardGrid` with "Other" custom input)
+4. **Contact** — Contact name, Email, Phone, Website (via `IconInput`)
+5. **Website Goals** — `GoalSelector` (max 3) + `TagInput` for audience tags
+6. **Additional Requests** — Freeform textarea + `RequestCategorySelector`
+
+**Composables**: `useTemplateRequestForm` (state, progress), `useTemplateRequestValidation` (field validators)
+
+---
+
+### LocationInput
+**File**: [form/LocationInput.vue](../app/components/form/LocationInput.vue)
+
+**Purpose**: Text input with Photon geocoding autocomplete for business location
+
+**Props**: `modelValue: LocationData`, `inputId?`, `placeholder?`, `readOnly?`
+**Emits**: `update:modelValue`, `blur`
+
+**Features**:
+- Debounced search against Photon API (300ms, max 5 results)
+- Keyboard navigation (arrow keys, enter, escape)
+- Verified badge when a suggestion is selected
+- Graceful degradation when API is unreachable (`verified: false`)
+
+---
+
+### TagInput
+**File**: [form/TagInput.vue](../app/components/form/TagInput.vue)
+
+**Purpose**: Flexible tag input with autocomplete suggestions
+
+**Props**: `modelValue: string[]`, `suggestions?: string[]`, `placeholder?`, `maxTags?`, `readOnly?`
+**Emits**: `update:modelValue`
+
+**Features**:
+- Free-text entry (comma or Enter to add)
+- Autocomplete suggestions (not restrictive — custom entries always allowed)
+- Removable chips with Backspace support
+- Duplicate prevention (case-insensitive)
+
+---
+
+### RequestCategorySelector
+**File**: [form/RequestCategorySelector.vue](../app/components/form/RequestCategorySelector.vue)
+
+**Purpose**: Card-style multi-select for request categories
+
+**Props**: `modelValue: string[]`, `categories?`, `readOnly?`
+**Emits**: `update:modelValue`
+
+**Features**:
+- Each category has an SVG icon + label
+- Uses `.form-option` / `.form-option--selected` patterns
+- No max limit (unlike GoalSelector)
+
+---
+
+### GoalSelector (updated)
+**File**: [form/GoalSelector.vue](../app/components/form/GoalSelector.vue)
+
+**Updated props**: Added `maxSelection?: number` (set to 3 from parent)
+- Disables unselected cards when limit is reached
+- Shows "X / 3 selected" hint text
+
+---
+
+### IndustryCardGrid (updated)
+**File**: [form/IndustryCardGrid.vue](../app/components/form/IndustryCardGrid.vue)
+
+**Updated props**: Added `customValue?: string`, `customValueError?: boolean`
+**New emits**: `update:customValue`, `customBlur`
+- Shows a text input below the grid when "Other" is selected
+- Custom input validated at form level (rejects nonsense via blocklist)

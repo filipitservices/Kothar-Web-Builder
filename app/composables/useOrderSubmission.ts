@@ -65,23 +65,24 @@ function formDataToOrderPayload(
 ): Omit<OrderRequest, 'createdAt' | 'updatedAt'> {
   const businessInfo: OrderBusinessInfo = {
     businessName: data.businessName.trim(),
+    preferredUrl: data.preferredUrl.trim(),
+    location: { ...data.location },
     industry: data.industry.trim(),
-    yearsInBusiness: data.yearsInBusiness.trim(),
-    businessDescription: data.businessDescription.trim()
+    customIndustry: data.industry === 'other' ? data.customIndustry.trim() : ''
   };
 
   const contactInfo: OrderContactInfo = {
     contactName: data.contactName.trim(),
     email: data.email.trim(),
     phone: data.phone.trim(),
-    website: data.website.trim(),
-    address: data.address.trim()
+    website: data.website.trim()
   };
 
   const projectDetails: OrderProjectDetails = {
     goals: [...data.goals],
-    targetAudience: data.targetAudience.trim(),
+    audienceTags: [...data.audienceTags],
     additionalNotes: data.additionalNotes.trim(),
+    requestCategories: [...data.requestCategories],
     colorCustomization: { ...data.colorCustomization }
   };
 
@@ -93,6 +94,7 @@ function formDataToOrderPayload(
     projectDetails,
     layout,
     attachments: [],
+    logoAttachments: [],
     status: ORDER_STATUS_DEFAULT,
     modificationLocked: false
   };

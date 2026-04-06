@@ -5,7 +5,7 @@
  * These types represent the exact document shape stored; do not store raw form objects.
  */
 
-import type { ColorCustomization } from '~/types/templateRequest';
+import type { ColorCustomization, LocationData } from '~/types/templateRequest';
 import type { BlockItem } from '~/types/builder';
 
 /**
@@ -63,9 +63,10 @@ export interface OrderAttachment {
 /** Business information section of an order. */
 export interface OrderBusinessInfo {
   businessName: string;
+  preferredUrl: string;
+  location: LocationData;
   industry: string;
-  yearsInBusiness: string;
-  businessDescription: string;
+  customIndustry: string;
 }
 
 /** Contact information section of an order. */
@@ -74,14 +75,14 @@ export interface OrderContactInfo {
   email: string;
   phone: string;
   website: string;
-  address: string;
 }
 
-/** Project details: goals, audience, notes, and color customization. */
+/** Project details: goals, audience, notes, categories, and color customization. */
 export interface OrderProjectDetails {
   goals: string[];
-  targetAudience: string;
+  audienceTags: string[];
   additionalNotes: string;
+  requestCategories: string[];
   colorCustomization: ColorCustomization;
 }
 
@@ -100,8 +101,10 @@ export interface OrderRequest {
   projectDetails: OrderProjectDetails;
   /** Page layout configuration (template sections + any builder modifications). */
   layout?: OrderLayout;
-  /** Metadata for files uploaded to Storage; no raw File or base64. */
+  /** Metadata for brand material files uploaded to Storage. */
   attachments: OrderAttachment[];
+  /** Metadata for logo files uploaded to Storage (separate from brand material). */
+  logoAttachments: OrderAttachment[];
   status: OrderStatus;
   /**
    * When true, order is locked (e.g. being processed). Admin-assignable only.

@@ -5,46 +5,37 @@ import type {
   TemplateRequestValidatableField,
   TemplateRequestValidationErrors
 } from '~/types/templateRequest';
-import { INDUSTRY_OPTIONS, WEBSITE_GOALS } from '~/constants/formOptions';
+import { INDUSTRY_OPTIONS, WEBSITE_GOALS, REQUEST_CATEGORIES, NONSENSE_INDUSTRY_VALUES } from '~/constants/formOptions';
 
 /** Minimum length for name-like fields */
 const NAME_MIN_LENGTH = 2;
 /** Maximum length for name-like fields */
 const NAME_MAX_LENGTH = 200;
-/** Maximum length for long text (description, notes, audience) */
+/** Maximum length for long text (notes) */
 const LONG_TEXT_MAX_LENGTH = 2000;
-/** Years in business: min/max (business-appropriate range) */
-const YEARS_MIN = 0;
-const YEARS_MAX = 200;
 /** Phone: min/max digit count after normalizing */
 const PHONE_DIGITS_MIN = 10;
 const PHONE_DIGITS_MAX = 15;
 /** Email max length (RFC 5321) */
 const EMAIL_MAX_LENGTH = 254;
+/** Max goals selection */
+const GOALS_MAX = 3;
+/** Preferred URL max length */
+const PREFERRED_URL_MAX_LENGTH = 100;
 
 const INDUSTRY_VALUES = new Set<string>(INDUSTRY_OPTIONS.map((o) => o.value));
 const GOAL_VALUES = new Set<string>(WEBSITE_GOALS.map((g) => g.value));
+const CATEGORY_VALUES = new Set<string>(REQUEST_CATEGORIES.map((c) => c.value));
 
-/**
- * Allowed characters for business/contact names: letters, digits, space, hyphen, apostrophe, period.
- * Reject strings that contain any other character to avoid nonsense or excessive special chars.
- */
 function isAllowedNameChars(value: string): boolean {
   return /^[a-zA-Z0-9\s\-'.]*$/.test(value);
 }
 
-/**
- * Must contain at least two alphabetic characters (so "12" or "---" is invalid).
- */
 function hasMinLetters(value: string, min: number = 2): boolean {
   const letters = value.match(/[a-zA-Z]/g);
   return (letters?.length ?? 0) >= min;
 }
 
-/**
- * Trim and validate a name-like field (business name, contact name).
- * Rules: required, 2–200 chars after trim, not purely numeric, at least 2 letters, allowed chars only.
- */
 function validateName(
   value: string,
   fieldLabel: string
@@ -71,35 +62,28 @@ function validateName(
   return undefined;
 }
 
-/**
- * Validate years in business: optional; if provided, must be a non-negative integer in [YEARS_MIN, YEARS_MAX].
- * No alphabetic characters; explicit parse, no silent coercion.
- */
-function validateYearsInBusiness(value: string): string | undefined {
+function validatePreferredUrl(value: string): string | undefined {
   const trimmed = value.trim();
   if (trimmed.length === 0) {
     return undefined;
   }
-  if (!/^\d+$/.test(trimmed)) {
-    return 'Years in business must be a whole number (no letters or symbols)';
+  if (trimmed.length > PREFERRED_URL_MAX_LENGTH) {
+    return `Preferred URL must be at most ${PREFERRED_URL_MAX_LENGTH} characters`;
   }
-  const num = parseInt(trimmed, 10);
-  if (Number.isNaN(num) || num !== parseFloat(trimmed)) {
-    return 'Years in business must be a whole number';
+  if (/\s/.test(trimmed)) {
+    return 'URL cannot contain spaces';
   }
-  if (num < YEARS_MIN) {
-    return `Years in business cannot be less than ${YEARS_MIN}`;
-  }
-  if (num > YEARS_MAX) {
-    return `Years in business cannot exceed ${YEARS_MAX}`;
+  if (!/^[a-zA-Z0-9][a-zA-Z0-9\-._~]*$/.test(trimmed)) {
+    return 'URL can only contain letters, numbers, and hyphens';
   }
   return undefined;
 }
 
-/**
- * Email format: local@domain.tld, non-empty, max length.
- * Simple pattern: at least one non-whitespace before @, then domain with at least one dot.
- */
+function validateLocation(data: TemplateRequestFormData): string | undefined {
+  // Location is optional; no error if empty
+  return undefined;
+}
+
 function validateEmail(value: string): string | undefined {
   const trimmed = value.trim();
   if (trimmed.length === 0) {
@@ -114,9 +98,6 @@ function validateEmail(value: string): string | undefined {
   return undefined;
 }
 
-/**
- * Phone: optional. If provided, must contain 10–15 digits (after stripping spaces, dashes, parens, plus).
- */
 function validatePhone(value: string): string | undefined {
   const trimmed = value.trim();
   if (trimmed.length === 0) {
@@ -135,9 +116,6 @@ function validatePhone(value: string): string | undefined {
   return undefined;
 }
 
-/**
- * Website: optional. If provided, must look like a URL (http(s) or domain with TLD).
- */
 function validateWebsite(value: string): string | undefined {
   const trimmed = value.trim();
   if (trimmed.length === 0) {
@@ -154,9 +132,68 @@ function validateWebsite(value: string): string | undefined {
   return undefined;
 }
 
-/**
- * Long text (description, notes, target audience): optional; if provided, max length.
- */
+function validateIndustry(value: string): string | undefined {
+  const trimmed = value.trim();
+  if (trimmed.length === 0) {
+    return 'Please select your industry';
+  }
+  if (!INDUSTRY_VALUES.has(trimmed)) {
+    return 'Please select a valid industry';
+  }
+  return undefined;
+}
+
+function validateCustomIndustry(data: TemplateRequestFormData): string | undefined {
+  if (data.industry !== 'other') {
+    return undefined;
+  }
+  const trimmed = data.customIndustry.trim();
+  if (trimmed.length === 0) {
+    return 'Please describe your industry';
+  }
+  if (trimmed.length < 3) {
+    return 'Industry description must be at least 3 characters';
+  }
+  if (trimmed.length > NAME_MAX_LENGTH) {
+    return `Industry description must be at most ${NAME_MAX_LENGTH} characters`;
+  }
+  if (/^\d+$/.test(trimmed)) {
+    return 'Industry description cannot be only numbers';
+  }
+  if (!hasMinLetters(trimmed)) {
+    return 'Industry description must contain at least two letters';
+  }
+  if (NONSENSE_INDUSTRY_VALUES.has(trimmed.toLowerCase())) {
+    return 'Please provide a meaningful industry description';
+  }
+  return undefined;
+}
+
+function validateGoals(goals: string[]): string | undefined {
+  if (!goals || goals.length === 0) {
+    return 'Please select at least one website goal';
+  }
+  if (goals.length > GOALS_MAX) {
+    return `Please select at most ${GOALS_MAX} goals`;
+  }
+  const invalid = goals.some((g) => !GOAL_VALUES.has(g));
+  if (invalid) {
+    return 'Please select only from the listed goals';
+  }
+  return undefined;
+}
+
+function validateAudienceTags(tags: string[]): string | undefined {
+  if (!tags || tags.length === 0) {
+    return undefined;
+  }
+  const hasEmpty = tags.some((t) => t.trim().length === 0);
+  if (hasEmpty) {
+    return 'Audience tags cannot be empty';
+  }
+  return undefined;
+}
+
 function validateLongText(
   value: string,
   maxLength: number,
@@ -172,44 +209,13 @@ function validateLongText(
   return undefined;
 }
 
-/**
- * Address: optional; if provided, reasonable max length.
- */
-function validateAddress(value: string): string | undefined {
-  const trimmed = value.trim();
-  if (trimmed.length === 0) {
+function validateRequestCategories(values: string[]): string | undefined {
+  if (!values || values.length === 0) {
     return undefined;
   }
-  if (trimmed.length > 500) {
-    return 'Address must be at most 500 characters';
-  }
-  return undefined;
-}
-
-/**
- * Industry: required, must be one of the predefined options.
- */
-function validateIndustry(value: string): string | undefined {
-  const trimmed = value.trim();
-  if (trimmed.length === 0) {
-    return 'Please select your industry';
-  }
-  if (!INDUSTRY_VALUES.has(trimmed)) {
-    return 'Please select a valid industry';
-  }
-  return undefined;
-}
-
-/**
- * Goals: at least one required.
- */
-function validateGoals(goals: string[]): string | undefined {
-  if (!goals || goals.length === 0) {
-    return 'Please select at least one website goal';
-  }
-  const invalid = goals.some((g) => !GOAL_VALUES.has(g));
+  const invalid = values.some((v) => !CATEGORY_VALUES.has(v));
   if (invalid) {
-    return 'Please select only from the listed goals';
+    return 'Please select only from the listed categories';
   }
   return undefined;
 }
@@ -221,9 +227,6 @@ export interface UseTemplateRequestValidationReturn {
   clearFieldError: (field: TemplateRequestValidatableField) => void;
 }
 
-/**
- * Run the validator for a given field against current form data.
- */
 function runValidator(
   field: TemplateRequestValidatableField,
   data: TemplateRequestFormData
@@ -233,38 +236,32 @@ function runValidator(
       return validateName(data.businessName, 'Business name');
     case 'contactName':
       return validateName(data.contactName, 'Contact name');
+    case 'preferredUrl':
+      return validatePreferredUrl(data.preferredUrl);
+    case 'location':
+      return validateLocation(data);
     case 'industry':
       return validateIndustry(data.industry);
-    case 'yearsInBusiness':
-      return validateYearsInBusiness(data.yearsInBusiness);
-    case 'businessDescription':
-      return validateLongText(
-        data.businessDescription,
-        LONG_TEXT_MAX_LENGTH,
-        'Business description'
-      );
+    case 'customIndustry':
+      return validateCustomIndustry(data);
     case 'email':
       return validateEmail(data.email);
     case 'phone':
       return validatePhone(data.phone);
     case 'website':
       return validateWebsite(data.website);
-    case 'address':
-      return validateAddress(data.address);
     case 'goals':
       return validateGoals(data.goals);
-    case 'targetAudience':
-      return validateLongText(
-        data.targetAudience,
-        LONG_TEXT_MAX_LENGTH,
-        'Target audience'
-      );
+    case 'audienceTags':
+      return validateAudienceTags(data.audienceTags);
     case 'additionalNotes':
       return validateLongText(
         data.additionalNotes,
         LONG_TEXT_MAX_LENGTH,
         'Additional notes'
       );
+    case 'requestCategories':
+      return validateRequestCategories(data.requestCategories);
     default: {
       const _: never = field;
       return undefined;
@@ -272,10 +269,6 @@ function runValidator(
   }
 }
 
-/**
- * Template request form validation composable.
- * Centralizes all validation logic; does not mutate form data.
- */
 export function useTemplateRequestValidation(
   formData: Ref<TemplateRequestFormData>
 ): UseTemplateRequestValidationReturn {
@@ -296,17 +289,18 @@ export function useTemplateRequestValidation(
 
     const fields: TemplateRequestValidatableField[] = [
       'businessName',
+      'preferredUrl',
+      'location',
       'industry',
-      'yearsInBusiness',
-      'businessDescription',
+      'customIndustry',
       'contactName',
       'email',
       'phone',
       'website',
-      'address',
       'goals',
-      'targetAudience',
-      'additionalNotes'
+      'audienceTags',
+      'additionalNotes',
+      'requestCategories'
     ];
 
     for (const field of fields) {

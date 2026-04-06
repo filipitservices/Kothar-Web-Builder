@@ -1,7 +1,11 @@
 /** Form state, progress, and color defaults for the template request form. */
 import { ref, computed, watch, type Ref, type ComputedRef } from 'vue';
 import type { ShowcaseTemplate } from '~/stores/showcase';
-import type { ColorCustomization, TemplateRequestFormData } from '~/types/templateRequest';
+import type {
+  ColorCustomization,
+  TemplateRequestFormData,
+  LocationData
+} from '~/types/templateRequest';
 
 export interface FormProgress {
   completed: number;
@@ -23,31 +27,39 @@ export interface UseTemplateRequestFormReturn {
 
 const TOTAL_FIELDS = 14;
 
+function createEmptyLocation(): LocationData {
+  return { displayName: '', verified: false };
+}
+
 function createInitialFormData(colors: ColorCustomization): TemplateRequestFormData {
   return {
+    colorCustomization: { ...colors },
+    logoAssets: [],
+    logoFiles: [],
+    brandAssets: [],
+    files: [],
     businessName: '',
+    preferredUrl: '',
+    location: createEmptyLocation(),
     industry: '',
-    yearsInBusiness: '',
-    businessDescription: '',
+    customIndustry: '',
     contactName: '',
     email: '',
     phone: '',
     website: '',
-    address: '',
     goals: [],
-    targetAudience: '',
-    brandAssets: [],
-    files: [],
+    audienceTags: [],
     additionalNotes: '',
-    colorCustomization: { ...colors }
+    requestCategories: []
   };
 }
 
 export function useTemplateRequestForm(
   template: Ref<ShowcaseTemplate | undefined>,
-  uploadedFiles: Ref<readonly File[]>
+  uploadedFiles: Ref<readonly File[]>,
+  uploadedLogoFiles: Ref<readonly File[]>
 ): UseTemplateRequestFormReturn {
-  
+
   const defaultColors = computed<ColorCustomization>(() => {
     const t = template.value;
     if (!t) {
@@ -75,29 +87,31 @@ export function useTemplateRequestForm(
   const progress = computed<FormProgress>(() => {
     let completed = 0;
     const data = formData.value;
-    
-    // Design customization - always counts as 1 (pre-filled from template)
+
+    // Design customization — always counts as 1 (pre-filled from template)
     completed++;
-    
-    // Business information
+
+    // Branding
+    if (uploadedLogoFiles.value.length > 0) completed++;
+    if (uploadedFiles.value.length > 0) completed++;
+
+    // Business info
     if (data.businessName.trim()) completed++;
+    if (data.preferredUrl.trim()) completed++;
+    if (data.location.displayName.trim()) completed++;
     if (data.industry) completed++;
-    if (data.yearsInBusiness.trim()) completed++;
-    if (data.businessDescription.trim()) completed++;
-    
-    // Contact information
+
+    // Contact
     if (data.contactName.trim()) completed++;
     if (data.email.trim()) completed++;
     if (data.phone.trim()) completed++;
     if (data.website.trim()) completed++;
-    if (data.address.trim()) completed++;
-    
+
     // Website goals
     if (data.goals.length > 0) completed++;
-    if (data.targetAudience.trim()) completed++;
-    
-    // Branding & content
-    if (uploadedFiles.value.length > 0) completed++;
+    if (data.audienceTags.length > 0) completed++;
+
+    // Additional requests
     if (data.additionalNotes.trim()) completed++;
 
     return {
@@ -138,7 +152,14 @@ export function useTemplateRequestForm(
       ...data,
       colorCustomization: { ...data.colorCustomization },
       goals: [...data.goals],
-      files: data.files ? [...data.files] : []
+      audienceTags: [...(data.audienceTags ?? [])],
+      requestCategories: [...(data.requestCategories ?? [])],
+      logoAssets: [...(data.logoAssets ?? [])],
+      logoFiles: data.logoFiles ? [...data.logoFiles] : [],
+      files: data.files ? [...data.files] : [],
+      location: data.location
+        ? { ...data.location }
+        : createEmptyLocation()
     };
   }
 

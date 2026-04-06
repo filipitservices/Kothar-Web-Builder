@@ -24,17 +24,26 @@ function trimStr(v: unknown): string {
   return typeof v === 'string' ? v.trim() : '';
 }
 
+/**
+ * Handles both old shape (yearsInBusiness, businessDescription) and new shape
+ * (preferredUrl, location, customIndustry). All string fields must be empty.
+ */
 function isEmptyBusinessInfo(v: unknown): boolean {
   if (v === null || typeof v !== 'object') return false;
   const o = v as Record<string, unknown>;
-  return (
-    trimStr(o.businessName) === '' &&
-    trimStr(o.industry) === '' &&
-    trimStr(o.yearsInBusiness) === '' &&
-    trimStr(o.businessDescription) === ''
-  );
+  if (trimStr(o.businessName) !== '' || trimStr(o.industry) !== '') return false;
+  // New fields
+  if (trimStr(o.preferredUrl) !== '' || trimStr(o.customIndustry) !== '') return false;
+  const loc = o.location;
+  if (loc !== null && typeof loc === 'object' && trimStr((loc as Record<string, unknown>).displayName) !== '') return false;
+  // Old fields (backward compat)
+  if (trimStr(o.yearsInBusiness) !== '' || trimStr(o.businessDescription) !== '') return false;
+  return true;
 }
 
+/**
+ * Handles both old shape (with address) and new shape (without address).
+ */
 function isEmptyContactInfo(v: unknown): boolean {
   if (v === null || typeof v !== 'object') return false;
   const o = v as Record<string, unknown>;
@@ -47,12 +56,23 @@ function isEmptyContactInfo(v: unknown): boolean {
   );
 }
 
+/**
+ * Handles both old shape (targetAudience string) and new shape (audienceTags array, requestCategories array).
+ */
 function isEmptyProjectDetailsText(v: unknown): boolean {
   if (v === null || typeof v !== 'object') return false;
   const o = v as Record<string, unknown>;
   const goals = o.goals;
   if (!Array.isArray(goals) || goals.length !== 0) return false;
-  return trimStr(o.targetAudience) === '' && trimStr(o.additionalNotes) === '';
+  if (trimStr(o.additionalNotes) !== '') return false;
+  // Old field
+  if (trimStr(o.targetAudience) !== '') return false;
+  // New fields
+  const audienceTags = o.audienceTags;
+  if (Array.isArray(audienceTags) && audienceTags.length !== 0) return false;
+  const requestCategories = o.requestCategories;
+  if (Array.isArray(requestCategories) && requestCategories.length !== 0) return false;
+  return true;
 }
 
 function layoutAllowsCleanup(layout: unknown): boolean {
@@ -68,6 +88,8 @@ export function isPristineAbandonedDraft(data: DocumentData): boolean {
   if (data.status !== ORDER_STATUS_DRAFT) return false;
   if (data.modificationLocked === true) return false;
   if (!Array.isArray(data.attachments) || data.attachments.length !== 0) return false;
+  const logoAtt = data.logoAttachments;
+  if (Array.isArray(logoAtt) && logoAtt.length !== 0) return false;
   if (!isEmptyBusinessInfo(data.businessInfo)) return false;
   if (!isEmptyContactInfo(data.contactInfo)) return false;
   if (!isEmptyProjectDetailsText(data.projectDetails)) return false;

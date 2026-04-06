@@ -23,31 +23,52 @@ import type {
   OrderProjectDetails,
   OrderLayout
 } from '~/types/order';
-import type { TemplateRequestFormData } from '~/types/templateRequest';
+import type { TemplateRequestFormData, LocationData } from '~/types/templateRequest';
 import { sanitizeStorageFileName } from '~/utils/storage';
 
 /**
  * Map an order document to form data for prefilling the edit form.
- * Existing attachments are reflected in brandAssets (names only); files array is empty.
+ * Backward-compatible: handles old order shapes that may have yearsInBusiness,
+ * businessDescription, address, or targetAudience.
  */
 export function orderToFormData(order: OrderWithId): TemplateRequestFormData {
   const { businessInfo, contactInfo, projectDetails } = order;
+
+  // Backward compat: old orders may have contactInfo.address instead of businessInfo.location
+  const oldAddress = (contactInfo as Record<string, unknown>).address as string | undefined;
+  const location: LocationData = businessInfo.location
+    ? { ...businessInfo.location }
+    : oldAddress
+      ? { displayName: oldAddress, verified: false }
+      : { displayName: '', verified: false };
+
+  // Backward compat: old orders may have targetAudience string instead of audienceTags array
+  const oldTargetAudience = (projectDetails as Record<string, unknown>).targetAudience as string | undefined;
+  const audienceTags: string[] = Array.isArray(projectDetails.audienceTags)
+    ? [...projectDetails.audienceTags]
+    : oldTargetAudience?.trim()
+      ? [oldTargetAudience.trim()]
+      : [];
+
   return {
+    colorCustomization: { ...projectDetails.colorCustomization },
+    logoAssets: (order.logoAttachments ?? []).map((a) => a.originalName),
+    logoFiles: [],
+    brandAssets: (order.attachments ?? []).map((a) => a.originalName),
+    files: [],
     businessName: businessInfo.businessName ?? '',
+    preferredUrl: businessInfo.preferredUrl ?? '',
+    location,
     industry: businessInfo.industry ?? '',
-    yearsInBusiness: businessInfo.yearsInBusiness ?? '',
-    businessDescription: businessInfo.businessDescription ?? '',
+    customIndustry: businessInfo.customIndustry ?? '',
     contactName: contactInfo.contactName ?? '',
     email: contactInfo.email ?? '',
     phone: contactInfo.phone ?? '',
     website: contactInfo.website ?? '',
-    address: contactInfo.address ?? '',
     goals: [...(projectDetails.goals ?? [])],
-    targetAudience: projectDetails.targetAudience ?? '',
-    brandAssets: (order.attachments ?? []).map((a) => a.originalName),
-    files: [],
+    audienceTags,
     additionalNotes: projectDetails.additionalNotes ?? '',
-    colorCustomization: { ...projectDetails.colorCustomization }
+    requestCategories: [...(projectDetails.requestCategories ?? [])]
   };
 }
 
@@ -63,21 +84,22 @@ function formDataToOrderUpdate(data: TemplateRequestFormData): {
   return {
     businessInfo: {
       businessName: data.businessName.trim(),
+      preferredUrl: data.preferredUrl.trim(),
+      location: { ...data.location },
       industry: data.industry.trim(),
-      yearsInBusiness: data.yearsInBusiness.trim(),
-      businessDescription: data.businessDescription.trim()
+      customIndustry: data.industry === 'other' ? data.customIndustry.trim() : ''
     },
     contactInfo: {
       contactName: data.contactName.trim(),
       email: data.email.trim(),
       phone: data.phone.trim(),
-      website: data.website.trim(),
-      address: data.address.trim()
+      website: data.website.trim()
     },
     projectDetails: {
       goals: [...data.goals],
-      targetAudience: data.targetAudience.trim(),
+      audienceTags: [...data.audienceTags],
       additionalNotes: data.additionalNotes.trim(),
+      requestCategories: [...data.requestCategories],
       colorCustomization: { ...data.colorCustomization }
     }
   };
@@ -126,10 +148,14 @@ export interface OrderUpdateParams {
   userId: string;
   orderId: string;
   formData: TemplateRequestFormData;
-  /** Existing attachments to preserve; new files will be appended. */
+  /** Existing brand material attachments to preserve; new files will be appended. */
   existingAttachments: OrderAttachment[];
-  /** New files to upload and append to attachments. */
+  /** New brand material files to upload and append. */
   newFiles?: File[];
+  /** Existing logo attachments to preserve. */
+  existingLogoAttachments?: OrderAttachment[];
+  /** New logo files to upload and append. */
+  newLogoFiles?: File[];
   /** Page layout configuration to persist with the order. */
   layout?: OrderLayout;
   /** Optional status transition (e.g. draft -> submitted). */
@@ -138,7 +164,7 @@ export interface OrderUpdateParams {
 
 /**
  * Update an existing order. Writes businessInfo, contactInfo, projectDetails,
- * attachments, layout, updatedAt, and optionally status (e.g. draft → submitted).
+ * attachments, logoAttachments, layout, updatedAt, and optionally status.
  * Never writes modificationLocked (admin-only).
  */
 export function useOrderUpdate(): UseOrderUpdateReturn {
@@ -148,7 +174,12 @@ export function useOrderUpdate(): UseOrderUpdateReturn {
       return Promise.reject(new OrderUpdateError('Firebase is not configured.'));
     }
 
-    const { userId, orderId, formData, existingAttachments, newFiles = [], layout, status } = params;
+    const {
+      userId, orderId, formData,
+      existingAttachments, newFiles = [],
+      existingLogoAttachments = [], newLogoFiles = [],
+      layout, status
+    } = params;
     if (!userId.trim() || !orderId.trim()) {
       return Promise.reject(new OrderUpdateError('User ID and order ID are required.'));
     }
@@ -157,16 +188,26 @@ export function useOrderUpdate(): UseOrderUpdateReturn {
     const orderRef = doc(db, 'users', userId, 'orders', orderId);
 
     return (async () => {
-      let attachments: OrderAttachment[] = [...existingAttachments];
+      const storage = getStorage(app);
 
+      let attachments: OrderAttachment[] = [...existingAttachments];
       if (newFiles.length > 0) {
-        const storage = getStorage(app);
         const uploaded = await Promise.all(
           newFiles.map((file, index) =>
             uploadFileAndGetMetadata(storage, userId, orderId, file, existingAttachments.length + index)
           )
         );
         attachments = [...existingAttachments, ...uploaded];
+      }
+
+      let logoAttachments: OrderAttachment[] = [...existingLogoAttachments];
+      if (newLogoFiles.length > 0) {
+        const uploaded = await Promise.all(
+          newLogoFiles.map((file, index) =>
+            uploadFileAndGetMetadata(storage, userId, orderId, file, existingLogoAttachments.length + index)
+          )
+        );
+        logoAttachments = [...existingLogoAttachments, ...uploaded];
       }
 
       const { businessInfo, contactInfo, projectDetails } = formDataToOrderUpdate(formData);
@@ -176,6 +217,7 @@ export function useOrderUpdate(): UseOrderUpdateReturn {
         contactInfo,
         projectDetails,
         attachments,
+        logoAttachments,
         updatedAt: serverTimestamp(),
       };
 

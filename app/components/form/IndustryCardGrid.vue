@@ -29,6 +29,24 @@
         <span class="industry-card__label">{{ option.label }}</span>
       </label>
     </div>
+
+    <div v-if="modelValue === 'other'" class="industry-card-grid__custom">
+      <label :for="customInputId" class="industry-card-grid__custom-label">
+        Please describe your industry <span class="required">*</span>
+      </label>
+      <input
+        :id="customInputId"
+        type="text"
+        class="form-input"
+        :class="{ 'form-input--invalid': customValueError }"
+        placeholder="e.g., Event planning, Pet grooming, Solar installation..."
+        :value="customValue"
+        :readonly="readOnly"
+        :disabled="readOnly"
+        @input="onCustomInput"
+        @blur="$emit('customBlur')"
+      />
+    </div>
   </div>
 </template>
 
@@ -46,6 +64,10 @@ interface IndustryOption {
 const props = withDefaults(
   defineProps<{
     modelValue: string;
+    /** Custom industry text when "other" is selected. */
+    customValue?: string;
+    /** Whether the custom value has a validation error. */
+    customValueError?: boolean;
     /** Drives the selected-option gradient wash (same system as color presets). */
     selectionSurfaceColors: ColorCustomization;
     options?: readonly IndustryOption[];
@@ -54,6 +76,8 @@ const props = withDefaults(
     readOnly?: boolean;
   }>(),
   {
+    customValue: '',
+    customValueError: false,
     options: () => INDUSTRY_OPTIONS,
     name: 'industry',
     label: 'Industry',
@@ -63,13 +87,25 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void;
+  (e: 'update:customValue', value: string): void;
+  (e: 'customBlur'): void;
 }>();
 
-const labelId = computed(() => `industry-label-${props.name}-${Math.random().toString(36).slice(2, 9)}`);
+const uid = Math.random().toString(36).slice(2, 9);
+const labelId = computed(() => `industry-label-${props.name}-${uid}`);
+const customInputId = computed(() => `industry-custom-${uid}`);
 
 function handleSelect(value: string): void {
   if (props.readOnly) return;
   emit('update:modelValue', value);
+}
+
+function onCustomInput(event: Event): void {
+  if (props.readOnly) return;
+  const target = event.target;
+  if (target instanceof HTMLInputElement) {
+    emit('update:customValue', target.value);
+  }
 }
 </script>
 
@@ -118,5 +154,24 @@ function handleSelect(value: string): void {
 
 .form-option--selected .industry-card__label {
   color: var(--color-primary);
+}
+
+.industry-card-grid__custom {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding-top: var(--space-sm);
+}
+
+.industry-card-grid__custom-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-muted-dark);
+  line-height: 1.3;
+}
+
+.industry-card-grid__custom-label .required {
+  color: var(--color-error);
+  margin-left: 2px;
 }
 </style>

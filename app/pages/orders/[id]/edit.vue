@@ -395,6 +395,8 @@ async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
         formData,
         existingAttachments: order.attachments ?? [],
         newFiles: formData.files?.length ? [...formData.files] : undefined,
+        existingLogoAttachments: order.logoAttachments ?? [],
+        newLogoFiles: formData.logoFiles?.length ? [...formData.logoFiles] : undefined,
         layout,
       });
 

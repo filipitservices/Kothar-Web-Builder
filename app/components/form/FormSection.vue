@@ -19,7 +19,7 @@ interface Props {
   title: string;
   hint?: string;
   step?: number | string;
-  variant?: 'palette' | 'building' | 'contact' | 'target' | 'sparkle';
+  variant?: 'palette' | 'building' | 'contact' | 'target' | 'sparkle' | 'branding' | 'business' | 'requests';
   featured?: boolean;
 }
 
@@ -127,6 +127,21 @@ withDefaults(defineProps<Props>(), {
 }
 
 .form-section__icon--sparkle {
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted-dark);
+}
+
+.form-section__icon--branding {
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted-dark);
+}
+
+.form-section__icon--business {
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted-dark);
+}
+
+.form-section__icon--requests {
   background: var(--color-bg-subtle);
   color: var(--color-text-muted-dark);
 }

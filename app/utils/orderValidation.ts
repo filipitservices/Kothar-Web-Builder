@@ -60,31 +60,37 @@ function validateOrderLayout(v: unknown): v is OrderLayout {
   return v.blocks.every((b: unknown) => validateOrderLayoutBlock(b));
 }
 
+/**
+ * Validates businessInfo — accepts both old shape (yearsInBusiness, businessDescription)
+ * and new shape (preferredUrl, location, customIndustry). Requires businessName and industry.
+ */
 function validateOrderBusinessInfo(v: unknown): v is OrderBusinessInfo {
   if (!isObject(v)) return false;
-  return (
-    isString(v.businessName) &&
-    isString(v.industry) &&
-    isString(v.yearsInBusiness) &&
-    isString(v.businessDescription)
-  );
+  return isString(v.businessName) && isString(v.industry);
 }
 
+/**
+ * Validates contactInfo — accepts old shape (with address) and new shape (without address).
+ * Requires contactName, email, phone, website.
+ */
 function validateOrderContactInfo(v: unknown): v is OrderContactInfo {
   if (!isObject(v)) return false;
   return (
     isString(v.contactName) &&
     isString(v.email) &&
     isString(v.phone) &&
-    isString(v.website) &&
-    isString(v.address)
+    isString(v.website)
   );
 }
 
+/**
+ * Validates projectDetails — accepts old shape (targetAudience string)
+ * and new shape (audienceTags array, requestCategories array).
+ */
 function validateOrderProjectDetails(v: unknown): v is OrderProjectDetails {
   if (!isObject(v)) return false;
   if (!Array.isArray(v.goals) || !v.goals.every((g: unknown) => isString(g))) return false;
-  if (!isString(v.targetAudience) || !isString(v.additionalNotes)) return false;
+  if (!isString(v.additionalNotes)) return false;
   return validateColorCustomization(v.colorCustomization);
 }
 
@@ -112,6 +118,9 @@ export function validateOrderRequest(data: unknown): data is OrderRequest {
   if (!validateOrderContactInfo(d.contactInfo)) return false;
   if (!validateOrderProjectDetails(d.projectDetails)) return false;
   if (!Array.isArray(d.attachments) || !d.attachments.every((a: unknown) => validateOrderAttachment(a))) return false;
+  if (d.logoAttachments !== undefined && d.logoAttachments !== null) {
+    if (!Array.isArray(d.logoAttachments) || !d.logoAttachments.every((a: unknown) => validateOrderAttachment(a))) return false;
+  }
   if (!isString(d.status) || !ORDER_STATUSES.has(d.status)) return false;
 
   if (d.layout !== undefined && d.layout !== null && !validateOrderLayout(d.layout)) return false;

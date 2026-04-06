@@ -255,7 +255,7 @@ interface Props {
 
 SMB onboarding form for requesting a website based on a selected showcase template. The `[id]` route param is a **Firebase document ID**, not a template slug. When the user clicks "Choose This Design" on the Gallery, a draft request is created in Firestore first, and the user is navigated to `/gallery/request/{docId}`.
 
-The form uses gamified, section-based interactions: industry selection via **IndustryCardGrid** (selectable cards), **GuidedBusinessDescription** (three optional blocks: what we do, who we serve, what sets us apart), **YearsInBusinessInput** (segmented options only; field is optional), and **GoalSelector** (multi-select goals; no order). All use design tokens and support a read-only state when the form is disabled.
+The form is organized into 6 sections: **Design Customization** (color presets/custom), **Branding** (logo uploads + brand material), **Business Info** (name, preferred URL, Photon-verified location, industry with strict "Other" validation), **Contact** (name, email, phone, website), **Website Goals** (max-3 goal selector + tag-based audience input), **Additional Requests** (freeform notes + selectable request categories). All use design tokens and support a read-only state when the form is disabled.
 
 ### Architecture
 
@@ -311,9 +311,9 @@ TemplateRequestForm
 - `TemplateRequestForm` passes **`colorUiResetScopeId`** (the Firestore order / request document id) and a derived **`colorUiResetKey`** into `ColorSchemePicker`.
 - When that key changes (baseline hydration from `initialFormData`, or a change of showcase `template.id`), the picker sets the active tab to **Presets** if the current `colorCustomization` matches a curated preset, otherwise **Custom**. The tab does **not** follow live edits to colors (no watcher on `colors` alone), so manual tweaks are not overridden while the user works.
 
-**Selectable options (industry, goals, years)**
+**Selectable options (industry, goals, request categories)**
 
-Selected chips for **IndustryCardGrid**, **YearsInBusinessInput**, and **GoalSelector** (`.form-option--selected`) reuse the same gradient wash and shadow treatment as selected color preset cards. `app/utils/colorSurfaceWash.ts` exports `selectionSurfaceCustomProperties(colors)` to set `--preset-surface-*` on the selected element; `app/assets/css/components.css` applies the shared `::before` gradient and borders/shadows to both `.form-option--selected` and `.color-preset-card--selected`. `TemplateRequestForm` passes `formData.colorCustomization` as `selectionSurfaceColors` so the wash stays aligned with the user’s current palette. **ColorSchemePicker** calls the same helper for preset buttons.
+Selected chips for **IndustryCardGrid**, **GoalSelector**, and **RequestCategorySelector** (`.form-option--selected`) reuse the same gradient wash and shadow treatment as selected color preset cards. `app/utils/colorSurfaceWash.ts` exports `selectionSurfaceCustomProperties(colors)` to set `--preset-surface-*` on the selected element; `app/assets/css/components.css` applies the shared `::before` gradient and borders/shadows to both `.form-option--selected` and `.color-preset-card--selected`. `TemplateRequestForm` passes `formData.colorCustomization` as `selectionSurfaceColors` so the wash stays aligned with the user’s current palette. **ColorSchemePicker** calls the same helper for preset buttons. **GoalSelector** supports a `maxSelection` prop (set to 3) that disables unselected cards when the limit is reached. **IndustryCardGrid** shows a text input for the custom industry description when "Other" is selected.
 
 ### Navigation (gallery request page only)
 
@@ -342,13 +342,16 @@ Validation is centralized in `useTemplateRequestValidation` (see `app/composable
 **Rules (summary):**
 - **Business name / Contact name:** Required; 2–200 characters after trim; not purely numeric; at least two letters; only letters, numbers, spaces, hyphens, apostrophes, periods.
 - **Industry:** Required; must be one of the predefined options.
-- **Years in business:** Optional; if provided, must be a whole number between 0 and 200.
+- **Custom industry (when "Other"):** Required when industry is "other"; min 3 chars; must contain at least two letters; rejects nonsense values (blocklist in `formOptions.ts`).
+- **Preferred URL:** Optional; if provided, alphanumeric + hyphens, no spaces, max 100 characters.
+- **Location:** Optional; no validation constraints (Photon verification is a UX helper, not a gate).
 - **Email:** Required; valid email format; max 254 characters.
 - **Phone:** Optional; if provided, 10–15 digits (spaces, dashes, parentheses allowed).
 - **Website:** Optional; if provided, must be a valid URL (protocol or domain with TLD).
-- **Address:** Optional; if provided, max 500 characters.
-- **Goals:** At least one goal required; values must be from the predefined list.
-- **Long text (description, target audience, additional notes):** Optional; if provided, max 2000 characters.
+- **Goals:** At least one and at most three goals required; values must be from the predefined list.
+- **Audience tags:** Optional; individual tags cannot be empty.
+- **Additional notes:** Optional; if provided, max 2000 characters.
+- **Request categories:** Optional; values must be from the predefined list.
 
 **UI:** Error messages use the design token `--color-error`. Invalid inputs use the `.form-input--invalid` / `.form-select--invalid` / `.form-textarea--invalid` classes (and IconInput receives invalid styling via `.form-group--error`). Error text appears below the field; layout uses the shared `.form-error` class from `components.css`.
 

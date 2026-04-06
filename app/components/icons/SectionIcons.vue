@@ -147,4 +147,59 @@ export const MapPinIcon = defineComponent({
     ]);
   }
 });
+
+/**
+ * Image icon for branding section
+ */
+export const BrandingIcon = defineComponent({
+  name: 'BrandingIcon',
+  render() {
+    return h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
+      h('rect', { x: '3', y: '3', width: '18', height: '18', rx: '2', ry: '2' }),
+      h('circle', { cx: '8.5', cy: '8.5', r: '1.5' }),
+      h('polyline', { points: '21 15 16 10 5 21' })
+    ]);
+  }
+});
+
+/**
+ * Briefcase icon for business info section
+ */
+export const BusinessIcon = defineComponent({
+  name: 'BusinessIcon',
+  render() {
+    return h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
+      h('rect', { x: '2', y: '7', width: '20', height: '14', rx: '2', ry: '2' }),
+      h('path', { d: 'M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16' })
+    ]);
+  }
+});
+
+/**
+ * Clipboard/list icon for additional requests section
+ */
+export const RequestsIcon = defineComponent({
+  name: 'RequestsIcon',
+  render() {
+    return h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
+      h('path', { d: 'M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2' }),
+      h('rect', { x: '8', y: '2', width: '8', height: '4', rx: '1', ry: '1' }),
+      h('line', { x1: '9', y1: '12', x2: '15', y2: '12' }),
+      h('line', { x1: '9', y1: '16', x2: '15', y2: '16' })
+    ]);
+  }
+});
+
+/**
+ * Link icon for preferred URL field
+ */
+export const LinkIcon = defineComponent({
+  name: 'LinkIcon',
+  render() {
+    return h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
+      h('path', { d: 'M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71' }),
+      h('path', { d: 'M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71' })
+    ]);
+  }
+});
 </script>

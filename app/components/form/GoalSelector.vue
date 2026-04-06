@@ -7,7 +7,8 @@
         class="goal-card form-option"
         :class="{
           'form-option--selected': modelValue.includes(goal.value),
-          'form-option--read-only': readOnly
+          'form-option--read-only': readOnly,
+          'form-option--disabled': isAtLimit && !modelValue.includes(goal.value)
         }"
         :style="
           modelValue.includes(goal.value)
@@ -19,7 +20,7 @@
           type="checkbox"
           :value="goal.value"
           :checked="modelValue.includes(goal.value)"
-          :disabled="readOnly"
+          :disabled="readOnly || (isAtLimit && !modelValue.includes(goal.value))"
           class="form-option__input"
           :aria-label="`Select: ${goal.label}`"
           @change="handleChange(goal.value, $event)"
@@ -35,11 +36,14 @@
         </span>
       </label>
     </div>
+    <p v-if="maxSelection !== undefined" class="goal-selector__limit-hint">
+      {{ modelValue.length }} / {{ maxSelection }} selected
+    </p>
   </div>
 </template>
 
 <script setup lang="ts">
-import { h, type FunctionalComponent } from 'vue';
+import { h, computed, type FunctionalComponent } from 'vue';
 import type { ColorCustomization } from '~/types/templateRequest';
 import { selectionSurfaceCustomProperties } from '~/utils/colorSurfaceWash';
 
@@ -55,9 +59,12 @@ const props = withDefaults(
     /** Drives the selected-option gradient wash (same system as color presets). */
     selectionSurfaceColors: ColorCustomization;
     readOnly?: boolean;
+    /** Maximum number of goals that can be selected. Undefined = no limit. */
+    maxSelection?: number;
   }>(),
   {
-    readOnly: false
+    readOnly: false,
+    maxSelection: undefined
   }
 );
 
@@ -65,12 +72,20 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: string[]): void;
 }>();
 
+const isAtLimit = computed(() =>
+  props.maxSelection !== undefined && props.modelValue.length >= props.maxSelection
+);
+
 function handleChange(value: string, event: Event): void {
   if (props.readOnly) return;
   const target = event.target;
   if (!(target instanceof HTMLInputElement)) return;
   const checked = target.checked;
   if (checked) {
+    if (isAtLimit.value) {
+      target.checked = false;
+      return;
+    }
     emit('update:modelValue', [...props.modelValue, value]);
   } else {
     emit('update:modelValue', props.modelValue.filter((v) => v !== value));
@@ -213,5 +228,22 @@ function getIconComponent(value: string): FunctionalComponent {
   opacity: 1;
   transform: scale(1);
   background: var(--color-primary);
+}
+
+.form-option--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.form-option--disabled:hover:not(.form-option--read-only) {
+  border-color: var(--color-border);
+  background-color: var(--color-bg);
+}
+
+.goal-selector__limit-hint {
+  margin: var(--space-sm) 0 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
 }
 </style>

@@ -57,10 +57,11 @@ Each order document matches the **OrderRequest** type (see `app/types/order.ts`)
 |-------|------|-------------|
 | `templateId` | string | Showcase template ID (e.g. `elite-plumbing`). |
 | `templateName` | string | Human-readable template name. |
-| `businessInfo` | object | `businessName`, `industry`, `yearsInBusiness`, `businessDescription`. |
-| `contactInfo` | object | `contactName`, `email`, `phone`, `website`, `address`. |
-| `projectDetails` | object | `goals` (string[]), `targetAudience`, `additionalNotes`, `colorCustomization`. |
-| `attachments` | array | Metadata for each uploaded file (see below). |
+| `businessInfo` | object | `businessName`, `preferredUrl`, `location` (`LocationData` with `displayName`, `city?`, `state?`, `country?`, `postcode?`, `lat?`, `lon?`, `verified`), `industry`, `customIndustry`. |
+| `contactInfo` | object | `contactName`, `email`, `phone`, `website`. |
+| `projectDetails` | object | `goals` (string[]), `audienceTags` (string[]), `additionalNotes`, `requestCategories` (string[]), `colorCustomization`. |
+| `attachments` | array | Metadata for brand material files (see below). |
+| `logoAttachments` | array | Metadata for logo files (same shape as attachments). |
 | `layout` | object? | Page layout configuration: `{ blocks: OrderLayoutBlock[], customized: boolean }`. Set on draft creation from the template sections; updated when user saves from the builder. |
 | `status` | string | Lifecycle stage: `draft` (initial creation, form not yet submitted), `submitted`, `under_review`, `in_production`, `awaiting_feedback`, `finalizing`, `completed`, `cancelled`. `draft` → `submitted` transition happens on form submission; other transitions are admin-only. Legacy values `in_review`, `in_progress`, `delivered` are supported for display. |
 | `modificationLocked` | boolean | Optional. When `true`, order is locked (e.g. being processed). Admin-assignable only; client must not write. Edit UI is disabled when true. |
@@ -160,7 +161,7 @@ Choosing a design creates a **draft** order immediately. If the user leaves befo
 
 - `status` is **`draft`**, `modificationLocked` is not **`true`**
 - `createdAt` is older than **24 hours** (server time)
-- **No persisted progress:** `attachments` is an empty array; all `businessInfo` and `contactInfo` strings are empty after trim; `projectDetails.goals` is empty and `targetAudience` / `additionalNotes` are empty after trim
+- **No persisted progress:** `attachments` and `logoAttachments` are empty arrays; all `businessInfo` and `contactInfo` strings are empty after trim; `projectDetails.goals` is empty and `audienceTags` / `additionalNotes` / `requestCategories` are empty after trim
 - **`layout` is missing or `layout.customized === false`** (builder save sets `customized: true`; those drafts are kept)
 
 **Implementation:** [`server/utils/abandoned-draft-cleanup.ts`](../server/utils/abandoned-draft-cleanup.ts) runs a paginated **`collectionGroup('orders')`** query (`status == 'draft'`, `createdAt` before cutoff, `orderBy('createdAt')`), applies the predicate above, deletes each matching document with the Admin SDK, then deletes Storage objects under **`orders/{userId}/{orderId}/`**. This does **not** change **`requestLimits/daily`** (creation counts remain as under [Daily Request Limit](#daily-request-limit)).

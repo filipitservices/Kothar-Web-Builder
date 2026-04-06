@@ -36,26 +36,65 @@ export interface ColorDefinition {
 }
 
 /**
+ * Structured location data, optionally verified via Photon geocoding.
+ */
+export interface LocationData {
+  /** User-visible location text (what was typed or selected). */
+  displayName: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  postcode?: string;
+  lat?: number;
+  lon?: number;
+  /** True when the location was confirmed by Photon; false for free-text entries. */
+  verified: boolean;
+}
+
+/**
  * Form data for template requests.
- * Contains all business and contact information along with color customization.
+ * Organized by section: Design Customization, Branding, Business Info,
+ * Contact, Website Goals, Additional Requests.
  */
 export interface TemplateRequestFormData {
+  /* ── Design Customization ── */
+  colorCustomization: ColorCustomization;
+
+  /* ── Branding ── */
+  /** Logo file names (parallel to logoFiles). */
+  logoAssets: string[];
+  /** Uploaded logo files (client-only; not persisted). */
+  logoFiles: File[];
+  /** Brand material file names (parallel to files). */
+  brandAssets: string[];
+  /** Uploaded brand material files (client-only; not persisted). */
+  files: File[];
+
+  /* ── Business Info ── */
   businessName: string;
+  /** Desired URL / slug; availability checked asynchronously. */
+  preferredUrl: string;
+  /** Business location with optional Photon verification. */
+  location: LocationData;
   industry: string;
-  yearsInBusiness: string;
-  businessDescription: string;
+  /** Required when industry is "other"; must be a meaningful description. */
+  customIndustry: string;
+
+  /* ── Contact ── */
   contactName: string;
   email: string;
   phone: string;
   website: string;
-  address: string;
+
+  /* ── Website Goals ── */
   goals: string[];
-  targetAudience: string;
-  brandAssets: string[];
-  /** Uploaded brand asset files */
-  files: File[];
+  /** Tag-based audience descriptors (free-entry + suggestions). */
+  audienceTags: string[];
+
+  /* ── Additional Requests ── */
   additionalNotes: string;
-  colorCustomization: ColorCustomization;
+  /** Selectable request categories (e.g. "booking support", "social proof"). */
+  requestCategories: string[];
 }
 
 /**
@@ -73,21 +112,22 @@ export type ColorMode = 'presets' | 'custom';
 
 /**
  * Form field keys that are validated by the template request validation layer.
- * Excludes colorCustomization, files, and brandAssets (derived from files).
+ * Excludes colorCustomization, file arrays, and brandAssets/logoAssets (derived from files).
  */
 export type TemplateRequestValidatableField =
   | 'businessName'
+  | 'preferredUrl'
+  | 'location'
   | 'industry'
-  | 'yearsInBusiness'
-  | 'businessDescription'
+  | 'customIndustry'
   | 'contactName'
   | 'email'
   | 'phone'
   | 'website'
-  | 'address'
   | 'goals'
-  | 'targetAudience'
-  | 'additionalNotes';
+  | 'audienceTags'
+  | 'additionalNotes'
+  | 'requestCategories';
 
 /**
  * Validation errors keyed by validatable field.

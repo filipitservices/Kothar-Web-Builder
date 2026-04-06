@@ -31,42 +31,56 @@ function filesMetaEqual(a: readonly File[], b: readonly File[]): boolean {
   return true;
 }
 
+function sortedArraysEqual(a: readonly string[], b: readonly string[]): boolean {
+  const sa = sortedStrings(a);
+  const sb = sortedStrings(b);
+  if (sa.length !== sb.length) return false;
+  for (let i = 0; i < sa.length; i++) {
+    if (sa[i] !== sb[i]) return false;
+  }
+  return true;
+}
+
 /**
- * Compare two form snapshots for unsaved detection (normalized goals / brand assets).
+ * Compare two form snapshots for unsaved detection.
  */
 export function areTemplateRequestSnapshotsEqual(
   a: TemplateRequestFormData,
   b: TemplateRequestFormData
 ): boolean {
+  // Business info
   if (a.businessName.trim() !== b.businessName.trim()) return false;
+  if (a.preferredUrl.trim() !== b.preferredUrl.trim()) return false;
+  if (a.location.displayName.trim() !== b.location.displayName.trim()) return false;
+  if (a.location.verified !== b.location.verified) return false;
   if (a.industry.trim() !== b.industry.trim()) return false;
-  if (a.yearsInBusiness.trim() !== b.yearsInBusiness.trim()) return false;
-  if (a.businessDescription.trim() !== b.businessDescription.trim()) return false;
+  if (a.customIndustry.trim() !== b.customIndustry.trim()) return false;
+
+  // Contact
   if (a.contactName.trim() !== b.contactName.trim()) return false;
   if (a.email.trim() !== b.email.trim()) return false;
   if (a.phone.trim() !== b.phone.trim()) return false;
   if (a.website.trim() !== b.website.trim()) return false;
-  if (a.address.trim() !== b.address.trim()) return false;
 
-  const goalsA = sortedStrings(a.goals);
-  const goalsB = sortedStrings(b.goals);
-  if (goalsA.length !== goalsB.length) return false;
-  for (let i = 0; i < goalsA.length; i++) {
-    if (goalsA[i] !== goalsB[i]) return false;
-  }
+  // Goals
+  if (!sortedArraysEqual(a.goals, b.goals)) return false;
 
-  if (a.targetAudience.trim() !== b.targetAudience.trim()) return false;
+  // Audience tags
+  if (!sortedArraysEqual(a.audienceTags, b.audienceTags)) return false;
 
-  const assetsA = sortedStrings(a.brandAssets);
-  const assetsB = sortedStrings(b.brandAssets);
-  if (assetsA.length !== assetsB.length) return false;
-  for (let i = 0; i < assetsA.length; i++) {
-    if (assetsA[i] !== assetsB[i]) return false;
-  }
+  // Brand assets
+  if (!sortedArraysEqual(a.brandAssets, b.brandAssets)) return false;
 
+  // Logo assets
+  if (!sortedArraysEqual(a.logoAssets, b.logoAssets)) return false;
+
+  // Files
   if (!filesMetaEqual(a.files, b.files)) return false;
+  if (!filesMetaEqual(a.logoFiles, b.logoFiles)) return false;
 
+  // Additional requests
   if (a.additionalNotes.trim() !== b.additionalNotes.trim()) return false;
+  if (!sortedArraysEqual(a.requestCategories, b.requestCategories)) return false;
 
   return colorsEqual(a.colorCustomization, b.colorCustomization);
 }
