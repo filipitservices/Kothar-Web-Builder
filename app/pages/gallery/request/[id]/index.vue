@@ -38,8 +38,9 @@
 
         <!-- Two Column Layout -->
         <div class="req__grid">
-          <!-- Left: Template Preview -->
-          <aside class="req-preview">
+          <!-- Left: Template Preview (client-only; omitted from DOM below 1025px) -->
+          <ClientOnly>
+            <aside v-if="showPreviewColumn" class="req-preview">
             <div class="req-preview-card">
               <div class="req-preview-label">Live Preview</div>
               <p class="req-welcome">
@@ -107,7 +108,8 @@
               </div>
               <span class="req-progress-label">{{ formProgress.completed }} of {{ formProgress.total }} fields completed</span>
             </div>
-          </aside>
+            </aside>
+          </ClientOnly>
 
           <section class="req-form">
             <div class="req-form__header">
@@ -180,7 +182,12 @@ const requestLayoutStore = useRequestLayoutStore();
 const { orderToFormData, updateOrder } = useOrderUpdate();
 const { ensureLoaded, openCheckout } = useWhopAccess();
 const { submitDraftOrder } = useDraftRequestSubmitFlow();
-const { minWidth, isReady: viewportReady, isSupported: viewportSupported } = useBuilderViewportSupport();
+const {
+  minWidth,
+  isReady: viewportReady,
+  isSupported: viewportSupported,
+  showPreviewColumn
+} = useBuilderViewportSupport();
 
 const showAccessModal = ref(false);
 const accessCheckoutLoading = ref(false);
@@ -300,6 +307,22 @@ function calculateViewportScale(): void {
 
 let resizeObserver: ResizeObserver | null = null;
 
+function teardownPreviewResizeObserver(): void {
+  resizeObserver?.disconnect();
+  resizeObserver = null;
+}
+
+function setupPreviewResizeObserver(): void {
+  teardownPreviewResizeObserver();
+  const container = previewContainerRef.value;
+  if (!container) return;
+  calculateViewportScale();
+  resizeObserver = new ResizeObserver(() => {
+    calculateViewportScale();
+  });
+  resizeObserver.observe(container);
+}
+
 function getOrderFromNavigationState(): OrderWithId | null {
   if (typeof window === 'undefined') return null;
   const state = window.history.state as { orderFromCreate?: OrderWithId } | undefined;
@@ -366,16 +389,23 @@ onMounted(async () => {
 
   void ensureLoaded();
 
-  await nextTick();
-  calculateViewportScale();
-
-  if (previewContainerRef.value) {
-    resizeObserver = new ResizeObserver(() => {
-      calculateViewportScale();
-    });
-    resizeObserver.observe(previewContainerRef.value);
-  }
 });
+
+watch(
+  [showPreviewColumn, previewContainerRef],
+  async () => {
+    if (!showPreviewColumn.value) {
+      teardownPreviewResizeObserver();
+      return;
+    }
+    await nextTick();
+    if (!previewContainerRef.value) {
+      return;
+    }
+    setupPreviewResizeObserver();
+  },
+  { flush: 'post', immediate: true }
+);
 
 watch(
   userId,
@@ -386,7 +416,7 @@ watch(
 );
 
 onUnmounted(() => {
-  resizeObserver?.disconnect();
+  teardownPreviewResizeObserver();
 });
 
 function createPreviewTemplate(

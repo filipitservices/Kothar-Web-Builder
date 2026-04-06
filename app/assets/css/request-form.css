@@ -32,23 +32,17 @@
   margin: 0 auto;
 }
 
-/* Two Column Grid */
+/* Grid: single column by default; two columns only when preview aside is in the DOM */
 .req__grid {
   display: grid;
-  grid-template-columns: 420px 1fr;
-  gap: 3rem;
+  grid-template-columns: 1fr;
+  gap: 0;
   align-items: start;
 }
 
-@media (max-width: 1024px) {
-  .req__grid {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-
-  .req-preview {
-    display: none;
-  }
+.req__grid:has(.req-preview) {
+  grid-template-columns: 420px 1fr;
+  gap: 3rem;
 }
 
 

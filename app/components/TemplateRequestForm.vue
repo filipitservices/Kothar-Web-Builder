@@ -39,6 +39,7 @@
         <div class="form-group">
           <FileUploadArea
             tone="logo"
+            dropzone-vertical="compact"
             accept="image/*,.svg"
             formats-text="PNG, JPG, SVG, WebP"
             aria-label="Upload logo files"
@@ -585,21 +586,54 @@ defineExpose({
 }
 
 .form-subsection--logos {
-  background: color-mix(in srgb, var(--color-primary-tint) 32%, var(--color-bg));
-  border-radius: var(--radius-md);
-  padding: var(--space-md);
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--color-primary-tint) 72%, var(--color-bg)) 0%,
+    color-mix(in srgb, var(--color-primary-tint) 36%, var(--color-bg)) 100%
+  );
+  box-shadow:
+    0 1px 2px color-mix(in srgb, var(--color-primary) 8%, transparent),
+    0 4px 14px color-mix(in srgb, var(--color-primary) 9%, transparent);
+}
+
+.form-subsection--logos .form-subsection__title {
+  color: color-mix(in srgb, var(--color-primary) 28%, var(--color-text));
+  letter-spacing: 0.01em;
+}
+
+.form-subsection--logos .form-subsection__desc {
+  color: color-mix(in srgb, var(--color-primary) 10%, var(--color-text-muted));
 }
 
 .form-subsection--branding {
-  background: color-mix(in srgb, var(--color-bg-subtle) 60%, var(--color-bg));
-  border-radius: var(--radius-md);
-  padding: var(--space-md);
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, var(--color-accent-warm-deep) 24%, var(--color-border));
+  background: linear-gradient(
+    168deg,
+    color-mix(in srgb, var(--color-accent-warm-tint) 78%, var(--color-bg)) 0%,
+    color-mix(in srgb, var(--color-accent-warm-tint) 42%, var(--color-bg)) 55%,
+    color-mix(in srgb, var(--color-accent-warm-deep) 6%, var(--color-bg)) 100%
+  );
+  box-shadow:
+    0 1px 2px color-mix(in srgb, var(--color-accent-warm-deep) 10%, transparent),
+    0 4px 16px color-mix(in srgb, var(--color-accent-warm-deep) 11%, transparent);
+}
+
+.form-subsection--branding .form-subsection__title {
+  color: color-mix(in srgb, var(--color-accent-warm-deep) 32%, var(--color-text));
+  letter-spacing: 0.01em;
+}
+
+.form-subsection--branding .form-subsection__desc {
+  color: color-mix(in srgb, var(--color-accent-warm-deep) 12%, var(--color-text-muted));
 }
 
 .form-subsection:last-child {
   border-bottom: none;
-  margin-bottom: 0;
-  padding-bottom: 0;
 }
 
 .form-subsection__title {
@@ -674,6 +708,11 @@ defineExpose({
   font-size: 0.875rem;
 }
 
+.form-subsection--branding .existing-attachments-item {
+  background: color-mix(in srgb, var(--color-accent-warm-tint) 45%, var(--color-bg));
+  border-color: color-mix(in srgb, var(--color-accent-warm-deep) 14%, var(--color-border));
+}
+
 .existing-attachments-name {
   flex: 1;
   min-width: 0;
@@ -699,5 +738,9 @@ defineExpose({
 
 .existing-attachments-link:hover {
   text-decoration: underline;
+}
+
+.form-subsection--branding .existing-attachments-link {
+  color: color-mix(in srgb, var(--color-accent-warm-deep) 45%, var(--color-primary));
 }
 </style>

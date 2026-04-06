@@ -2,12 +2,24 @@ import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 const BUILDER_MIN_WIDTH = 1025;
 
+function readViewportWidth(): number | null {
+  if (!import.meta.client) {
+    return null;
+  }
+  return window.innerWidth;
+}
+
 export function useBuilderViewportSupport() {
-  const viewportWidth = ref<number | null>(null);
+  /** Synchronous on client so first paint matches viewport (avoids preview flash on narrow screens). */
+  const viewportWidth = ref<number | null>(readViewportWidth());
   const isSupported = computed(() =>
     viewportWidth.value !== null && viewportWidth.value >= BUILDER_MIN_WIDTH
   );
   const isReady = computed(() => viewportWidth.value !== null);
+  /** Request/order edit pages: live preview column only at or above builder minimum width. */
+  const showPreviewColumn = computed(
+    () => viewportWidth.value !== null && viewportWidth.value >= BUILDER_MIN_WIDTH
+  );
 
   const updateWidth = () => {
     viewportWidth.value = window.innerWidth;
@@ -27,5 +39,6 @@ export function useBuilderViewportSupport() {
     viewportWidth,
     isSupported,
     isReady,
+    showPreviewColumn,
   };
 }

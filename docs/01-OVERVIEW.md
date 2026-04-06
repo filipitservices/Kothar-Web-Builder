@@ -161,7 +161,7 @@ pnpm dev
 | `app/pages/builder.vue` | Main editor page (protected, requires auth) |
 | `app/pages/sites/index.vue` | My Sites: Live Sites + Orders tabs (protected) |
 | `app/pages/sites/[id].vue` | Site control panel (protected) |
-| `app/pages/gallery/request/[id].vue` | Template request form (protected) |
+| `app/pages/gallery/request/[id]/index.vue` | Template request form (protected) |
 | `app/pages/orders/[id]/edit.vue` | Order edit form (protected; locked orders redirect to /sites) |
 | `app/pages/login.vue` | Authentication page |
 | `app/middleware/auth.ts` | Route protection middleware |

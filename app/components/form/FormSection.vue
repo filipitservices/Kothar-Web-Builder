@@ -54,6 +54,22 @@ withDefaults(defineProps<Props>(), {
   border-color: var(--color-border-hover);
 }
 
+.form-section--branding:hover {
+  border-color: color-mix(in srgb, var(--color-accent-warm-deep) 22%, var(--color-border-hover));
+}
+
+.form-section--contact:hover {
+  border-color: color-mix(in srgb, var(--color-accent-warm-deep) 18%, var(--color-border-hover));
+}
+
+.form-section--palette:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 16%, var(--color-border-hover));
+}
+
+.form-section--business:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 14%, var(--color-border-hover));
+}
+
 .form-section:focus-within {
   border-color: var(--color-primary);
   box-shadow: var(--focus-ring-primary);
@@ -68,14 +84,40 @@ withDefaults(defineProps<Props>(), {
   border-color: var(--color-border);
 }
 
+.form-section--palette {
+  --section-accent: var(--color-primary);
+  --section-surface: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-primary-tint) 38%, var(--color-bg)) 0%,
+    color-mix(in srgb, var(--color-primary-tint) 14%, var(--color-bg)) 100%
+  );
+}
+
+.form-section--branding {
+  --section-accent: color-mix(in srgb, var(--color-accent-warm-deep) 58%, var(--color-text-muted-dark));
+  --section-surface: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-accent-warm-tint) 32%, var(--color-bg)) 0%,
+    color-mix(in srgb, var(--color-accent-warm-tint) 10%, var(--color-bg)) 100%
+  );
+}
+
 .form-section--business {
   --section-accent: var(--color-primary);
-  --section-surface: color-mix(in srgb, var(--color-primary-tint) 40%, var(--color-bg));
+  --section-surface: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-primary-tint) 58%, var(--color-bg)) 0%,
+    color-mix(in srgb, var(--color-primary-tint) 28%, var(--color-bg)) 100%
+  );
 }
 
 .form-section--contact {
-  --section-accent: var(--color-text-muted-dark);
-  --section-surface: color-mix(in srgb, var(--color-bg-subtle) 55%, var(--color-bg));
+  --section-accent: color-mix(in srgb, var(--color-accent-warm-deep) 42%, var(--color-text-muted-dark));
+  --section-surface: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-accent-warm-tint) 52%, var(--color-bg)) 0%,
+    color-mix(in srgb, var(--color-accent-warm-tint) 22%, var(--color-bg)) 100%
+  );
 }
 
 .form-section--target {
@@ -118,6 +160,8 @@ withDefaults(defineProps<Props>(), {
   color: var(--color-text);
 }
 
+.form-section--palette .form-section__legend::after,
+.form-section--branding .form-section__legend::after,
 .form-section--business .form-section__legend::after,
 .form-section--contact .form-section__legend::after,
 .form-section--target .form-section__legend::after,
@@ -160,8 +204,8 @@ withDefaults(defineProps<Props>(), {
 }
 
 .form-section__icon--contact {
-  background: var(--color-bg-subtle);
-  color: var(--color-text-muted-dark);
+  background: color-mix(in srgb, var(--color-accent-warm-deep) 14%, var(--color-bg));
+  color: color-mix(in srgb, var(--color-accent-warm-deep) 55%, var(--color-text-muted-dark));
 }
 
 .form-section__icon--target {
@@ -175,8 +219,8 @@ withDefaults(defineProps<Props>(), {
 }
 
 .form-section__icon--branding {
-  background: var(--color-bg-subtle);
-  color: var(--color-text-muted-dark);
+  background: color-mix(in srgb, var(--color-accent-warm-deep) 16%, var(--color-bg));
+  color: var(--color-accent-warm-deep);
 }
 
 .form-section__icon--business {

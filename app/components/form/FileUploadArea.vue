@@ -5,9 +5,13 @@
     role="group"
     aria-labelledby="upload-label"
   >
-    <div 
+    <div
       class="dropzone"
-      :class="{ dragging: isDragging, compact: hasFiles }"
+      :class="{
+        dragging: isDragging,
+        compact: hasFiles,
+        'dropzone--compact-vertical': dropzoneVertical === 'compact' && !hasFiles
+      }"
       role="button"
       tabindex="0"
       :aria-describedby="hasFiles ? 'file-count' : undefined"
@@ -90,6 +94,8 @@ interface Props {
   formatsText?: string;
   acceptedTypes?: string[];
   tone?: 'brand' | 'logo';
+  /** Vertical padding of the drop zone; compact is slightly shorter (token-based). */
+  dropzoneVertical?: 'default' | 'compact';
   title?: string;
   description?: string;
   ctaText?: string;
@@ -102,6 +108,7 @@ const props = withDefaults(defineProps<Props>(), {
   formatsText: 'PNG, JPG, PDF, SVG, AI, PSD, EPS',
   acceptedTypes: () => ['image/', 'application/pdf', '.ai', '.psd', '.eps', '.svg'],
   tone: 'brand',
+  dropzoneVertical: 'default',
   title: 'Upload your brand files',
   description: "Logos, images, documents, references — anything you'd like us to use.",
   ctaText: 'Drop them here'
@@ -189,6 +196,17 @@ function notifyParent(): void {
   --upload-cta-color: var(--color-primary);
 }
 
+.upload--brand {
+  --upload-bg: color-mix(in srgb, var(--color-accent-warm-tint) 70%, var(--color-bg));
+  --upload-bg-hover: color-mix(in srgb, var(--color-accent-warm-tint) 84%, var(--color-bg));
+  --upload-bg-dragging: color-mix(in srgb, var(--color-accent-warm-tint) 94%, var(--color-bg));
+  --upload-border: color-mix(in srgb, var(--color-accent-warm-deep) 26%, var(--color-border));
+  --upload-border-strong: color-mix(in srgb, var(--color-accent-warm-deep) 40%, var(--color-border-hover));
+  --upload-icon-bg: color-mix(in srgb, var(--color-accent-warm-deep) 14%, var(--color-bg));
+  --upload-icon-color: var(--color-accent-warm-deep);
+  --upload-cta-color: color-mix(in srgb, var(--color-accent-warm-deep) 72%, var(--color-primary));
+}
+
 /* Dropzone */
 .dropzone {
   position: relative;
@@ -223,6 +241,11 @@ function notifyParent(): void {
 
 .dropzone.compact {
   padding: var(--space-lg);
+}
+
+.dropzone.dropzone--compact-vertical:not(.compact) {
+  padding-top: var(--space-lg);
+  padding-bottom: var(--space-lg);
 }
 
 /* Icon */

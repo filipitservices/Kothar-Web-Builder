@@ -29,7 +29,7 @@ Kothar follows a clear page separation pattern:
 | `/sites` | `pages/sites/index.vue` | My Sites: Live Sites + Orders tabs | Full-page, table dashboard | **Protected** |
 | `/sites/[id]` | `pages/sites/[id].vue` | Site control panel — manage one live site | Full-page, sections | **Protected** |
 | `/report-issue` | `pages/report-issue.vue` | Report app issues (entry from user menu only) | Full-page, form | **Protected** |
-| `/gallery/request/[id]` | `pages/gallery/request/[id].vue` | Template request form (`[id]` = Firebase document ID) | 2-column layout | **Protected** |
+| `/gallery/request/[id]` | `pages/gallery/request/[id]/index.vue` | Template request form (`[id]` = Firebase document ID) | 2-column layout (preview omitted below 1025px) | **Protected** |
 | `/gallery/request/[id]/builder` | `pages/gallery/request/[id]/builder.vue` | Builder for the layout of a specific request | Builder | **Protected** |
 | `/orders/[id]/edit` | `pages/orders/[id]/edit.vue` | Order edit form (locked orders redirect to /sites) | Same as request form | **Protected** |
 | `/orders/[id]/builder` | `pages/orders/[id]/builder.vue` | Builder for the layout of a specific order | Builder | **Protected** |
@@ -83,8 +83,10 @@ app/pages/
 ├── gallery/
 │   ├── index.vue           # /gallery - central hub with templates (protected)
 │   └── request/
-│       ├── [id].vue        # /gallery/request/:id - template request form (protected)
-│       └── [id]/builder.vue # /gallery/request/:id/builder - builder for that request (protected)
+│       ├── [id].vue        # /gallery/request/:id — <NuxtPage /> shell only
+│       └── [id]/
+│           ├── index.vue   # template request form (protected)
+│           └── builder.vue # /gallery/request/:id/builder (protected)
 ├── builder.vue             # /builder route - legacy redirect to ID-scoped builder
 ├── sites/
 │   ├── index.vue           # /sites - My Live Sites list (protected)
@@ -106,7 +108,7 @@ Routes are implicitly defined by file structure. No manual `vue-router` config r
 - `/builder` → renders `pages/builder.vue` (requires auth)
 - `/sites` → renders `pages/sites/index.vue` (requires auth)
 - `/sites/:id` → renders `pages/sites/[id].vue` (requires auth)
-- `/gallery/request/:id` → renders `pages/gallery/request/[id].vue` (requires auth; `:id` is a Firebase document ID)
+- `/gallery/request/:id` → renders `pages/gallery/request/[id]/index.vue` (requires auth; `:id` is a Firebase document ID; parent `pages/gallery/request/[id].vue` is a `<NuxtPage />` shell)
 - `/login` → renders `pages/login.vue` (guests only)
 - `/reset-password` → renders `pages/reset-password.vue` (guests only)
 

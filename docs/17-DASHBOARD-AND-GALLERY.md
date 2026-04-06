@@ -249,7 +249,7 @@ interface Props {
 
 ## Template Request Form (`/gallery/request/[id]`)
 
-**Page:** `app/pages/gallery/request/[id].vue`
+**Page:** `app/pages/gallery/request/[id]/index.vue`
 **Form Component:** `app/components/TemplateRequestForm.vue`
 **CSS:** `app/assets/css/request-form.css`
 
@@ -261,7 +261,7 @@ The form is organized into 6 sections: **Design Customization** (color presets/c
 
 The page consists of two main pieces:
 
-1. **Page (`[id].vue`)** - Loads the request document from Firestore by doc ID, resolves the associated showcase template, handles preview rendering, progress display, and error states
+1. **Page (`[id]/index.vue`)** - Loads the request document from Firestore by doc ID, resolves the associated showcase template, handles preview rendering, progress display, and error states
 2. **Form Component (`TemplateRequestForm.vue`)** - Contains all form logic, validation, color customization, and file uploads
 
 ### Request Lifecycle
@@ -328,7 +328,7 @@ Two-column layout on desktop:
 - **Left (420px)**: Welcome message, live preview card (sticky), progress bar
 - **Right (flexible)**: Form sections
 
-Responsive collapse to single column on mobile.
+Below **1025px** viewport width (same threshold as the visual layout editor), the live preview column is **not rendered** (client-only, omitted from the DOM). The grid is a single column so scrolling is form-only. Order edit (`/orders/[id]/edit`) uses the same layout rules.
 
 ### Form validation
 

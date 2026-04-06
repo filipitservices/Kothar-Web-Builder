@@ -13,7 +13,8 @@
         </Transition>
 
         <div class="req__grid">
-          <aside class="req-preview">
+          <ClientOnly>
+            <aside v-if="showPreviewColumn" class="req-preview">
             <div class="req-preview-card">
               <div class="req-preview-label">Live Preview</div>
               <p class="req-welcome">Edit your request</p>
@@ -79,7 +80,8 @@
               </div>
               <span class="req-progress-label">{{ formProgress.completed }} of {{ formProgress.total }} fields completed</span>
             </div>
-          </aside>
+            </aside>
+          </ClientOnly>
 
           <section class="req-form">
             <div class="req-form__header">
@@ -122,7 +124,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { useShowcaseStore, type ShowcaseTemplate } from '~/stores/showcase';
 import { useAuthStore } from '~/stores/auth';
 import { useOrdersStore } from '~/stores/orders';
@@ -157,7 +159,12 @@ const requestLayoutStore = useRequestLayoutStore();
 const { orderToFormData, updateOrder } = useOrderUpdate();
 const { ensureLoaded, fetchAccessFromServer, openCheckout } = useWhopAccess();
 const { submitDraftOrder } = useDraftRequestSubmitFlow();
-const { minWidth, isReady: viewportReady, isSupported: viewportSupported } = useBuilderViewportSupport();
+const {
+  minWidth,
+  isReady: viewportReady,
+  isSupported: viewportSupported,
+  showPreviewColumn
+} = useBuilderViewportSupport();
 
 const showAccessModal = ref(false);
 const accessCheckoutLoading = ref(false);
@@ -329,19 +336,45 @@ function calculateViewportScale(): void {
 
 let resizeObserver: ResizeObserver | null = null;
 
+function teardownPreviewResizeObserver(): void {
+  resizeObserver?.disconnect();
+  resizeObserver = null;
+}
+
+function setupPreviewResizeObserver(): void {
+  teardownPreviewResizeObserver();
+  const container = previewContainerRef.value;
+  if (!container) return;
+  calculateViewportScale();
+  resizeObserver = new ResizeObserver(() => {
+    calculateViewportScale();
+  });
+  resizeObserver.observe(container);
+}
+
 onMounted(async () => {
   await loadOrderAndTemplate();
   void ensureLoaded();
-  await nextTick();
-  calculateViewportScale();
-  if (previewContainerRef.value) {
-    resizeObserver = new ResizeObserver(() => calculateViewportScale());
-    resizeObserver.observe(previewContainerRef.value);
-  }
 });
 
+watch(
+  [showPreviewColumn, previewContainerRef],
+  async () => {
+    if (!showPreviewColumn.value) {
+      teardownPreviewResizeObserver();
+      return;
+    }
+    await nextTick();
+    if (!previewContainerRef.value) {
+      return;
+    }
+    setupPreviewResizeObserver();
+  },
+  { flush: 'post', immediate: true }
+);
+
 onUnmounted(() => {
-  resizeObserver?.disconnect();
+  teardownPreviewResizeObserver();
 });
 
 function openBuilder(): void {

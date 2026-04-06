@@ -118,7 +118,7 @@ Only **`status: 'draft'`** orders may be deleted by the owner (`modificationLock
 
 ### Phase 2: Form Submission
 
-1. **Page** (`pages/gallery/request/[id].vue`): Loads the draft document from Firestore by doc ID; resolves the showcase template for preview; renders the form.
+1. **Page** (`pages/gallery/request/[id]/index.vue`): Loads the draft document from Firestore by doc ID; resolves the showcase template for preview; renders the form.
 2. On form submit (after validation), **`useDraftRequestSubmitFlow()`** runs: **`updateOrder`** keeps **`status` as `draft`** with full form, attachments, and layout, then **`POST /api/orders/finalize-draft`** (session cookie, `{ orderId }`). The server verifies the order is **draft**, runs live access + membership policy, and only then **Admin-updates** **`status` to `submitted`**. If access is denied, response is **`{ ok: false, reason: 'subscription_required' }`** (HTTP 200); the UI shows the **access modal** — order stays **draft**. On **`{ ok: true }`**, **`requestLayoutStore.reset()`** and navigate to **`/sites?tab=orders`**. **`/orders/[id]/edit`** uses the same composable for **draft**; **non-draft** updates still use **`fetchAccessFromServer()`** + client `updateOrder` + rules.
 3. **Composable** (`composables/useOrderUpdate.ts`): Uploads files to Storage, then calls `updateDoc` for **draft** saves only; **`draft → submitted`** for the request flow is **not** done via client `updateDoc` (see finalize-draft above).
 4. **Resume after payment:** The user continues from **My Sites → Orders → Modify** (`/orders/{id}/edit`); data is read from Firestore, not from in-memory form state.
