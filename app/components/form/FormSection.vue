@@ -514,20 +514,6 @@ withDefaults(defineProps<Props>(), {
     0 0 0 3px color-mix(in srgb, var(--fs-field-focus) 9%, transparent);
 }
 
-.form-section--business :deep(.form-option.form-option--selected::before) {
-  background:
-    radial-gradient(ellipse 135% 92% at 14% 20%, color-mix(in srgb, var(--color-accent-warm-tint) 52%, transparent) 0%, transparent 58%),
-    radial-gradient(ellipse 100% 78% at 92% 32%, color-mix(in srgb, var(--color-primary-tint) 46%, transparent) 0%, transparent 54%),
-    radial-gradient(ellipse 72% 58% at 48% 94%, color-mix(in srgb, var(--color-primary) 8%, transparent) 0%, transparent 46%),
-    linear-gradient(
-      171deg,
-      var(--color-white) 0%,
-      color-mix(in srgb, var(--color-white) 99.2%, var(--color-primary-tint)) 44%,
-      var(--color-white) 72%,
-      color-mix(in srgb, var(--color-white) 98%, var(--color-accent-warm-tint)) 100%
-    );
-}
-
 .form-section--contact :deep(.form-option:focus-within:not(.form-option--selected)) {
   border-color: color-mix(in srgb, var(--color-accent-warm-deep) 30%, var(--color-border));
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent-warm-deep) 8%, transparent);
@@ -620,19 +606,6 @@ withDefaults(defineProps<Props>(), {
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--fs-field-focus) 18%, transparent),
     0 0 0 3px color-mix(in srgb, var(--fs-field-focus) 9%, transparent);
-}
-
-.form-section--requests :deep(.form-option.form-option--selected::before) {
-  background:
-    radial-gradient(ellipse 130% 86% at 78% 24%, color-mix(in srgb, var(--color-accent-warm-tint) 44%, transparent) 0%, transparent 56%),
-    radial-gradient(ellipse 90% 76% at 14% 58%, color-mix(in srgb, var(--color-primary-tint) 38%, transparent) 0%, transparent 52%),
-    radial-gradient(ellipse 64% 50% at 52% 90%, color-mix(in srgb, var(--color-success) 9%, transparent) 0%, transparent 42%),
-    linear-gradient(
-      169deg,
-      var(--color-white) 0%,
-      color-mix(in srgb, var(--color-white) 98.5%, var(--color-primary-tint)) 48%,
-      var(--color-white) 100%
-    );
 }
 
 /* Responsive */

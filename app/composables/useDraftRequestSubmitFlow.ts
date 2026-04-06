@@ -11,11 +11,28 @@ import { ROUTES } from '~/constants/routes';
 import type { FinalizeDraftResponse } from '~/types/finalizeDraft';
 import type { OrderWithId, OrderLayout } from '~/types/order';
 import type { TemplateRequestFormData } from '~/types/templateRequest';
+import { FinalizeDraftError } from '~/types/finalizeDraftError';
 
 export type DraftSubmitResult =
   | { kind: 'submitted' }
   /** Entitlement check failed; draft is saved — show access modal, do not navigate as success. */
   | { kind: 'subscription_required'; syncedOrder: OrderWithId | null };
+
+function readHttpFromUnknown(err: unknown): {
+  statusCode?: number;
+  statusMessage?: string;
+} {
+  if (err === null || typeof err !== 'object') return {};
+  const o = err as Record<string, unknown>;
+  const statusCode =
+    typeof o.statusCode === 'number'
+      ? o.statusCode
+      : typeof o.status === 'number'
+        ? o.status
+        : undefined;
+  const statusMessage = typeof o.statusMessage === 'string' ? o.statusMessage : undefined;
+  return { statusCode, statusMessage };
+}
 
 export function useDraftRequestSubmitFlow() {
   const ordersStore = useOrdersStore();
@@ -52,26 +69,21 @@ export function useDraftRequestSubmitFlow() {
         return { kind: 'subscription_required', syncedOrder };
       }
     } catch (err: unknown) {
-      const statusCode =
-        err !== null &&
-        typeof err === 'object' &&
-        'statusCode' in err &&
-        typeof (err as { statusCode: unknown }).statusCode === 'number'
-          ? (err as { statusCode: number }).statusCode
-          : undefined;
-      const statusFromErr =
-        err !== null &&
-        typeof err === 'object' &&
-        'status' in err &&
-        typeof (err as { status: unknown }).status === 'number'
-          ? (err as { status: number }).status
-          : undefined;
-      const httpStatus = statusCode ?? statusFromErr;
+      const { statusCode: codeFromErr, statusMessage: msgFromErr } = readHttpFromUnknown(err);
+      const httpStatus = codeFromErr;
       /** Legacy/alternate deploys that still return 403 */
       if (httpStatus === 403) {
         return { kind: 'subscription_required', syncedOrder };
       }
-      throw err;
+      const message =
+        msgFromErr?.trim() && msgFromErr.trim().length > 0
+          ? msgFromErr.trim()
+          : 'Could not complete submission.';
+      throw new FinalizeDraftError(message, {
+        cause: err,
+        statusCode: httpStatus,
+        statusMessage: msgFromErr,
+      });
     }
 
     await ordersStore.fetchOrder(userId, order.id);

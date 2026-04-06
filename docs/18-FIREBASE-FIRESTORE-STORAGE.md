@@ -70,6 +70,8 @@ Each order document matches the **OrderRequest** type (see `app/types/order.ts`)
 
 No redundant or client-only fields. No `File` objects or base64 blobs in Firestore.
 
+**`businessInfo.location`:** Optional subfields (`city`, `state`, `country`, `postcode`, `lat`, `lon`) are stored only when they have valid values (non-empty normalized strings or finite coordinates). The Firestore **modular Web SDK** rejects `undefined` anywhere in the write payload, so the app never sends explicit `undefined` for nested keys. **`normalizeLocationData()`** (via **`normalizeTemplateRequestFormData()`** in `app/utils/requestInputNormalization.ts`) runs on form data before **`useOrderUpdate`** / **`useOrderSubmission`** call **`updateDoc`** or **`setDoc`**.
+
 ### Attachment Metadata (in Order Document)
 
 Each element of `attachments` has the shape **OrderAttachment**:

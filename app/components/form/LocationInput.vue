@@ -66,7 +66,8 @@
 <script setup lang="ts">
 import { ref, computed, watch, onBeforeUnmount } from 'vue';
 import type { LocationData } from '~/types/templateRequest';
-import { usePhotonSearch, type PhotonSuggestion } from '~/composables/usePhotonSearch';
+import { photonSuggestionToLocationData, usePhotonSearch, type PhotonSuggestion } from '~/composables/usePhotonSearch';
+import { normalizeLocationData } from '~/utils/requestInputNormalization';
 
 const props = withDefaults(
   defineProps<{
@@ -110,26 +111,20 @@ function onInput(event: Event): void {
   if (!(target instanceof HTMLInputElement)) return;
   const text = target.value;
 
-  emit('update:modelValue', {
-    displayName: text,
-    verified: false
-  });
+  emit(
+    'update:modelValue',
+    normalizeLocationData({
+      displayName: text,
+      verified: false
+    })
+  );
 
   search(text);
   highlightIndex.value = -1;
 }
 
 function selectSuggestion(suggestion: PhotonSuggestion): void {
-  emit('update:modelValue', {
-    displayName: suggestion.displayName,
-    city: suggestion.city,
-    state: suggestion.state,
-    country: suggestion.country,
-    postcode: suggestion.postcode,
-    lat: suggestion.lat,
-    lon: suggestion.lon,
-    verified: true
-  });
+  emit('update:modelValue', photonSuggestionToLocationData(suggestion));
   clear();
   highlightIndex.value = -1;
 }

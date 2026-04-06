@@ -105,7 +105,6 @@ const selectedCategory = ref<ShowcaseCategory | null>(null);
 const showModal = ref(false);
 const selectedTemplate = ref<ShowcaseTemplate | null>(null);
 const isCreating = ref(false);
-const errorBanner = ref<string | null>(null);
 
 // Methods
 const openShowcase = (template) => { ... };
@@ -116,7 +115,7 @@ const handleChooseDesign = async (templateId) => { ... };
 
 ### Daily Request Limit
 
-Users are limited to 3 request creations per day. This is enforced by Firestore security rules via a counter document at `users/{userId}/requestLimits/daily`. When the limit is exceeded, a toast notification is displayed (no `alert()`).
+Users are limited to 3 request creations per day. This is enforced by Firestore security rules via a counter document at `users/{userId}/requestLimits/daily`. When the limit is exceeded or draft creation fails, **`useRequestFlowErrorDialogStore().presentError`** opens the global **Request flow error** modal (see **Request/order error presentation** below); no `alert()` and no toast for that path.
 
 ### Category Filtering
 
@@ -274,7 +273,11 @@ The page consists of two main pieces:
 
 ### Error Handling
 
-If the route ID does not correspond to a valid request document (not found, inaccessible, or the user is not the owner), the page renders a styled error state with a link back to the Gallery. No crash, no raw error. All user-facing messages use inline styled feedback (no `alert()` calls).
+If the route ID does not correspond to a valid request document (not found, inaccessible, or the user is not the owner), the page renders a styled error state with a link back to the Gallery. No crash, no raw error.
+
+**Request/order error presentation:** Failures from saving the draft, submitting, updating an order, opening checkout, finalizing via **`POST /api/orders/finalize-draft`**, or saving layout in the builder are surfaced through a single path: **`stores/requestFlowErrorDialog.ts`** + **`RequestFlowErrorModal.vue`** (mounted in **`app.vue`**). Content is produced by **`utils/normalizeRequestFlowError.ts`**, which maps Firebase (**`FirestoreError`**, Storage **`FirebaseError`**), **`FinalizeDraftError`** (HTTP metadata from finalize), and domain errors (**`OrderUpdateError`**, **`CreateRequestError`**, etc. via **`cause`**) into a titled explanation, next-step guidance, and an optional collapsed “Technical details” section. The dialog uses **`role="alertdialog"`**, initial focus, and Escape to dismiss. **`SubmissionAccessModal`** remains the only UI for **`subscription_required`** (not mixed into the error modal). A slim **info** inline banner (`req-feedback--info`) may still appear for non-blocking hints (e.g. viewport too narrow for the layout editor).
+
+No `alert()` calls.
 
 ### Data Flow
 
@@ -289,6 +292,8 @@ TemplateRequestForm
 ```
 
 **State:** Form draft in `useTemplateRequestForm`; page seeds once via `initialFormData` → `hydrateFormData`. Updates via `updateField`. Children are controlled (`modelValue` / `update:modelValue`).
+
+Photon powers **suggestions only** for the location field; **`normalizeLocationData()`** (see `app/utils/requestInputNormalization.ts`) compacts `businessInfo.location` before any Firestore write so optional keys are omitted rather than set to `undefined`, which the client SDK disallows.
 
 ### Design customization (color presets)
 
@@ -348,7 +353,7 @@ Validation is centralized in `useTemplateRequestValidation` (see `app/composable
 - **Industry:** Required; must be one of the predefined options.
 - **Custom industry (when "Other"):** Required when industry is "other"; min 3 chars; must contain at least two letters; rejects nonsense values (blocklist in `formOptions.ts`).
 - **Preferred URL:** Optional; if provided, alphanumeric + hyphens, no spaces, max 100 characters.
-- **Location:** Optional; no validation constraints (Photon verification is a UX helper, not a gate).
+- **Location:** Optional; no validation constraints (Photon verification is a UX helper, not a gate). Persisted subfields are normalized and omitted when empty so Firestore writes stay valid.
 - **Email:** Required; valid email format; max 254 characters.
 - **Phone:** Optional; if provided, 10–15 digits (spaces, dashes, parentheses allowed).
 - **Website:** Optional; if provided, must be a valid URL (protocol or domain with TLD).

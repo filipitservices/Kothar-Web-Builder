@@ -10,6 +10,7 @@ import { ref, computed, type Ref, type ComputedRef } from 'vue';
 import type { OrderLayout } from '~/types/order';
 import type { useRequestLayoutStore } from '~/stores/requestLayout';
 import type { useAuthStore } from '~/stores/auth';
+import { useRequestFlowErrorDialogStore } from '~/stores/requestFlowErrorDialog';
 
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
@@ -31,6 +32,7 @@ export interface UseBuilderSaveReturn {
 
 export function useBuilderSave(options: UseBuilderSaveOptions): UseBuilderSaveReturn {
   const { requestLayoutStore, authStore, saveLayout } = options;
+  const flowErrorDialog = useRequestFlowErrorDialogStore();
   const isSaving = ref(false);
   const saveStatus = ref<SaveStatus>('idle');
   let saveStatusTimer: ReturnType<typeof setTimeout> | null = null;
@@ -59,7 +61,8 @@ export function useBuilderSave(options: UseBuilderSaveOptions): UseBuilderSaveRe
       saveStatusTimer = setTimeout(() => {
         saveStatus.value = 'idle';
       }, SAVED_RESET_MS);
-    } catch {
+    } catch (err) {
+      flowErrorDialog.presentError(err, 'save_layout');
       saveStatus.value = 'error';
       saveStatusTimer = setTimeout(() => {
         saveStatus.value = 'idle';

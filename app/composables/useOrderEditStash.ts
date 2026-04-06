@@ -1,5 +1,6 @@
 import type { OrderLayout } from '~/types/order';
 import type { TemplateRequestFormData } from '~/types/templateRequest';
+import { normalizeLocationData } from '~/utils/requestInputNormalization';
 
 interface OrderEditStashPayload {
   version: 1;
@@ -84,7 +85,16 @@ function normalizeStashFormData(data: TemplateRequestFormData): TemplateRequestF
     files: [],
     businessName: data.businessName,
     preferredUrl: data.preferredUrl,
-    location: { ...data.location },
+    location: normalizeLocationData({
+      displayName: data.location.displayName,
+      verified: data.location.verified,
+      city: data.location.city,
+      state: data.location.state,
+      country: data.location.country,
+      postcode: data.location.postcode,
+      lat: data.location.lat,
+      lon: data.location.lon
+    }),
     industry: data.industry,
     customIndustry: data.customIndustry,
     contactName: data.contactName,

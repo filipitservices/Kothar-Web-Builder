@@ -490,6 +490,12 @@
   color: var(--color-success);
 }
 
+.req-feedback--info {
+  background: var(--color-primary-tint);
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary-dark);
+}
+
 .req-feedback__close {
   margin-left: auto;
   display: inline-flex;

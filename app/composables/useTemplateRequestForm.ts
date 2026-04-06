@@ -6,6 +6,7 @@ import type {
   TemplateRequestFormData,
   LocationData
 } from '~/types/templateRequest';
+import { normalizeLocationData } from '~/utils/requestInputNormalization';
 
 export interface FormProgress {
   completed: number;
@@ -158,7 +159,16 @@ export function useTemplateRequestForm(
       logoFiles: data.logoFiles ? [...data.logoFiles] : [],
       files: data.files ? [...data.files] : [],
       location: data.location
-        ? { ...data.location }
+        ? normalizeLocationData({
+            displayName: data.location.displayName,
+            verified: data.location.verified,
+            city: data.location.city,
+            state: data.location.state,
+            country: data.location.country,
+            postcode: data.location.postcode,
+            lat: data.location.lat,
+            lon: data.location.lon
+          })
         : createEmptyLocation()
     };
   }

@@ -7,6 +7,8 @@
  */
 
 import { ref, type Ref } from 'vue';
+import type { LocationData } from '~/types/templateRequest';
+import { normalizeLocationData } from '~/utils/requestInputNormalization';
 
 export interface PhotonSuggestion {
   displayName: string;
@@ -65,6 +67,20 @@ function featureToSuggestion(feature: PhotonFeature): PhotonSuggestion {
     lat: feature.geometry.coordinates[1],
     lon: feature.geometry.coordinates[0]
   };
+}
+
+/** Maps a Photon hit to compact `LocationData` safe for form state and Firestore. */
+export function photonSuggestionToLocationData(suggestion: PhotonSuggestion): LocationData {
+  return normalizeLocationData({
+    displayName: suggestion.displayName,
+    verified: true,
+    city: suggestion.city,
+    state: suggestion.state,
+    country: suggestion.country,
+    postcode: suggestion.postcode,
+    lat: suggestion.lat,
+    lon: suggestion.lon
+  });
 }
 
 export interface UsePhotonSearchReturn {

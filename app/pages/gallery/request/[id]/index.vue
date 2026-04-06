@@ -28,9 +28,9 @@
       <div class="req__content">
         <!-- Inline feedback messages -->
         <Transition name="req-banner">
-          <div v-if="feedbackMessage" class="req-feedback" :class="feedbackClass" role="alert">
-            <span>{{ feedbackMessage }}</span>
-            <button type="button" class="req-feedback__close" @click="feedbackMessage = null" aria-label="Dismiss">
+          <div v-if="infoBannerMessage" class="req-feedback req-feedback--info" role="status">
+            <span>{{ infoBannerMessage }}</span>
+            <button type="button" class="req-feedback__close" @click="infoBannerMessage = null" aria-label="Dismiss">
               <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
             </button>
           </div>
@@ -166,6 +166,7 @@ import type { TemplateRequestFormData, ColorCustomization } from '~/types/templa
 import { useBuilderViewportSupport } from '~/composables/useBuilderViewportSupport';
 import { areTemplateRequestSnapshotsEqual } from '~/utils/templateRequestFormEquality';
 import { getAccountFirstName } from '~/utils/accountIdentity';
+import { useRequestFlowErrorDialogStore } from '~/stores/requestFlowErrorDialog';
 
 definePageMeta({
   middleware: 'auth'
@@ -182,6 +183,7 @@ const requestLayoutStore = useRequestLayoutStore();
 const { orderToFormData, updateOrder } = useOrderUpdate();
 const { ensureLoaded, openCheckout } = useWhopAccess();
 const { submitDraftOrder } = useDraftRequestSubmitFlow();
+const flowErrorDialog = useRequestFlowErrorDialogStore();
 const {
   minWidth,
   isReady: viewportReady,
@@ -208,11 +210,8 @@ const loadError = ref(false);
 const hasLoaded = ref(false);
 
 const isSubmitting = ref(false);
-const feedbackMessage = ref<string | null>(null);
-const feedbackType = ref<'success' | 'error'>('error');
-const feedbackClass = computed(() =>
-  feedbackType.value === 'success' ? 'req-feedback--success' : 'req-feedback--error'
-);
+/** Inline hint only (e.g. viewport too narrow for builder); errors use RequestFlowErrorModal. */
+const infoBannerMessage = ref<string | null>(null);
 
 const formProgress = ref({ completed: 1, total: 14 });
 const progressPercentage = computed(() => {
@@ -446,8 +445,7 @@ function handleProgressUpdate(progress: { completed: number; total: number }): v
 
 function openBuilder(): void {
   if (!isBuilderSupported.value) {
-    feedbackType.value = 'error';
-    feedbackMessage.value = `The visual layout editor is available on screens wider than ${minWidth - 1}px.`;
+    infoBannerMessage.value = `The visual layout editor is available on screens wider than ${minWidth - 1}px.`;
     return;
   }
   const id = requestId.value;
@@ -460,9 +458,8 @@ async function onAccessContinue(): Promise<void> {
   try {
     await openCheckout(WHOP_CHECKOUT_RETURN_PATH);
     showAccessModal.value = false;
-  } catch {
-    feedbackType.value = 'error';
-    feedbackMessage.value = 'Could not open checkout. Please try again.';
+  } catch (err) {
+    flowErrorDialog.presentError(err, 'checkout');
   } finally {
     accessCheckoutLoading.value = false;
   }
@@ -472,13 +469,15 @@ async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
   const uid = userId.value;
   const order = orderDoc.value;
   if (!uid || !order) {
-    feedbackType.value = 'error';
-    feedbackMessage.value = 'You must be signed in to submit a request.';
+    flowErrorDialog.presentError(
+      new Error('You must be signed in to submit a request.'),
+      'submit_draft'
+    );
     return;
   }
 
   isSubmitting.value = true;
-  feedbackMessage.value = null;
+  infoBannerMessage.value = null;
 
   const layout = requestLayoutStore.active
     ? requestLayoutStore.getLayoutForSubmission()
@@ -492,17 +491,11 @@ async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
         formBaseline.value = orderToFormData(result.syncedOrder);
         requestLayoutStore.syncLayoutBaselineFromCurrent();
       }
-      feedbackType.value = 'error';
-      feedbackMessage.value =
-        'Your draft is saved. A subscription is required to submit — use Continue below.';
       showAccessModal.value = true;
       return;
     }
   } catch (err) {
-    feedbackType.value = 'error';
-    feedbackMessage.value = err instanceof Error
-      ? err.message
-      : 'There was an error submitting your request. Please try again.';
+    flowErrorDialog.presentError(err, 'submit_draft');
   } finally {
     isSubmitting.value = false;
   }

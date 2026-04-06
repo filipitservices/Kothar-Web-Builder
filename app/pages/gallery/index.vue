@@ -105,9 +105,9 @@
 import { ref, computed, nextTick } from 'vue';
 import { useAuth } from '~/composables/useAuth';
 import { useShowcaseStore, type ShowcaseTemplate, type ShowcaseCategory } from '~/stores/showcase';
-import { useCreateRequest, CreateRequestError } from '~/composables/useCreateRequest';
-import { useToast } from '~/composables/useToast';
+import { useCreateRequest } from '~/composables/useCreateRequest';
 import ShowcaseModal from '~/components/ShowcaseModal.vue';
+import { useRequestFlowErrorDialogStore } from '~/stores/requestFlowErrorDialog';
 import { ROUTES } from '~/constants/routes';
 
 definePageMeta({
@@ -119,7 +119,7 @@ defineOptions({ name: 'GalleryPage', display: 'Gallery' });
 const { currentUser } = useAuth();
 const showcaseStore = useShowcaseStore();
 const { createDraftRequest } = useCreateRequest();
-const toast = useToast();
+const flowErrorDialog = useRequestFlowErrorDialogStore();
 const router = useRouter();
 const appConfig = useAppConfig();
 
@@ -187,11 +187,7 @@ async function handleChooseDesign(templateId: string): Promise<void> {
       })
     });
   } catch (err) {
-    if (err instanceof CreateRequestError) {
-      toast.showError(err.message);
-    } else {
-      toast.showError('Something went wrong. Please try again.');
-    }
+    flowErrorDialog.presentError(err, 'create_draft');
   } finally {
     isCreating.value = false;
   }

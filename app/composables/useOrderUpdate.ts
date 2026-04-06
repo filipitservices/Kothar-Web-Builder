@@ -25,7 +25,7 @@ import type {
 } from '~/types/order';
 import type { TemplateRequestFormData, LocationData } from '~/types/templateRequest';
 import { sanitizeStorageFileName } from '~/utils/storage';
-import { normalizeTemplateRequestFormData } from '~/utils/requestInputNormalization';
+import { normalizeLocationData, normalizeTemplateRequestFormData } from '~/utils/requestInputNormalization';
 
 /**
  * Map an order document to form data for prefilling the edit form.
@@ -37,11 +37,22 @@ export function orderToFormData(order: OrderWithId): TemplateRequestFormData {
 
   // Backward compat: old orders may have contactInfo.address instead of businessInfo.location
   const oldAddress = (contactInfo as Record<string, unknown>).address as string | undefined;
-  const location: LocationData = businessInfo.location
-    ? { ...businessInfo.location }
+  const loc = businessInfo.location;
+  const rawLocation: LocationData = loc
+    ? {
+        displayName: loc.displayName ?? '',
+        verified: Boolean(loc.verified),
+        city: loc.city,
+        state: loc.state,
+        country: loc.country,
+        postcode: loc.postcode,
+        lat: loc.lat,
+        lon: loc.lon
+      }
     : oldAddress
       ? { displayName: oldAddress, verified: false }
       : { displayName: '', verified: false };
+  const location = normalizeLocationData(rawLocation);
 
   // Backward compat: old orders may have targetAudience string instead of audienceTags array
   const oldTargetAudience = (projectDetails as Record<string, unknown>).targetAudience as string | undefined;
@@ -87,7 +98,7 @@ function formDataToOrderUpdate(data: TemplateRequestFormData): {
     businessInfo: {
       businessName: normalizedData.businessName,
       preferredUrl: normalizedData.preferredUrl,
-      location: { ...normalizedData.location },
+      location: normalizedData.location,
       industry: normalizedData.industry,
       customIndustry: normalizedData.industry === 'other' ? normalizedData.customIndustry : ''
     },
@@ -234,7 +245,7 @@ export function useOrderUpdate(): UseOrderUpdateReturn {
       try {
         await updateDoc(orderRef, updatePayload);
       } catch (err) {
-        throw new OrderUpdateError('Failed to update order. Please try again.', err);
+        throw new OrderUpdateError('Could not save changes.', err);
       }
     })();
   }

@@ -215,7 +215,7 @@ export const useBlocksStore = defineStore('blocks', () => {
 
 The app uses Nuxt 4 layouts for global structure:
 
-- **app.vue**: Root entry; wraps content in `<NuxtLayout><NuxtPage /></NuxtLayout>`.
+- **app.vue**: Root entry; wraps content in `<NuxtLayout><NuxtPage /></NuxtLayout>`. **`ClientOnly`** mounts global overlays: **`ToastContainer`**, **`UnsavedChangesDialog`**, and **`RequestFlowErrorModal`** (request/order write and layout-save errors via **`requestFlowErrorDialog`** store).
 - **layouts/default.vue**: Used by landing, gallery, gallery request, login, and reset-password. Renders the shared **AppNavbar** and a slot for the page.
 - **layouts/builder.vue**: Used only by the builder page. Renders only the slot (no navbar), so the editor has full viewport for the 3-column layout.
 

@@ -6,12 +6,14 @@
     <ClientOnly>
       <ToastContainer />
       <UnsavedChangesDialog />
+      <RequestFlowErrorModal />
     </ClientOnly>
   </div>
 </template>
 
 <script setup lang="ts">
 import UnsavedChangesDialog from '~/components/UnsavedChangesDialog.vue';
+import RequestFlowErrorModal from '~/components/RequestFlowErrorModal.vue';
 
 const appConfig = useAppConfig();
 

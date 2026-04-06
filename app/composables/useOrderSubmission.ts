@@ -68,7 +68,7 @@ function formDataToOrderPayload(
   const businessInfo: OrderBusinessInfo = {
     businessName: normalizedData.businessName,
     preferredUrl: normalizedData.preferredUrl,
-    location: { ...normalizedData.location },
+    location: normalizedData.location,
     industry: normalizedData.industry,
     customIndustry: normalizedData.industry === 'other' ? normalizedData.customIndustry : ''
   };

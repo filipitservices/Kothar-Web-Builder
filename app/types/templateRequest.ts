@@ -37,6 +37,8 @@ export interface ColorDefinition {
 
 /**
  * Structured location data, optionally verified via Photon geocoding.
+ * Runtime values used for Firestore should omit optional keys when unknown — never
+ * set optional properties to `undefined`. Use `normalizeLocationData()` before writes.
  */
 export interface LocationData {
   /** User-visible location text (what was typed or selected). */

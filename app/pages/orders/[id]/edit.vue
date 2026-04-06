@@ -4,9 +4,9 @@
       <div class="req__content">
         <!-- Inline feedback messages -->
         <Transition name="req-banner">
-          <div v-if="feedbackMessage" class="req-feedback" :class="feedbackClass" role="alert">
-            <span>{{ feedbackMessage }}</span>
-            <button type="button" class="req-feedback__close" @click="feedbackMessage = null" aria-label="Dismiss">
+          <div v-if="infoBannerMessage" class="req-feedback req-feedback--info" role="status">
+            <span>{{ infoBannerMessage }}</span>
+            <button type="button" class="req-feedback__close" @click="infoBannerMessage = null" aria-label="Dismiss">
               <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
             </button>
           </div>
@@ -144,6 +144,7 @@ import { useUnsavedChanges } from '~/composables/useUnsavedChanges';
 import { useUnsavedChangesStore } from '~/stores/unsavedChanges';
 import { areTemplateRequestSnapshotsEqual } from '~/utils/templateRequestFormEquality';
 import { useOrderEditStash } from '~/composables/useOrderEditStash';
+import { useRequestFlowErrorDialogStore } from '~/stores/requestFlowErrorDialog';
 
 definePageMeta({
   middleware: 'auth'
@@ -161,6 +162,7 @@ const { orderToFormData, updateOrder } = useOrderUpdate();
 const { saveStash, loadStash, clearStash } = useOrderEditStash();
 const { ensureLoaded, fetchAccessFromServer, openCheckout } = useWhopAccess();
 const { submitDraftOrder } = useDraftRequestSubmitFlow();
+const flowErrorDialog = useRequestFlowErrorDialogStore();
 const {
   minWidth,
   isReady: viewportReady,
@@ -179,11 +181,7 @@ const previewTemplate = ref<ShowcaseTemplate | undefined>(undefined);
 const initialFormData = ref<TemplateRequestFormData | null>(null);
 const orderRef = ref<OrderWithId | null>(null);
 const isSubmitting = ref(false);
-const feedbackMessage = ref<string | null>(null);
-const feedbackType = ref<'success' | 'error'>('error');
-const feedbackClass = computed(() =>
-  feedbackType.value === 'success' ? 'req-feedback--success' : 'req-feedback--error'
-);
+const infoBannerMessage = ref<string | null>(null);
 const formProgress = ref({ completed: 1, total: 14 });
 const progressPercentage = computed(() => {
   if (formProgress.value.total === 0) return 0;
@@ -403,8 +401,7 @@ onUnmounted(() => {
 
 function openBuilder(): void {
   if (!isBuilderSupported.value) {
-    feedbackType.value = 'error';
-    feedbackMessage.value = `The visual layout editor is available on screens wider than ${minWidth - 1}px.`;
+    infoBannerMessage.value = `The visual layout editor is available on screens wider than ${minWidth - 1}px.`;
     return;
   }
   const id = orderId.value;
@@ -417,9 +414,8 @@ async function onAccessContinue(): Promise<void> {
   try {
     await openCheckout(WHOP_CHECKOUT_RETURN_PATH);
     showAccessModal.value = false;
-  } catch {
-    feedbackType.value = 'error';
-    feedbackMessage.value = 'Could not open checkout. Please try again.';
+  } catch (err) {
+    flowErrorDialog.presentError(err, 'checkout');
   } finally {
     accessCheckoutLoading.value = false;
   }
@@ -428,7 +424,14 @@ async function onAccessContinue(): Promise<void> {
 async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
   const uid = userId.value;
   const order = orderRef.value;
-  if (!uid || !order) return;
+  if (!uid) {
+    flowErrorDialog.presentError(
+      new Error('You must be signed in to update this request.'),
+      'update_order'
+    );
+    return;
+  }
+  if (!order) return;
 
   const layout = requestLayoutStore.active
     ? requestLayoutStore.getLayoutForSubmission()
@@ -443,7 +446,7 @@ async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
     }
 
     isSubmitting.value = true;
-    feedbackMessage.value = null;
+    infoBannerMessage.value = null;
 
     try {
       await updateOrder({
@@ -462,8 +465,7 @@ async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
       useUnsavedChangesStore().requestAllowNext();
       await navigateTo({ path: ROUTES.sites, query: { tab: 'orders' } });
     } catch (err) {
-      feedbackType.value = 'error';
-      feedbackMessage.value = err instanceof Error ? err.message : 'Failed to update. Please try again.';
+      flowErrorDialog.presentError(err, 'update_order');
     } finally {
       isSubmitting.value = false;
     }
@@ -471,7 +473,7 @@ async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
   }
 
   isSubmitting.value = true;
-  feedbackMessage.value = null;
+  infoBannerMessage.value = null;
 
   try {
     const result = await submitDraftOrder({ userId: uid, order, formData, layout, updateOrder });
@@ -481,16 +483,12 @@ async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
         initialFormData.value = orderToFormData(result.syncedOrder);
         requestLayoutStore.syncLayoutBaselineFromCurrent();
       }
-      feedbackType.value = 'error';
-      feedbackMessage.value =
-        'Your draft is saved. A subscription is required to submit — use Continue below.';
       showAccessModal.value = true;
     } else {
       clearStash(order.id);
     }
   } catch (err) {
-    feedbackType.value = 'error';
-    feedbackMessage.value = err instanceof Error ? err.message : 'Failed to update. Please try again.';
+    flowErrorDialog.presentError(err, 'submit_draft');
   } finally {
     isSubmitting.value = false;
   }

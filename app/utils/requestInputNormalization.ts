@@ -1,4 +1,4 @@
-import type { TemplateRequestFormData } from '~/types/templateRequest';
+import type { LocationData, TemplateRequestFormData } from '~/types/templateRequest';
 
 const ASCII_CONTROL_CHAR_PATTERN = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
 
@@ -35,6 +35,40 @@ export function normalizeTags(tags: string[]): string[] {
   return [...new Set(normalized)];
 }
 
+function appendOptionalLocationString(
+  out: LocationData,
+  key: 'city' | 'state' | 'country' | 'postcode',
+  raw: string | undefined
+): void {
+  if (raw === undefined) return;
+  const v = normalizeSingleLineInput(raw);
+  if (v.length === 0) return;
+  out[key] = v;
+}
+
+/**
+ * Returns a Firestore-safe `LocationData`: required `displayName` and `verified` only;
+ * optional string and coordinate keys are present only when they have valid values.
+ * Never adds own properties with value `undefined` (Firestore rejects undefined).
+ */
+export function normalizeLocationData(input: LocationData): LocationData {
+  const out: LocationData = {
+    displayName: normalizeSingleLineInput(input.displayName),
+    verified: input.verified,
+  };
+  appendOptionalLocationString(out, 'city', input.city);
+  appendOptionalLocationString(out, 'state', input.state);
+  appendOptionalLocationString(out, 'country', input.country);
+  appendOptionalLocationString(out, 'postcode', input.postcode);
+  if (typeof input.lat === 'number' && Number.isFinite(input.lat)) {
+    out.lat = input.lat;
+  }
+  if (typeof input.lon === 'number' && Number.isFinite(input.lon)) {
+    out.lon = input.lon;
+  }
+  return out;
+}
+
 export function normalizeTemplateRequestFormData(
   data: TemplateRequestFormData
 ): TemplateRequestFormData {
@@ -42,14 +76,7 @@ export function normalizeTemplateRequestFormData(
     ...data,
     businessName: normalizeSingleLineInput(data.businessName),
     preferredUrl: normalizeSingleLineInput(data.preferredUrl),
-    location: {
-      ...data.location,
-      displayName: normalizeSingleLineInput(data.location.displayName),
-      city: data.location.city ? normalizeSingleLineInput(data.location.city) : undefined,
-      state: data.location.state ? normalizeSingleLineInput(data.location.state) : undefined,
-      country: data.location.country ? normalizeSingleLineInput(data.location.country) : undefined,
-      postcode: data.location.postcode ? normalizeSingleLineInput(data.location.postcode) : undefined,
-    },
+    location: normalizeLocationData(data.location),
     industry: normalizeSingleLineInput(data.industry),
     customIndustry: normalizeSingleLineInput(data.customIndustry),
     contactName: normalizeSingleLineInput(data.contactName),
