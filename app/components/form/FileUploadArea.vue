@@ -1,5 +1,10 @@
 <template>
-  <div class="upload" role="group" aria-labelledby="upload-label">
+  <div
+    class="upload"
+    :class="`upload--${tone}`"
+    role="group"
+    aria-labelledby="upload-label"
+  >
     <div 
       class="dropzone"
       :class="{ dragging: isDragging, compact: hasFiles }"
@@ -33,10 +38,10 @@
       </div>
 
       <div class="copy">
-        <p id="upload-label" class="headline">Upload your brand files</p>
+        <p id="upload-label" class="headline">{{ title }}</p>
         <p class="desc">
-          Logos, images, documents, references — anything you'd like us to use. 
-          <span class="cta">Drop them here</span> and we'll sort it out.
+          {{ description }}
+          <span class="cta">{{ ctaText }}</span>.
         </p>
         <p class="formats">{{ formatsText }}</p>
       </div>
@@ -84,6 +89,10 @@ interface Props {
   ariaLabel?: string;
   formatsText?: string;
   acceptedTypes?: string[];
+  tone?: 'brand' | 'logo';
+  title?: string;
+  description?: string;
+  ctaText?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -91,7 +100,11 @@ const props = withDefaults(defineProps<Props>(), {
   multiple: true,
   ariaLabel: 'Choose files to upload',
   formatsText: 'PNG, JPG, PDF, SVG, AI, PSD, EPS',
-  acceptedTypes: () => ['image/', 'application/pdf', '.ai', '.psd', '.eps', '.svg']
+  acceptedTypes: () => ['image/', 'application/pdf', '.ai', '.psd', '.eps', '.svg'],
+  tone: 'brand',
+  title: 'Upload your brand files',
+  description: "Logos, images, documents, references — anything you'd like us to use.",
+  ctaText: 'Drop them here'
 });
 
 const emit = defineEmits<{
@@ -154,107 +167,146 @@ function notifyParent(): void {
   border: 0;
 }
 
+.upload {
+  --upload-bg: color-mix(in srgb, var(--color-bg-subtle) 60%, var(--color-bg));
+  --upload-bg-hover: color-mix(in srgb, var(--color-bg-subtle) 78%, var(--color-bg));
+  --upload-bg-dragging: color-mix(in srgb, var(--color-bg-subtle) 88%, var(--color-bg));
+  --upload-border: var(--color-border);
+  --upload-border-strong: var(--color-border-hover);
+  --upload-icon-bg: color-mix(in srgb, var(--color-bg-subtle) 75%, var(--color-bg));
+  --upload-icon-color: var(--color-text-muted-dark);
+  --upload-cta-color: var(--color-text-muted-dark);
+}
+
+.upload--logo {
+  --upload-bg: color-mix(in srgb, var(--color-primary-tint) 72%, var(--color-bg));
+  --upload-bg-hover: color-mix(in srgb, var(--color-primary-tint) 84%, var(--color-bg));
+  --upload-bg-dragging: color-mix(in srgb, var(--color-primary-tint) 95%, var(--color-bg));
+  --upload-border: color-mix(in srgb, var(--color-primary) 20%, var(--color-border));
+  --upload-border-strong: color-mix(in srgb, var(--color-primary) 34%, var(--color-border-hover));
+  --upload-icon-bg: color-mix(in srgb, var(--color-primary) 11%, var(--color-bg));
+  --upload-icon-color: var(--color-primary);
+  --upload-cta-color: var(--color-primary);
+}
+
 /* Dropzone */
 .dropzone {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2rem 1.5rem;
-  background: linear-gradient(135deg, #f0f5ff, #faf5ff);
-  border: 2px dashed #c7d2fe;
-  border-radius: 12px;
+  padding: var(--space-xl) var(--space-lg);
+  background: var(--upload-bg);
+  border: 1px dashed var(--upload-border);
+  border-radius: var(--radius-lg);
   cursor: pointer;
   text-align: center;
-  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .dropzone:hover {
-  background: linear-gradient(135deg, #e8efff, #f3ebff);
-  border-color: #a5b4fc;
+  background: var(--upload-bg-hover);
+  border-color: var(--upload-border-strong);
 }
 
 .dropzone:focus-visible {
   outline: none;
-  border-color: #1e3a8a;
-  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.12);
+  border-color: var(--upload-border-strong);
+  box-shadow: var(--focus-ring-primary);
 }
 
 .dropzone.dragging {
-  background: linear-gradient(135deg, #dbeafe, #ede9fe);
-  border: 2px solid #1e3a8a;
-  transform: scale(1.01);
-  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1), 0 8px 24px -4px rgba(30, 58, 138, 0.15);
+  background: var(--upload-bg-dragging);
+  border-style: solid;
+  border-color: var(--upload-border-strong);
 }
 
-.dropzone.compact { padding: 1.25rem 1.5rem; }
+.dropzone.compact {
+  padding: var(--space-lg);
+}
 
 /* Icon */
 .icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 52px; height: 52px;
-  margin-bottom: 1rem;
-  background: linear-gradient(135deg, #dbeafe, #e0e7ff);
-  border-radius: 14px;
-  color: #1e3a8a;
-  transition: transform 0.2s, box-shadow 0.2s;
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: var(--space-md);
+  background: var(--upload-icon-bg);
+  border-radius: var(--radius-md);
+  color: var(--upload-icon-color);
 }
 
-.icon svg { width: 26px; height: 26px; }
-
-.dropzone:hover .icon {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15);
+.icon svg {
+  width: 1.375rem;
+  height: 1.375rem;
 }
 
-.dropzone.dragging .icon {
-  transform: translateY(-4px) scale(1.05);
-  box-shadow: 0 8px 20px rgba(30, 58, 138, 0.2);
+.dropzone.compact .icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-bottom: var(--space-sm);
 }
 
-.dropzone.compact .icon { width: 40px; height: 40px; margin-bottom: 0.75rem; }
-.dropzone.compact .icon svg { width: 20px; height: 20px; }
+.dropzone.compact .icon svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
 
 /* Copy */
-.copy { display: flex; flex-direction: column; gap: 0.375rem; }
+.copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
 
 .headline {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.9375rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--color-text);
   line-height: 1.4;
 }
 
 .desc {
   margin: 0;
   font-size: 0.875rem;
-  color: #64748b;
+  color: var(--color-text-muted);
   line-height: 1.5;
-  max-width: 320px;
+  max-width: 22rem;
 }
 
-.cta { color: #1e3a8a; font-weight: 500; }
+.cta {
+  color: var(--upload-cta-color);
+  font-weight: 600;
+}
 
 .formats {
-  margin: 0.25rem 0 0;
+  margin: var(--space-xs) 0 0;
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: var(--color-text-muted);
   letter-spacing: 0.01em;
 }
 
-.dropzone.compact .headline { font-size: 0.875rem; }
-.dropzone.compact .desc { display: none; }
-.dropzone.compact .formats { margin-top: 0; }
+.dropzone.compact .headline {
+  font-size: 0.875rem;
+}
+
+.dropzone.compact .desc {
+  display: none;
+}
+
+.dropzone.compact .formats {
+  margin-top: 0;
+}
 
 /* File list */
 .files {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  margin: 1rem 0 0;
+  gap: var(--space-sm);
+  margin: var(--space-md) 0 0;
   padding: 0;
   list-style: none;
 }
@@ -262,30 +314,29 @@ function notifyParent(): void {
 .file {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-
-.file:hover {
-  border-color: #cbd5e1;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
 }
 
 .file-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px; height: 32px;
-  background: linear-gradient(135deg, #f0f5ff, #faf5ff);
-  border-radius: 8px;
+  width: 2rem;
+  height: 2rem;
+  background: color-mix(in srgb, var(--upload-icon-color) 8%, var(--color-bg));
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
 
-.file-icon svg { width: 16px; height: 16px; color: #6366f1; }
+.file-icon svg {
+  width: 1rem;
+  height: 1rem;
+  color: var(--upload-icon-color);
+}
 
 .file-info {
   display: flex;
@@ -298,51 +349,80 @@ function notifyParent(): void {
 .file-name {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #1e293b;
+  color: var(--color-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.file-size { font-size: 0.75rem; color: #94a3b8; }
+.file-size {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
 
 .file-remove {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px; height: 28px;
+  width: 1.75rem;
+  height: 1.75rem;
   padding: 0;
   background: transparent;
   border: none;
-  border-radius: 6px;
-  color: #94a3b8;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 0.15s, color 0.15s;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-.file-remove svg { width: 16px; height: 16px; }
+.file-remove svg {
+  width: 1rem;
+  height: 1rem;
+}
 
 .file-remove:hover,
 .file-remove:focus-visible {
-  background: #fef2f2;
-  color: #dc2626;
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted-dark);
   outline: none;
 }
 
 .file-remove:focus-visible {
-  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2);
+  box-shadow: var(--focus-ring-primary);
 }
 
 /* Responsive */
 @media (max-width: 480px) {
-  .dropzone { padding: 1.5rem 1rem; }
-  .icon { width: 44px; height: 44px; border-radius: 12px; }
-  .icon svg { width: 22px; height: 22px; }
+  .dropzone {
+    padding: var(--space-lg) var(--space-md);
+  }
+
+  .icon {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .icon svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
   .headline { font-size: 0.9375rem; }
   .desc { font-size: 0.8125rem; }
-  .file { padding: 0.625rem 0.875rem; }
-  .file-icon { width: 28px; height: 28px; }
-  .file-icon svg { width: 14px; height: 14px; }
+
+  .file {
+    padding: 0.625rem 0.875rem;
+  }
+
+  .file-icon {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .file-icon svg {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
 }
 </style>

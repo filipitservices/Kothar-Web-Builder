@@ -1,5 +1,11 @@
 <template>
-  <fieldset class="form-section" :class="{ 'form-section--featured': featured }">
+  <fieldset
+    class="form-section"
+    :class="[
+      `form-section--${variant}`,
+      { 'form-section--featured': featured }
+    ]"
+  >
     <legend class="form-section__legend">
       <span class="form-section__icon" :class="`form-section__icon--${variant}`">
         <slot name="icon" />
@@ -33,10 +39,12 @@ withDefaults(defineProps<Props>(), {
 
 <style scoped>
 .form-section {
+  --section-accent: var(--color-primary);
+  --section-surface: var(--color-bg);
   border: none;
   padding: var(--space-lg);
   margin: 0 0 var(--space-md) 0;
-  background: var(--color-bg);
+  background: var(--section-surface);
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-border);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -56,8 +64,28 @@ withDefaults(defineProps<Props>(), {
 }
 
 .form-section--featured {
-  background: var(--color-bg-muted);
-  border-color: var(--color-primary-tint);
+  background: var(--color-bg);
+  border-color: var(--color-border);
+}
+
+.form-section--business {
+  --section-accent: var(--color-primary);
+  --section-surface: color-mix(in srgb, var(--color-primary-tint) 40%, var(--color-bg));
+}
+
+.form-section--contact {
+  --section-accent: var(--color-text-muted-dark);
+  --section-surface: color-mix(in srgb, var(--color-bg-subtle) 55%, var(--color-bg));
+}
+
+.form-section--target {
+  --section-accent: var(--color-success);
+  --section-surface: color-mix(in srgb, var(--color-success-tint) 65%, var(--color-bg));
+}
+
+.form-section--requests {
+  --section-accent: var(--color-primary-dark);
+  --section-surface: color-mix(in srgb, var(--color-primary-tint) 28%, var(--color-bg));
 }
 
 /* Inner spacing for form elements */
@@ -79,6 +107,7 @@ withDefaults(defineProps<Props>(), {
 
 /* Legend */
 .form-section__legend {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-md);
@@ -87,6 +116,20 @@ withDefaults(defineProps<Props>(), {
   font-size: 1rem;
   font-weight: 700;
   color: var(--color-text);
+}
+
+.form-section--business .form-section__legend::after,
+.form-section--contact .form-section__legend::after,
+.form-section--target .form-section__legend::after,
+.form-section--requests .form-section__legend::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--space-sm) * -1);
+  height: 2px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--section-accent) 22%, transparent);
 }
 
 /* Icon container */
@@ -137,13 +180,13 @@ withDefaults(defineProps<Props>(), {
 }
 
 .form-section__icon--business {
-  background: var(--color-bg-subtle);
-  color: var(--color-text-muted-dark);
+  background: color-mix(in srgb, var(--color-primary) 14%, var(--color-bg));
+  color: var(--color-primary);
 }
 
 .form-section__icon--requests {
-  background: var(--color-bg-subtle);
-  color: var(--color-text-muted-dark);
+  background: color-mix(in srgb, var(--color-primary-dark) 14%, var(--color-bg));
+  color: var(--color-primary-dark);
 }
 
 /* Text content */
@@ -175,11 +218,11 @@ withDefaults(defineProps<Props>(), {
   justify-content: center;
   width: 1.5rem;
   height: 1.5rem;
-  background: var(--color-bg-subtle);
+  background: color-mix(in srgb, var(--section-accent) 12%, var(--color-bg));
   border-radius: 50%;
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--color-text-muted);
+  color: var(--section-accent);
   flex-shrink: 0;
 }
 

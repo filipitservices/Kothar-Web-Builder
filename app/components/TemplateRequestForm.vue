@@ -12,7 +12,6 @@
       title="Design Customization"
       hint="Choose colors that represent your brand"
       variant="palette"
-      featured
     >
       <template #icon><PaletteIcon /></template>
       <ColorSchemePicker
@@ -34,22 +33,26 @@
       <template #icon><BrandingIcon /></template>
 
       <!-- 2a. Logos subsection -->
-      <div class="form-subsection">
+      <div class="form-subsection form-subsection--logos">
         <h4 class="form-subsection__title">Logos &amp; Emblems</h4>
         <p class="form-subsection__desc">Upload your logo files — primary logo, icon, or emblem variations.</p>
         <div class="form-group">
           <FileUploadArea
+            tone="logo"
             accept="image/*,.svg"
             formats-text="PNG, JPG, SVG, WebP"
             aria-label="Upload logo files"
             :accepted-types="['image/']"
+            title="Upload logo assets"
+            description="Primary logo, icon marks, and emblem variants for your brand."
+            cta-text="Drop logo files here"
             @update:files="handleLogoFilesUpdate"
           />
         </div>
       </div>
 
       <!-- 2b. Branding Material subsection -->
-      <div class="form-subsection">
+      <div class="form-subsection form-subsection--branding">
         <h4 class="form-subsection__title">Branding Material</h4>
         <p class="form-subsection__desc">Brand guidelines, photos, documents, or any reference material.</p>
 
@@ -78,8 +81,12 @@
 
         <div class="form-group">
           <FileUploadArea
+            tone="brand"
             accept="image/*,.pdf,.ai,.psd,.eps,.svg"
             formats-text="PNG, JPG, PDF, SVG, AI, PSD, EPS"
+            title="Upload branding materials"
+            description="Guidelines, product/service photos, and other reference files."
+            cta-text="Drop brand files here"
             @update:files="handleFilesUpdate"
           />
         </div>
@@ -575,6 +582,18 @@ defineExpose({
   padding: var(--space-md) 0;
   border-bottom: 1px solid var(--color-border);
   margin-bottom: var(--space-lg);
+}
+
+.form-subsection--logos {
+  background: color-mix(in srgb, var(--color-primary-tint) 32%, var(--color-bg));
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+}
+
+.form-subsection--branding {
+  background: color-mix(in srgb, var(--color-bg-subtle) 60%, var(--color-bg));
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
 }
 
 .form-subsection:last-child {

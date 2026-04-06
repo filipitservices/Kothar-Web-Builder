@@ -166,8 +166,8 @@ function getIconComponent(value: string): FunctionalComponent {
 
 <style scoped>
 .request-category-selector__grid {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-sm);
 }
 
@@ -178,6 +178,7 @@ function getIconComponent(value: string): FunctionalComponent {
   padding: var(--space-sm) var(--space-md);
   background: var(--color-bg);
   position: relative;
+  min-height: 3rem;
 }
 
 .request-category-card__icon {
@@ -218,6 +219,12 @@ function getIconComponent(value: string): FunctionalComponent {
   font-weight: 500;
   color: var(--color-text-muted-dark);
   line-height: 1.4;
+}
+
+@media (max-width: 460px) {
+  .request-category-selector__grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .request-category-card__check {
