@@ -477,6 +477,7 @@ const { getField, setField, isLocalValue, mergedData } = useBlockData(props.bloc
 - Keyboard navigation (arrow keys, enter, escape)
 - Verified badge when a suggestion is selected
 - Graceful degradation when API is unreachable (`verified: false`)
+- On the template request form, non-empty text without a selected suggestion fails validation (see `useTemplateRequestValidation`)
 
 ---
 

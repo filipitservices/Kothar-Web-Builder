@@ -293,7 +293,7 @@ TemplateRequestForm
 
 **State:** Form draft in `useTemplateRequestForm`; page seeds once via `initialFormData` → `hydrateFormData`. Updates via `updateField`. Children are controlled (`modelValue` / `update:modelValue`).
 
-Photon powers **suggestions only** for the location field; **`normalizeLocationData()`** (see `app/utils/requestInputNormalization.ts`) compacts `businessInfo.location` before any Firestore write so optional keys are omitted rather than set to `undefined`, which the client SDK disallows.
+Photon powers location **suggestions**; **`useTemplateRequestValidation`** requires that any non-empty location text be **Photon-verified** (a row chosen from the list) before submit. **`normalizeLocationData()`** (see `app/utils/requestInputNormalization.ts`) compacts `businessInfo.location` before any Firestore write so optional keys are omitted rather than set to `undefined`, which the client SDK disallows.
 
 ### Design customization (color presets)
 
@@ -353,7 +353,7 @@ Validation is centralized in `useTemplateRequestValidation` (see `app/composable
 - **Industry:** Required; must be one of the predefined options.
 - **Custom industry (when "Other"):** Required when industry is "other"; min 3 chars; must contain at least two letters; rejects nonsense values (blocklist in `formOptions.ts`).
 - **Preferred URL:** Optional; if provided, alphanumeric + hyphens, no spaces, max 100 characters.
-- **Location:** Optional; no validation constraints (Photon verification is a UX helper, not a gate). Persisted subfields are normalized and omitted when empty so Firestore writes stay valid.
+- **Location:** Optional when left empty; if the user enters any text, they must **select a suggestion** so the value is Photon-verified (`verified: true`) before the form can submit. Persisted subfields are normalized and omitted when empty so Firestore writes stay valid.
 - **Email:** Required; valid email format; max 254 characters.
 - **Phone:** Optional; if provided, 10–15 digits (spaces, dashes, parentheses allowed).
 - **Website:** Optional; if provided, must be a valid URL (protocol or domain with TLD).

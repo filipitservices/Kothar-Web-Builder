@@ -103,7 +103,7 @@
     >
       <template #icon><BusinessIcon /></template>
 
-      <div class="form-group" :class="{ 'form-group--error': errors.businessName }">
+      <div class="form-group" data-form-field="businessName" :class="{ 'form-group--error': errors.businessName }">
         <label for="businessName" class="form-label">Business Name <span class="required">*</span></label>
         <input
           id="businessName"
@@ -119,7 +119,7 @@
         <p v-if="errors.businessName" class="form-error">{{ errors.businessName }}</p>
       </div>
 
-      <div class="form-group" :class="{ 'form-group--error': errors.preferredUrl }">
+      <div class="form-group" data-form-field="preferredUrl" :class="{ 'form-group--error': errors.preferredUrl }">
         <label for="preferredUrl" class="form-label">Preferred URL</label>
         <div class="preferred-url-wrap">
           <div class="preferred-url-icon" aria-hidden="true">
@@ -142,7 +142,7 @@
         <p v-if="errors.preferredUrl" class="form-error">{{ errors.preferredUrl }}</p>
       </div>
 
-      <div class="form-group" :class="{ 'form-group--error': errors.location }">
+      <div class="form-group" data-form-field="location" :class="{ 'form-group--error': errors.location }">
         <label for="location" class="form-label">Location</label>
         <LocationInput
           :model-value="formData.location"
@@ -155,7 +155,11 @@
         <p v-if="errors.location" class="form-error">{{ errors.location }}</p>
       </div>
 
-      <div class="form-group" :class="{ 'form-group--error': errors.industry || errors.customIndustry }">
+      <div
+        class="form-group"
+        data-form-field="industry"
+        :class="{ 'form-group--error': errors.industry || errors.customIndustry }"
+      >
         <label class="form-label">Industry / Type <span class="required">*</span></label>
         <IndustryCardGrid
           :model-value="formData.industry"
@@ -182,7 +186,7 @@
       <template #icon><ContactIcon /></template>
 
       <div class="form-row">
-        <div class="form-group" :class="{ 'form-group--error': errors.contactName }">
+        <div class="form-group" data-form-field="contactName" :class="{ 'form-group--error': errors.contactName }">
           <label for="contactName" class="form-label">Contact Name <span class="required">*</span></label>
           <IconInput
             id="contactName"
@@ -197,7 +201,7 @@
           </IconInput>
           <p v-if="errors.contactName" class="form-error">{{ errors.contactName }}</p>
         </div>
-        <div class="form-group" :class="{ 'form-group--error': errors.email }">
+        <div class="form-group" data-form-field="email" :class="{ 'form-group--error': errors.email }">
           <label for="email" class="form-label">Email <span class="required">*</span></label>
           <IconInput
             id="email"
@@ -215,7 +219,7 @@
       </div>
 
       <div class="form-row">
-        <div class="form-group" :class="{ 'form-group--error': errors.phone }">
+        <div class="form-group" data-form-field="phone" :class="{ 'form-group--error': errors.phone }">
           <label for="phone" class="form-label">Phone Number</label>
           <IconInput
             id="phone"
@@ -229,7 +233,7 @@
           </IconInput>
           <p v-if="errors.phone" class="form-error">{{ errors.phone }}</p>
         </div>
-        <div class="form-group" :class="{ 'form-group--error': errors.website }">
+        <div class="form-group" data-form-field="website" :class="{ 'form-group--error': errors.website }">
           <label for="website" class="form-label">Current Website (if any)</label>
           <IconInput
             id="website"
@@ -255,7 +259,7 @@
     >
       <template #icon><TargetIcon /></template>
 
-      <div class="form-group" :class="{ 'form-group--error': errors.goals }">
+      <div class="form-group" data-form-field="goals" :class="{ 'form-group--error': errors.goals }">
         <label class="form-label">What are the primary goals for your website? <span class="required">*</span></label>
         <GoalSelector
           :model-value="formData.goals"
@@ -267,7 +271,7 @@
         <p v-if="errors.goals" class="form-error">{{ errors.goals }}</p>
       </div>
 
-      <div class="form-group" :class="{ 'form-group--error': errors.audienceTags }">
+      <div class="form-group" data-form-field="audienceTags" :class="{ 'form-group--error': errors.audienceTags }">
         <label class="form-label">Who do you serve?</label>
         <p class="form-hint">Add tags describing your target audience. Type freely or pick from suggestions.</p>
         <TagInput
@@ -290,7 +294,7 @@
     >
       <template #icon><RequestsIcon /></template>
 
-      <div class="form-group" :class="{ 'form-group--error': errors.additionalNotes }">
+      <div class="form-group" data-form-field="additionalNotes" :class="{ 'form-group--error': errors.additionalNotes }">
         <label for="additionalNotes" class="form-label">Notes &amp; special requests</label>
         <textarea
           id="additionalNotes"
@@ -305,7 +309,11 @@
         <p v-if="errors.additionalNotes" class="form-error">{{ errors.additionalNotes }}</p>
       </div>
 
-      <div class="form-group" :class="{ 'form-group--error': errors.requestCategories }">
+      <div
+        class="form-group"
+        data-form-field="requestCategories"
+        :class="{ 'form-group--error': errors.requestCategories }"
+      >
         <label class="form-label">What would help your site the most?</label>
         <p class="form-hint">Select any that apply — these help us prioritize your build.</p>
         <RequestCategorySelector
@@ -330,7 +338,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 import type { ShowcaseTemplate } from '~/stores/showcase';
 import type {
   ColorCustomization,
@@ -339,7 +347,10 @@ import type {
 } from '~/types/templateRequest';
 import type { OrderAttachment } from '~/types/order';
 import { useTemplateRequestForm } from '~/composables/useTemplateRequestForm';
-import { useTemplateRequestValidation } from '~/composables/useTemplateRequestValidation';
+import {
+  useTemplateRequestValidation,
+  TEMPLATE_REQUEST_VALIDATION_FIELD_ORDER
+} from '~/composables/useTemplateRequestValidation';
 
 import ColorSchemePicker from '~/components/ColorSchemePicker.vue';
 import FormSection from '~/components/form/FormSection.vue';
@@ -504,9 +515,56 @@ function handleColorsReset(): void {
   emit('colorChange', colors);
 }
 
+function scrollToFirstInvalidField(): void {
+  const formRoot = document.querySelector('.request-form');
+  if (!formRoot) return;
+
+  for (const field of TEMPLATE_REQUEST_VALIDATION_FIELD_ORDER) {
+    const message = errors.value[field];
+    if (!message) continue;
+
+    const groupKey = field === 'customIndustry' ? 'industry' : field;
+    const group = formRoot.querySelector(`[data-form-field="${groupKey}"]`);
+    if (group instanceof HTMLElement) {
+      group.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    const stableIdFields: Partial<Record<TemplateRequestValidatableField, string>> = {
+      businessName: 'businessName',
+      preferredUrl: 'preferredUrl',
+      location: 'location',
+      contactName: 'contactName',
+      email: 'email',
+      phone: 'phone',
+      website: 'website',
+      additionalNotes: 'additionalNotes'
+    };
+    const stableId = stableIdFields[field];
+    if (stableId) {
+      document.getElementById(stableId)?.focus();
+    } else if (field === 'customIndustry') {
+      group?.querySelector<HTMLInputElement>('.industry-card-grid__custom input.form-input')?.focus();
+    } else if (field === 'industry') {
+      group?.querySelector<HTMLInputElement>('input.form-option__input')?.focus();
+    } else if (field === 'goals') {
+      group?.querySelector<HTMLInputElement>('input.form-option__input')?.focus();
+    } else if (field === 'audienceTags') {
+      group?.querySelector<HTMLInputElement>('.tag-input__field')?.focus();
+    } else if (field === 'requestCategories') {
+      group?.querySelector<HTMLInputElement>('input.form-option__input')?.focus();
+    }
+    break;
+  }
+}
+
 function handleSubmit(): void {
   if (props.readOnly) return;
-  if (!validateAll()) return;
+  if (!validateAll()) {
+    void nextTick(() => {
+      scrollToFirstInvalidField();
+    });
+    return;
+  }
   emit('submit', {
     ...formData.value,
     brandAssets: uploadedFiles.value.map((f) => f.name),
@@ -565,13 +623,23 @@ defineExpose({
   min-height: 7.5rem;
 }
 
-/* Invalid state for IconInput when parent form-group has error */
-.form-group--error :deep(.icon-input__field) {
+/* Invalid state when parent form-group has error (.request-form raises specificity over FormSection theming) */
+.request-form .form-group--error :deep(.icon-input__field) {
   border-color: var(--color-error);
   box-shadow: 0 0 0 1px var(--color-error);
 }
 
-.form-group--error :deep(.icon-input__field:focus) {
+.request-form .form-group--error :deep(.icon-input__field:focus) {
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+}
+
+.request-form .form-group--error :deep(.location-input__field) {
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 1px var(--color-error);
+}
+
+.request-form .form-group--error :deep(.location-input__field:focus) {
   border-color: var(--color-error);
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
 }

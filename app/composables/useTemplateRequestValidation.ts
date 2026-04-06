@@ -106,6 +106,9 @@ function validateLocation(data: TemplateRequestFormData): string | undefined {
   if (trimmed.length > LOCATION_MAX_LENGTH) {
     return `Location must be at most ${LOCATION_MAX_LENGTH} characters`;
   }
+  if (!data.location.verified) {
+    return 'Select a location from the suggestions to verify your address';
+  }
   return undefined;
 }
 
@@ -273,6 +276,23 @@ function validateRequestCategories(values: string[]): string | undefined {
   return undefined;
 }
 
+/** Document order for validating and scrolling to the first invalid field on submit. */
+export const TEMPLATE_REQUEST_VALIDATION_FIELD_ORDER: readonly TemplateRequestValidatableField[] = [
+  'businessName',
+  'preferredUrl',
+  'location',
+  'industry',
+  'customIndustry',
+  'contactName',
+  'email',
+  'phone',
+  'website',
+  'goals',
+  'audienceTags',
+  'additionalNotes',
+  'requestCategories'
+];
+
 export interface UseTemplateRequestValidationReturn {
   errors: Ref<TemplateRequestValidationErrors>;
   validateField: (field: TemplateRequestValidatableField) => string | undefined;
@@ -340,23 +360,7 @@ export function useTemplateRequestValidation(
     const data = formData.value;
     const newErrors: TemplateRequestValidationErrors = {};
 
-    const fields: TemplateRequestValidatableField[] = [
-      'businessName',
-      'preferredUrl',
-      'location',
-      'industry',
-      'customIndustry',
-      'contactName',
-      'email',
-      'phone',
-      'website',
-      'goals',
-      'audienceTags',
-      'additionalNotes',
-      'requestCategories'
-    ];
-
-    for (const field of fields) {
+    for (const field of TEMPLATE_REQUEST_VALIDATION_FIELD_ORDER) {
       const message = runValidator(field, data);
       if (message) {
         newErrors[field] = message;
