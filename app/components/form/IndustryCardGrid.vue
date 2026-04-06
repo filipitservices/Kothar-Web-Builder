@@ -134,6 +134,10 @@ function onCustomInput(event: Event): void {
   background: var(--color-bg);
 }
 
+.industry-card.form-option--selected {
+  background: transparent;
+}
+
 .industry-card__label {
   position: relative;
   z-index: 1;

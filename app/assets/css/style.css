@@ -23,9 +23,11 @@
   --color-error-tint: #fef2f2;
   --color-success: #16a34a;
   --color-success-tint: #f0fdf4;
-  /* Request form accents: warm orange family (branding material + contact); *-deep for borders/icons */
+  /* Request form accents: warm orange (branding + contact); pink (Design Customization section only) */
   --color-accent-warm-tint: #ffedd5;
   --color-accent-warm-deep: #c2410c;
+  --color-accent-palette-tint: #fdf2f8;
+  --color-accent-palette-deep: #9d4a68;
   --color-placeholder: #9ca3af;
   /** Focus ring (primary) – used by form-option, form-section, focus-within surfaces */
   --focus-ring-primary: 0 0 0 3px rgba(30, 58, 138, 0.08);

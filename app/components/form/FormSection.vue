@@ -67,7 +67,7 @@ withDefaults(defineProps<Props>(), {
 }
 
 .form-section--palette:hover {
-  border-color: color-mix(in srgb, var(--color-primary) 16%, var(--color-border-hover));
+  border-color: color-mix(in srgb, var(--color-accent-palette-deep) 20%, var(--color-border-hover));
 }
 
 .form-section--business:hover {
@@ -89,15 +89,16 @@ withDefaults(defineProps<Props>(), {
 }
 
 .form-section--palette {
-  --section-accent: var(--color-primary);
+  --section-accent: var(--color-accent-palette-deep);
   --section-surface: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--color-primary-tint) 38%, var(--color-bg)) 0%,
-    color-mix(in srgb, var(--color-primary-tint) 14%, var(--color-bg)) 100%
+    color-mix(in srgb, var(--color-accent-palette-tint) 48%, var(--color-bg)) 0%,
+    color-mix(in srgb, var(--color-accent-palette-tint) 18%, var(--color-bg)) 100%
   );
-  --fs-field-border: color-mix(in srgb, var(--color-primary) 17%, var(--color-border));
-  --fs-field-border-hover: color-mix(in srgb, var(--color-primary) 24%, var(--color-border-hover));
-  --fs-field-focus: var(--color-primary);
+  --fs-field-border: color-mix(in srgb, var(--color-accent-palette-deep) 18%, var(--color-border));
+  --fs-field-border-hover: color-mix(in srgb, var(--color-accent-palette-deep) 26%, var(--color-border-hover));
+  --fs-field-focus: var(--color-accent-palette-deep);
+  border-color: color-mix(in srgb, var(--color-accent-palette-deep) 14%, var(--color-border));
 }
 
 .form-section--branding {
@@ -224,8 +225,8 @@ withDefaults(defineProps<Props>(), {
 
 /* Icon variants – use tokens where possible; subtle tints for distinction */
 .form-section__icon--palette {
-  background: var(--color-primary-tint);
-  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-accent-palette-tint) 82%, var(--color-bg));
+  color: var(--color-accent-palette-deep);
 }
 
 .form-section__icon--building {
@@ -346,19 +347,125 @@ withDefaults(defineProps<Props>(), {
 }
 
 .form-section--palette :deep(.color-scheme-header) {
-  border-bottom-color: color-mix(in srgb, var(--color-primary) 14%, var(--color-border));
+  background: color-mix(in srgb, var(--color-accent-palette-tint) 40%, var(--color-bg-muted));
+  border-bottom-color: color-mix(in srgb, var(--color-accent-palette-deep) 16%, var(--color-border));
+}
+
+.form-section--palette :deep(.color-scheme-title) {
+  color: color-mix(in srgb, var(--color-accent-palette-deep) 28%, var(--color-text-muted-dark));
+}
+
+.form-section--palette :deep(.toggle-group) {
+  background: color-mix(in srgb, var(--color-accent-palette-tint) 32%, var(--color-bg-subtle));
 }
 
 .form-section--palette :deep(.toggle-group__btn--active) {
+  color: var(--color-accent-palette-deep);
   box-shadow:
-    0 var(--space-xs) var(--space-sm) color-mix(in srgb, var(--color-primary) 8%, transparent),
-    0 0 0 1px color-mix(in srgb, var(--color-primary) 12%, transparent);
+    0 var(--space-xs) var(--space-sm) color-mix(in srgb, var(--color-accent-palette-deep) 9%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--color-accent-palette-deep) 14%, transparent);
+}
+
+.form-section--palette :deep(.color-preset-card:not(.color-preset-card--selected)) {
+  border-color: var(--fs-field-border);
+}
+
+.form-section--palette :deep(.color-preset-card:not(.color-preset-card--selected):hover) {
+  border-color: var(--fs-field-border-hover);
+}
+
+.form-section--palette :deep(.color-reset-btn) {
+  border-color: var(--fs-field-border);
+}
+
+.form-section--palette :deep(.color-reset-btn:hover) {
+  border-color: var(--fs-field-border-hover);
+}
+
+.form-section--palette :deep(.color-custom-swatch) {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-accent-palette-deep) 16%, var(--color-border)),
+    0 var(--space-sm) var(--space-md) color-mix(in srgb, var(--color-accent-palette-deep) 8%, transparent);
 }
 
 .form-section--palette :deep(.color-custom-control:focus-within .color-custom-swatch) {
   box-shadow:
     0 0 0 2px var(--fs-field-focus),
     0 0 0 5px color-mix(in srgb, var(--fs-field-focus) 14%, transparent);
+}
+
+.form-section--branding :deep(.form-subsection--logos) {
+  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
+}
+
+.form-section--branding :deep(.form-subsection--branding) {
+  border-color: color-mix(in srgb, var(--color-accent-warm-deep) 24%, var(--color-border));
+}
+
+.form-section--branding :deep(.existing-attachments-item) {
+  border-color: color-mix(in srgb, var(--color-accent-warm-deep) 16%, var(--color-border));
+}
+
+.form-section--business :deep(.form-option:not(.form-option--selected)) {
+  border-color: var(--fs-field-border);
+}
+
+.form-section--business :deep(.form-option:not(.form-option--selected):hover:not(.form-option--read-only)) {
+  border-color: var(--fs-field-border-hover);
+  background-color: color-mix(in srgb, var(--color-primary-tint) 25%, var(--color-bg));
+}
+
+.form-section--target :deep(.form-option:not(.form-option--selected):not(.form-option--disabled)) {
+  border-color: var(--fs-field-border);
+}
+
+.form-section--target :deep(.form-option:not(.form-option--selected):not(.form-option--disabled):hover:not(.form-option--read-only)) {
+  border-color: var(--fs-field-border-hover);
+  background-color: color-mix(in srgb, var(--color-success-tint) 30%, var(--color-bg));
+}
+
+.form-section--target :deep(.tag-input__chip) {
+  background: color-mix(in srgb, var(--color-success-tint) 70%, var(--color-bg));
+  border: 1px solid color-mix(in srgb, var(--color-success) 22%, var(--color-border));
+  color: color-mix(in srgb, var(--color-success) 40%, var(--color-text-muted-dark));
+}
+
+.form-section--target :deep(.tag-input__chip-remove) {
+  color: color-mix(in srgb, var(--color-success) 52%, var(--color-text-muted-dark));
+}
+
+.form-section--target :deep(.tag-input__chip-remove:hover) {
+  background: color-mix(in srgb, var(--color-success) 12%, transparent);
+}
+
+.form-section--target :deep(.form-option--selected .goal-card__icon) {
+  background: color-mix(in srgb, var(--color-success-tint) 82%, var(--color-bg-subtle));
+}
+
+.form-section--target :deep(.form-option--selected .goal-card__icon svg) {
+  color: var(--color-success);
+}
+
+.form-section--target :deep(.form-option--selected .goal-card__check) {
+  background: var(--color-success);
+}
+
+.form-section--requests :deep(.form-option:not(.form-option--selected)) {
+  border-color: var(--fs-field-border);
+}
+
+.form-section--requests :deep(.form-option:not(.form-option--selected):hover:not(.form-option--read-only)) {
+  border-color: var(--fs-field-border-hover);
+  background-color: color-mix(in srgb, var(--color-primary-tint) 22%, var(--color-bg));
+}
+
+.form-section--contact :deep(.form-option:not(.form-option--selected)) {
+  border-color: var(--fs-field-border);
+}
+
+.form-section--contact :deep(.form-option:not(.form-option--selected):hover:not(.form-option--read-only)) {
+  border-color: var(--fs-field-border-hover);
+  background-color: color-mix(in srgb, var(--color-accent-warm-tint) 28%, var(--color-bg));
 }
 
 .form-section--branding :deep(.upload.upload--brand) {
@@ -371,6 +478,14 @@ withDefaults(defineProps<Props>(), {
   --upload-border-strong: color-mix(in srgb, var(--color-primary) 34%, var(--color-border-hover));
 }
 
+.form-section--branding :deep(.upload--brand .file) {
+  border-color: color-mix(in srgb, var(--color-accent-warm-deep) 22%, var(--color-border));
+}
+
+.form-section--branding :deep(.upload--logo .file) {
+  border-color: color-mix(in srgb, var(--color-primary) 22%, var(--color-border));
+}
+
 /* Selectable cards: section-native borders + airy layered wash (not user palette) */
 .form-section--business :deep(.form-option:focus-within:not(.form-option--selected)) {
   border-color: color-mix(in srgb, var(--color-primary) 32%, var(--color-border));
@@ -379,7 +494,7 @@ withDefaults(defineProps<Props>(), {
 
 .form-section--business :deep(.form-option.form-option--selected) {
   border-color: color-mix(in srgb, var(--color-primary) 30%, var(--color-border));
-  background: var(--color-bg);
+  background: transparent;
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--color-primary) 14%, transparent),
     0 var(--space-md) var(--space-xl) color-mix(in srgb, var(--color-primary) 9%, transparent);
@@ -420,7 +535,7 @@ withDefaults(defineProps<Props>(), {
 
 .form-section--contact :deep(.form-option.form-option--selected) {
   border-color: color-mix(in srgb, var(--color-accent-warm-deep) 28%, var(--color-border));
-  background: var(--color-bg);
+  background: transparent;
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--color-accent-warm-deep) 13%, transparent),
     0 var(--space-md) var(--space-xl) color-mix(in srgb, var(--color-accent-warm-deep) 8%, transparent);
@@ -460,7 +575,7 @@ withDefaults(defineProps<Props>(), {
 
 .form-section--target :deep(.form-option.form-option--selected:not(.form-option--disabled)) {
   border-color: color-mix(in srgb, var(--color-success) 30%, var(--color-border));
-  background: var(--color-bg);
+  background: transparent;
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--color-success) 14%, transparent),
     0 var(--space-md) var(--space-xl) color-mix(in srgb, var(--color-success) 9%, transparent);
@@ -480,20 +595,6 @@ withDefaults(defineProps<Props>(), {
     0 0 0 3px color-mix(in srgb, var(--fs-field-focus) 9%, transparent);
 }
 
-.form-section--target :deep(.form-option.form-option--selected:not(.form-option--disabled)::before) {
-  background:
-    radial-gradient(ellipse 132% 90% at 22% 28%, color-mix(in srgb, var(--color-success-tint) 52%, transparent) 0%, transparent 56%),
-    radial-gradient(ellipse 94% 74% at 84% 62%, color-mix(in srgb, var(--color-primary-tint) 34%, transparent) 0%, transparent 50%),
-    radial-gradient(ellipse 56% 44% at 40% 6%, color-mix(in srgb, var(--color-accent-warm-tint) 34%, transparent) 0%, transparent 42%),
-    linear-gradient(
-      177deg,
-      var(--color-white) 0%,
-      color-mix(in srgb, var(--color-white) 99%, var(--color-success-tint)) 38%,
-      var(--color-white) 76%,
-      color-mix(in srgb, var(--color-white) 98.5%, var(--color-primary-tint)) 100%
-    );
-}
-
 .form-section--requests :deep(.form-option:focus-within:not(.form-option--selected)) {
   border-color: color-mix(in srgb, var(--color-primary-dark) 30%, var(--color-border));
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary-dark) 8%, transparent);
@@ -501,7 +602,7 @@ withDefaults(defineProps<Props>(), {
 
 .form-section--requests :deep(.form-option.form-option--selected) {
   border-color: color-mix(in srgb, var(--color-primary-dark) 28%, var(--color-border));
-  background: var(--color-bg);
+  background: transparent;
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--color-primary-dark) 13%, transparent),
     0 var(--space-md) var(--space-xl) color-mix(in srgb, var(--color-primary-dark) 8%, transparent);

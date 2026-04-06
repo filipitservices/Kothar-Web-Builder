@@ -153,6 +153,10 @@ function getIconComponent(value: string): FunctionalComponent {
   position: relative;
 }
 
+.goal-card.form-option--selected {
+  background: transparent;
+}
+
 .goal-card__icon {
   position: relative;
   z-index: 1;

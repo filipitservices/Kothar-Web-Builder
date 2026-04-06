@@ -181,6 +181,10 @@ function getIconComponent(value: string): FunctionalComponent {
   min-height: 3rem;
 }
 
+.request-category-card.form-option--selected {
+  background: transparent;
+}
+
 .request-category-card__icon {
   position: relative;
   z-index: 1;

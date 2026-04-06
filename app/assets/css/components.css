@@ -527,7 +527,8 @@
  */
 .form-option--selected {
   border-color: color-mix(in srgb, var(--color-primary) 26%, var(--color-border));
-  background: var(--color-bg);
+  /* Transparent so layered ::before wash remains visible (opaque BG paints over the pseudo) */
+  background: transparent;
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--color-primary) 12%, transparent),
     0 8px 24px color-mix(in srgb, var(--color-primary) 6%, transparent);
@@ -535,7 +536,7 @@
 
 .form-option--selected:hover:not(.form-option--read-only) {
   border-color: color-mix(in srgb, var(--color-primary) 32%, var(--color-border-hover));
-  background: var(--color-bg);
+  background: transparent;
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--color-primary) 16%, transparent),
     0 10px 28px color-mix(in srgb, var(--color-primary) 8%, transparent);
