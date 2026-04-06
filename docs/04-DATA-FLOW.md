@@ -681,6 +681,7 @@ function setField(name, value) {
 - `isDirty`: diff-based form/layout/builder edits
 - `hasUnsavedSession`: draft-session state (`order.status === 'draft'`)
 - `onDiscard`: page-specific rehydrate/reset action
+- `onStashLeave` (optional): page-scoped stash hook used only where supported
 
 The guard (`app/plugins/unsaved-changes-guard.client.ts`) classifies navigation intent via `app/utils/editingFlowScope.ts`:
 
@@ -688,6 +689,8 @@ The guard (`app/plugins/unsaved-changes-guard.client.ts`) classifies navigation 
 - leaving editing scope -> prompt when `hasDirtyEdits || hasUnsavedSession`
 
 This keeps untouched drafts protected on external exits while preventing false prompts on internal edit/builder transitions.
+
+`/orders/:id/edit` additionally provides a stash action in the same global dialog. The page wires `onStashLeave` to persist a session-scoped snapshot (form + layout) keyed by order id. On return to that order edit page, the stash is restored before editing resumes; discard and successful submit/update clear the stash.
 
 ---
 

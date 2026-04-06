@@ -41,9 +41,18 @@
             Stay on page
           </button>
           <button
+            v-if="unsaved.hasStashAction"
+            type="button"
+            class="btn btn--secondary"
+            :disabled="discarding || stashing"
+            @click="onStashLeave"
+          >
+            {{ stashing ? 'Stashing…' : 'Stash changes upon leave' }}
+          </button>
+          <button
             type="button"
             class="btn btn--danger"
-            :disabled="discarding"
+            :disabled="discarding || stashing"
             @click="onDiscardLeave"
           >
             {{ discarding ? 'Leaving…' : 'Discard changes' }}
@@ -65,6 +74,7 @@ const unsaved = useUnsavedChangesStore();
 const router = useRouter();
 const dialogRef = ref<HTMLElement | null>(null);
 const discarding = ref(false);
+const stashing = ref(false);
 
 function onStay(): void {
   unsaved.closeModalStay();
@@ -82,7 +92,7 @@ watch(
 
 async function onDiscardLeave(): Promise<void> {
   const target = unsaved.pendingTo;
-  if (!target || discarding.value) return;
+  if (!target || discarding.value || stashing.value) return;
   discarding.value = true;
   try {
     await unsaved.runDiscard();
@@ -93,6 +103,22 @@ async function onDiscardLeave(): Promise<void> {
     unsaved.consumeAllowNext();
   } finally {
     discarding.value = false;
+  }
+}
+
+async function onStashLeave(): Promise<void> {
+  const target = unsaved.pendingTo;
+  if (!target || discarding.value || stashing.value) return;
+  stashing.value = true;
+  try {
+    await unsaved.runStashLeave();
+    unsaved.closeModalStay();
+    unsaved.requestAllowNext();
+    await router.push(target);
+  } catch {
+    unsaved.consumeAllowNext();
+  } finally {
+    stashing.value = false;
   }
 }
 </script>

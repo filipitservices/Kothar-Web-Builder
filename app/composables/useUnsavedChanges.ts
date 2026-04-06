@@ -15,6 +15,7 @@ export interface UseUnsavedChangesOptions {
   isDirty: MaybeRefOrGetter<boolean>;
   hasUnsavedSession: MaybeRefOrGetter<boolean>;
   onDiscard: () => void | Promise<void>;
+  onStashLeave?: () => void | Promise<void>;
 }
 
 /**
@@ -31,6 +32,7 @@ export function useUnsavedChanges(options: UseUnsavedChangesOptions): void {
       isDirty: options.isDirty,
       hasUnsavedSession: options.hasUnsavedSession,
       onDiscard: options.onDiscard,
+      onStashLeave: options.onStashLeave,
     });
   });
 

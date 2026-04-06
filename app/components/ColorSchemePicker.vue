@@ -132,6 +132,9 @@
           </div>
         </div>
       </div>
+      <p class="color-custom-note">
+        In the case that your selected colors look a little rough in the preview, that is okay. Your selected palette can still be refined into a polished final design by us.
+      </p>
     </div>
   </div>
 </template>
@@ -523,6 +526,13 @@ function handleReset(): void {
   color: var(--color-placeholder);
   font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace;
   text-transform: uppercase;
+}
+
+.color-custom-note {
+  margin: var(--space-sm) 0 0;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--color-text-muted);
 }
 
 /* ==========================================================================

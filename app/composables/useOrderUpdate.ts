@@ -25,6 +25,7 @@ import type {
 } from '~/types/order';
 import type { TemplateRequestFormData, LocationData } from '~/types/templateRequest';
 import { sanitizeStorageFileName } from '~/utils/storage';
+import { normalizeTemplateRequestFormData } from '~/utils/requestInputNormalization';
 
 /**
  * Map an order document to form data for prefilling the edit form.
@@ -81,26 +82,27 @@ function formDataToOrderUpdate(data: TemplateRequestFormData): {
   contactInfo: OrderContactInfo;
   projectDetails: OrderProjectDetails;
 } {
+  const normalizedData = normalizeTemplateRequestFormData(data);
   return {
     businessInfo: {
-      businessName: data.businessName.trim(),
-      preferredUrl: data.preferredUrl.trim(),
-      location: { ...data.location },
-      industry: data.industry.trim(),
-      customIndustry: data.industry === 'other' ? data.customIndustry.trim() : ''
+      businessName: normalizedData.businessName,
+      preferredUrl: normalizedData.preferredUrl,
+      location: { ...normalizedData.location },
+      industry: normalizedData.industry,
+      customIndustry: normalizedData.industry === 'other' ? normalizedData.customIndustry : ''
     },
     contactInfo: {
-      contactName: data.contactName.trim(),
-      email: data.email.trim(),
-      phone: data.phone.trim(),
-      website: data.website.trim()
+      contactName: normalizedData.contactName,
+      email: normalizedData.email,
+      phone: normalizedData.phone,
+      website: normalizedData.website
     },
     projectDetails: {
-      goals: [...data.goals],
-      audienceTags: [...data.audienceTags],
-      additionalNotes: data.additionalNotes.trim(),
-      requestCategories: [...data.requestCategories],
-      colorCustomization: { ...data.colorCustomization }
+      goals: [...normalizedData.goals],
+      audienceTags: [...normalizedData.audienceTags],
+      additionalNotes: normalizedData.additionalNotes,
+      requestCategories: [...normalizedData.requestCategories],
+      colorCustomization: { ...normalizedData.colorCustomization }
     }
   };
 }

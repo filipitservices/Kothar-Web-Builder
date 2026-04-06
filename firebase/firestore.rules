@@ -21,6 +21,95 @@ service cloud.firestore {
         && get(accessBillingPath(uid)).data.hasAccess == true;
     }
 
+    function hasNoControlChars(value) {
+      return !(value is string) || value.matches('^[^\\u0000-\\u001F\\u007F]*$');
+    }
+
+    function isSafeString(value, maxLength) {
+      return value is string
+        && value.size() <= maxLength
+        && hasNoControlChars(value);
+    }
+
+    function isOptionalSafeString(value, maxLength) {
+      return value == null || isSafeString(value, maxLength);
+    }
+
+    function isValidColorCustomization(colors) {
+      return colors is map
+        && isSafeString(colors.primary, 20)
+        && isSafeString(colors.secondary, 20)
+        && isSafeString(colors.accent, 20)
+        && isSafeString(colors.background, 20)
+        && isSafeString(colors.text, 20);
+    }
+
+    function isValidStringList(values, maxItems) {
+      return values is list
+        && values.size() <= maxItems;
+    }
+
+    function isValidBusinessInfo(data) {
+      return data.businessInfo is map
+        && isSafeString(data.businessInfo.businessName, 200)
+        && data.businessInfo.businessName.size() >= 2
+        && isOptionalSafeString(data.businessInfo.preferredUrl, 100)
+        && isSafeString(data.businessInfo.industry, 80)
+        && isOptionalSafeString(data.businessInfo.customIndustry, 200)
+        && data.businessInfo.location is map
+        && isOptionalSafeString(data.businessInfo.location.displayName, 200)
+        && data.businessInfo.location.verified is bool
+        && isOptionalSafeString(data.businessInfo.location.city, 120)
+        && isOptionalSafeString(data.businessInfo.location.state, 120)
+        && isOptionalSafeString(data.businessInfo.location.country, 120)
+        && isOptionalSafeString(data.businessInfo.location.postcode, 40);
+    }
+
+    function isValidContactInfo(data) {
+      return data.contactInfo is map
+        && isSafeString(data.contactInfo.contactName, 200)
+        && data.contactInfo.contactName.size() >= 2
+        && isSafeString(data.contactInfo.email, 254)
+        && data.contactInfo.email.matches('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$')
+        && isOptionalSafeString(data.contactInfo.phone, 32)
+        && isOptionalSafeString(data.contactInfo.website, 2048);
+    }
+
+    function isValidProjectDetails(data) {
+      return data.projectDetails is map
+        && isValidStringList(data.projectDetails.goals, 3)
+        && data.projectDetails.goals.size() >= 1
+        && isValidStringList(data.projectDetails.audienceTags, 20)
+        && isOptionalSafeString(data.projectDetails.additionalNotes, 2000)
+        && isValidStringList(data.projectDetails.requestCategories, 12)
+        && isValidColorCustomization(data.projectDetails.colorCustomization);
+    }
+
+    function isValidAttachmentList(attachments) {
+      return attachments is list
+        && attachments.size() <= 50;
+    }
+
+    function isValidLayout(layout) {
+      return layout == null || (
+        layout is map
+        && layout.customized is bool
+        && layout.blocks is list
+        && layout.blocks.size() <= 200
+      );
+    }
+
+    function isValidOrderContent(data) {
+      return isSafeString(data.templateId, 120)
+        && isSafeString(data.templateName, 200)
+        && isValidBusinessInfo(data)
+        && isValidContactInfo(data)
+        && isValidProjectDetails(data)
+        && isValidAttachmentList(data.attachments)
+        && isValidAttachmentList(data.logoAttachments)
+        && isValidLayout(data.layout);
+    }
+
     // Template request orders: owner-only.
     // Creation requires a valid daily-limit counter in the same transaction.
     // When counter does not exist, allow (first request); otherwise getAfter validates post-transaction count.
@@ -33,6 +122,7 @@ service cloud.firestore {
         && resource.data.status == 'draft'
         && resource.data.modificationLocked != true;
       allow update: if request.auth != null && request.auth.uid == userId
+        && isValidOrderContent(request.resource.data)
         && (
           (
             resource.data.status == 'draft'
@@ -50,6 +140,7 @@ service cloud.firestore {
           )
         );
       allow create: if request.auth != null && request.auth.uid == userId
+        && isValidOrderContent(request.resource.data)
         && (
           !exists(/databases/$(database)/documents/users/$(userId)/requestLimits/daily)
           || getAfter(/databases/$(database)/documents/users/$(userId)/requestLimits/daily).data.count <= 3

@@ -33,6 +33,7 @@ import type {
 } from '~/types/order';
 import { ORDER_STATUS_DEFAULT } from '~/types/order';
 import { sanitizeStorageFileName } from '~/utils/storage';
+import { normalizeTemplateRequestFormData } from '~/utils/requestInputNormalization';
 
 /** Result of a successful order submission. */
 export interface OrderSubmissionResult {
@@ -63,27 +64,28 @@ function formDataToOrderPayload(
   data: TemplateRequestFormData,
   layout?: OrderLayout
 ): Omit<OrderRequest, 'createdAt' | 'updatedAt'> {
+  const normalizedData = normalizeTemplateRequestFormData(data);
   const businessInfo: OrderBusinessInfo = {
-    businessName: data.businessName.trim(),
-    preferredUrl: data.preferredUrl.trim(),
-    location: { ...data.location },
-    industry: data.industry.trim(),
-    customIndustry: data.industry === 'other' ? data.customIndustry.trim() : ''
+    businessName: normalizedData.businessName,
+    preferredUrl: normalizedData.preferredUrl,
+    location: { ...normalizedData.location },
+    industry: normalizedData.industry,
+    customIndustry: normalizedData.industry === 'other' ? normalizedData.customIndustry : ''
   };
 
   const contactInfo: OrderContactInfo = {
-    contactName: data.contactName.trim(),
-    email: data.email.trim(),
-    phone: data.phone.trim(),
-    website: data.website.trim()
+    contactName: normalizedData.contactName,
+    email: normalizedData.email,
+    phone: normalizedData.phone,
+    website: normalizedData.website
   };
 
   const projectDetails: OrderProjectDetails = {
-    goals: [...data.goals],
-    audienceTags: [...data.audienceTags],
-    additionalNotes: data.additionalNotes.trim(),
-    requestCategories: [...data.requestCategories],
-    colorCustomization: { ...data.colorCustomization }
+    goals: [...normalizedData.goals],
+    audienceTags: [...normalizedData.audienceTags],
+    additionalNotes: normalizedData.additionalNotes,
+    requestCategories: [...normalizedData.requestCategories],
+    colorCustomization: { ...normalizedData.colorCustomization }
   };
 
   return {

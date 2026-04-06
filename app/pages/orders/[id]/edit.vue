@@ -143,6 +143,7 @@ import { useBuilderViewportSupport } from '~/composables/useBuilderViewportSuppo
 import { useUnsavedChanges } from '~/composables/useUnsavedChanges';
 import { useUnsavedChangesStore } from '~/stores/unsavedChanges';
 import { areTemplateRequestSnapshotsEqual } from '~/utils/templateRequestFormEquality';
+import { useOrderEditStash } from '~/composables/useOrderEditStash';
 
 definePageMeta({
   middleware: 'auth'
@@ -157,6 +158,7 @@ const authStore = useAuthStore();
 const ordersStore = useOrdersStore();
 const requestLayoutStore = useRequestLayoutStore();
 const { orderToFormData, updateOrder } = useOrderUpdate();
+const { saveStash, loadStash, clearStash } = useOrderEditStash();
 const { ensureLoaded, fetchAccessFromServer, openCheckout } = useWhopAccess();
 const { submitDraftOrder } = useDraftRequestSubmitFlow();
 const {
@@ -229,6 +231,7 @@ async function discardUnsaved(): Promise<void> {
   const uid = userId.value;
   if (!uid) return;
   const id = orderId.value;
+  clearStash(id);
   const refreshed = await ordersStore.fetchOrder(uid, id);
   const template = originalTemplate.value;
   if (!refreshed || !template) return;
@@ -257,6 +260,14 @@ useUnsavedChanges({
   isDirty: isEditsDirty,
   hasUnsavedSession,
   onDiscard: discardUnsaved,
+  onStashLeave: () => {
+    const form = templateFormRef.value?.getSnapshotForDirtyCheck();
+    if (!form) return;
+    const layout = requestLayoutStore.active
+      ? requestLayoutStore.getLayoutForSubmission()
+      : undefined;
+    saveStash(orderId.value, form, layout);
+  },
 });
 
 function createPreviewTemplate(
@@ -309,13 +320,26 @@ async function loadOrderAndTemplate(): Promise<void> {
   }
 
   originalTemplate.value = template;
-  initialFormData.value = orderToFormData(order);
-  previewTemplate.value = createPreviewTemplate(template, order.projectDetails.colorCustomization);
+  const restoredStash = loadStash(order.id);
+  if (restoredStash) {
+    initialFormData.value = restoredStash.formData;
+    previewTemplate.value = createPreviewTemplate(template, restoredStash.formData.colorCustomization);
+  } else {
+    initialFormData.value = orderToFormData(order);
+    previewTemplate.value = createPreviewTemplate(template, order.projectDetails.colorCustomization);
+  }
 
   // Initialize layout store if not already active for this order
   const returnTo = `/orders/${orderId.value}/edit`;
   if (!requestLayoutStore.active || requestLayoutStore.sourceOrderId !== order.id) {
-    if (order.layout) {
+    if (restoredStash?.layout) {
+      requestLayoutStore.initFromOrderLayout(
+        restoredStash.layout,
+        order.id,
+        template.sections,
+        returnTo
+      );
+    } else if (order.layout) {
       requestLayoutStore.initFromOrderLayout(
         order.layout,
         order.id,
@@ -433,6 +457,7 @@ async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
         layout,
       });
 
+      clearStash(order.id);
       requestLayoutStore.reset();
       useUnsavedChangesStore().requestAllowNext();
       await navigateTo({ path: ROUTES.sites, query: { tab: 'orders' } });
@@ -460,6 +485,8 @@ async function handleSubmit(formData: TemplateRequestFormData): Promise<void> {
       feedbackMessage.value =
         'Your draft is saved. A subscription is required to submit — use Continue below.';
       showAccessModal.value = true;
+    } else {
+      clearStash(order.id);
     }
   } catch (err) {
     feedbackType.value = 'error';

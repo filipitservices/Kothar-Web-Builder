@@ -12,6 +12,7 @@ export interface UnsavedRegistration {
   isDirty: MaybeRefOrGetter<boolean>;
   hasUnsavedSession: MaybeRefOrGetter<boolean>;
   onDiscard: () => void | Promise<void>;
+  onStashLeave?: () => void | Promise<void>;
 }
 
 export const useUnsavedChangesStore = defineStore('unsavedChanges', () => {
@@ -33,6 +34,7 @@ export const useUnsavedChangesStore = defineStore('unsavedChanges', () => {
   });
 
   const shouldPromptOnLeaveFlow = computed(() => hasDirtyEdits.value || hasUnsavedSession.value);
+  const hasStashAction = computed(() => Boolean(active.value?.onStashLeave));
 
   function register(reg: UnsavedRegistration): void {
     active.value = reg;
@@ -82,6 +84,12 @@ export const useUnsavedChangesStore = defineStore('unsavedChanges', () => {
     await reg.onDiscard();
   }
 
+  async function runStashLeave(): Promise<void> {
+    const reg = active.value;
+    if (!reg?.onStashLeave) return;
+    await reg.onStashLeave();
+  }
+
   return {
     active,
     modalOpen,
@@ -90,6 +98,7 @@ export const useUnsavedChangesStore = defineStore('unsavedChanges', () => {
     hasDirtyEdits,
     hasUnsavedSession,
     shouldPromptOnLeaveFlow,
+    hasStashAction,
     register,
     unregister,
     requestAllowNext,
@@ -98,5 +107,6 @@ export const useUnsavedChangesStore = defineStore('unsavedChanges', () => {
     openIntercept,
     closeModalStay,
     runDiscard,
+    runStashLeave,
   };
 });

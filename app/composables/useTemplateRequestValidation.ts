@@ -6,6 +6,12 @@ import type {
   TemplateRequestValidationErrors
 } from '~/types/templateRequest';
 import { INDUSTRY_OPTIONS, WEBSITE_GOALS, REQUEST_CATEGORIES, NONSENSE_INDUSTRY_VALUES } from '~/constants/formOptions';
+import {
+  hasDisallowedControlChars,
+  normalizeMultilineInput,
+  normalizeSingleLineInput,
+  normalizeTags,
+} from '~/utils/requestInputNormalization';
 
 /** Minimum length for name-like fields */
 const NAME_MIN_LENGTH = 2;
@@ -22,13 +28,17 @@ const EMAIL_MAX_LENGTH = 254;
 const GOALS_MAX = 3;
 /** Preferred URL max length */
 const PREFERRED_URL_MAX_LENGTH = 100;
+const WEBSITE_MAX_LENGTH = 2048;
+const LOCATION_MAX_LENGTH = 200;
+const TAG_MAX_LENGTH = 60;
+const TAGS_MAX_COUNT = 20;
 
 const INDUSTRY_VALUES = new Set<string>(INDUSTRY_OPTIONS.map((o) => o.value));
 const GOAL_VALUES = new Set<string>(WEBSITE_GOALS.map((g) => g.value));
 const CATEGORY_VALUES = new Set<string>(REQUEST_CATEGORIES.map((c) => c.value));
 
 function isAllowedNameChars(value: string): boolean {
-  return /^[a-zA-Z0-9\s\-'.]*$/.test(value);
+  return /^[\p{L}\p{N}\s\-'.&,/()]*$/u.test(value);
 }
 
 function hasMinLetters(value: string, min: number = 2): boolean {
@@ -40,9 +50,12 @@ function validateName(
   value: string,
   fieldLabel: string
 ): string | undefined {
-  const trimmed = value.trim();
+  const trimmed = normalizeSingleLineInput(value);
   if (trimmed.length === 0) {
     return `${fieldLabel} is required`;
+  }
+  if (hasDisallowedControlChars(value)) {
+    return `${fieldLabel} contains unsupported characters`;
   }
   if (trimmed.length < NAME_MIN_LENGTH) {
     return `${fieldLabel} must be at least ${NAME_MIN_LENGTH} characters`;
@@ -63,9 +76,12 @@ function validateName(
 }
 
 function validatePreferredUrl(value: string): string | undefined {
-  const trimmed = value.trim();
+  const trimmed = normalizeSingleLineInput(value);
   if (trimmed.length === 0) {
     return undefined;
+  }
+  if (hasDisallowedControlChars(value)) {
+    return 'URL contains unsupported characters';
   }
   if (trimmed.length > PREFERRED_URL_MAX_LENGTH) {
     return `Preferred URL must be at most ${PREFERRED_URL_MAX_LENGTH} characters`;
@@ -80,14 +96,26 @@ function validatePreferredUrl(value: string): string | undefined {
 }
 
 function validateLocation(data: TemplateRequestFormData): string | undefined {
-  // Location is optional; no error if empty
+  const trimmed = normalizeSingleLineInput(data.location.displayName ?? '');
+  if (trimmed.length === 0) {
+    return undefined;
+  }
+  if (hasDisallowedControlChars(data.location.displayName ?? '')) {
+    return 'Location contains unsupported characters';
+  }
+  if (trimmed.length > LOCATION_MAX_LENGTH) {
+    return `Location must be at most ${LOCATION_MAX_LENGTH} characters`;
+  }
   return undefined;
 }
 
 function validateEmail(value: string): string | undefined {
-  const trimmed = value.trim();
+  const trimmed = normalizeSingleLineInput(value).toLowerCase();
   if (trimmed.length === 0) {
     return 'Email is required';
+  }
+  if (hasDisallowedControlChars(value)) {
+    return 'Email contains unsupported characters';
   }
   if (trimmed.length > EMAIL_MAX_LENGTH) {
     return 'Email is too long';
@@ -99,9 +127,12 @@ function validateEmail(value: string): string | undefined {
 }
 
 function validatePhone(value: string): string | undefined {
-  const trimmed = value.trim();
+  const trimmed = normalizeSingleLineInput(value);
   if (trimmed.length === 0) {
     return undefined;
+  }
+  if (hasDisallowedControlChars(value)) {
+    return 'Phone number contains unsupported characters';
   }
   const digits = trimmed.replace(/\D/g, '');
   if (digits.length < PHONE_DIGITS_MIN) {
@@ -117,23 +148,26 @@ function validatePhone(value: string): string | undefined {
 }
 
 function validateWebsite(value: string): string | undefined {
-  const trimmed = value.trim();
+  const trimmed = normalizeSingleLineInput(value);
   if (trimmed.length === 0) {
     return undefined;
+  }
+  if (hasDisallowedControlChars(value)) {
+    return 'Website URL contains unsupported characters';
   }
   const hasProtocol = /^https?:\/\/.+\..+/.test(trimmed);
   const looksLikeDomain = /^[a-zA-Z0-9][a-zA-Z0-9-.]*\.[a-zA-Z]{2,}/.test(trimmed);
   if (!hasProtocol && !looksLikeDomain) {
     return 'Please enter a valid URL (e.g. https://example.com)';
   }
-  if (trimmed.length > 2048) {
+  if (trimmed.length > WEBSITE_MAX_LENGTH) {
     return 'URL is too long';
   }
   return undefined;
 }
 
 function validateIndustry(value: string): string | undefined {
-  const trimmed = value.trim();
+  const trimmed = normalizeSingleLineInput(value);
   if (trimmed.length === 0) {
     return 'Please select your industry';
   }
@@ -147,9 +181,12 @@ function validateCustomIndustry(data: TemplateRequestFormData): string | undefin
   if (data.industry !== 'other') {
     return undefined;
   }
-  const trimmed = data.customIndustry.trim();
+  const trimmed = normalizeSingleLineInput(data.customIndustry);
   if (trimmed.length === 0) {
     return 'Please describe your industry';
+  }
+  if (hasDisallowedControlChars(data.customIndustry)) {
+    return 'Industry description contains unsupported characters';
   }
   if (trimmed.length < 3) {
     return 'Industry description must be at least 3 characters';
@@ -187,9 +224,22 @@ function validateAudienceTags(tags: string[]): string | undefined {
   if (!tags || tags.length === 0) {
     return undefined;
   }
-  const hasEmpty = tags.some((t) => t.trim().length === 0);
+  if (tags.length > TAGS_MAX_COUNT) {
+    return `Please add at most ${TAGS_MAX_COUNT} audience tags`;
+  }
+  const normalized = normalizeTags(tags);
+  const hasEmpty = tags.some((t) => normalizeSingleLineInput(t).length === 0);
   if (hasEmpty) {
     return 'Audience tags cannot be empty';
+  }
+  if (normalized.length !== tags.length) {
+    return 'Audience tags must be unique';
+  }
+  if (tags.some((tag) => hasDisallowedControlChars(tag))) {
+    return 'Audience tags contain unsupported characters';
+  }
+  if (normalized.some((tag) => tag.length > TAG_MAX_LENGTH)) {
+    return `Audience tags must be at most ${TAG_MAX_LENGTH} characters`;
   }
   return undefined;
 }
@@ -199,9 +249,12 @@ function validateLongText(
   maxLength: number,
   fieldLabel: string
 ): string | undefined {
-  const trimmed = value.trim();
+  const trimmed = normalizeMultilineInput(value);
   if (trimmed.length === 0) {
     return undefined;
+  }
+  if (hasDisallowedControlChars(value, true)) {
+    return `${fieldLabel} contains unsupported characters`;
   }
   if (trimmed.length > maxLength) {
     return `${fieldLabel} must be at most ${maxLength} characters`;
