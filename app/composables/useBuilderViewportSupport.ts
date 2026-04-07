@@ -2,16 +2,12 @@ import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 const BUILDER_MIN_WIDTH = 1025;
 
-function readViewportWidth(): number | null {
-  if (!import.meta.client) {
-    return null;
-  }
-  return window.innerWidth;
-}
-
 export function useBuilderViewportSupport() {
-  /** Synchronous on client so first paint matches viewport (avoids preview flash on narrow screens). */
-  const viewportWidth = ref<number | null>(readViewportWidth());
+  /**
+   * Start null on server and client so the first paint matches during SSR hydration.
+   * Width is applied in onMounted (and on resize) so we never read window during setup.
+   */
+  const viewportWidth = ref<number | null>(null);
   const isSupported = computed(() =>
     viewportWidth.value !== null && viewportWidth.value >= BUILDER_MIN_WIDTH
   );
