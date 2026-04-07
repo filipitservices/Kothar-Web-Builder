@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch, nextTick } from 'vue';
 
 interface CategoryNavProps {
   categories: string[];
@@ -31,13 +31,43 @@ interface CategoryNavProps {
   getCategoryLabel: (category: string) => string;
 }
 
-defineProps<CategoryNavProps>();
+const props = defineProps<CategoryNavProps>();
 
 defineEmits<{
   select: [category: string | null];
 }>();
 
 const navRef = ref<HTMLElement | null>(null);
+
+function centerActiveCategoryInNav(): void {
+  const nav = navRef.value;
+  if (!nav) return;
+  const active = nav.querySelector('.category-nav-btn.is-active');
+  if (!(active instanceof HTMLElement)) return;
+
+  const navRect = nav.getBoundingClientRect();
+  const activeRect = active.getBoundingClientRect();
+  const navCenterX = navRect.left + navRect.width / 2;
+  const btnCenterX = activeRect.left + activeRect.width / 2;
+  const delta = btnCenterX - navCenterX;
+  if (Math.abs(delta) < 1) return;
+
+  const targetScrollLeft = nav.scrollLeft + delta;
+  const maxScroll = Math.max(0, nav.scrollWidth - nav.clientWidth);
+  const left = Math.max(0, Math.min(targetScrollLeft, maxScroll));
+  nav.scrollTo({ left, behavior: 'smooth' });
+}
+
+watch(
+  () => props.selectedCategory,
+  async () => {
+    await nextTick();
+    requestAnimationFrame(() => {
+      centerActiveCategoryInNav();
+    });
+  },
+  { flush: 'post' }
+);
 
 const handleWheel = (event: WheelEvent) => {
   const nav = navRef.value;

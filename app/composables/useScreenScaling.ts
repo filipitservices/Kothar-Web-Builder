@@ -18,6 +18,9 @@ export function useScreenScaling() {
     const panel = screensPanelRef.value;
     if (!panel) return;
 
+    const inner = panel.querySelector('.screens-inner') as HTMLElement | null;
+    const savedInnerScrollTop = inner ? inner.scrollTop : 0;
+
     const { clientWidth: availableWidth, clientHeight: availableHeight } = panel;
     
     // Measure fixed-height panels (AI chat is overlay, does not consume layout space)
@@ -53,11 +56,24 @@ export function useScreenScaling() {
     desktopScaledHeight.value = DESKTOP_NATURAL_HEIGHT * newDesktopScale;
     mobileScaledWidth.value = MOBILE_NATURAL_WIDTH * newMobileScale;
     mobileScaledHeight.value = MOBILE_NATURAL_HEIGHT * newMobileScale;
+
+    if (inner && savedInnerScrollTop > 0) {
+      requestAnimationFrame(() => {
+        const el = panel.querySelector('.screens-inner') as HTMLElement | null;
+        if (!el) return;
+        const max = Math.max(0, el.scrollHeight - el.clientHeight);
+        el.scrollTop = Math.min(savedInnerScrollTop, max);
+      });
+    }
   };
 
   let resizeTimeout: ReturnType<typeof setTimeout> | null = null;
+  let mutationDebounceTimer: ReturnType<typeof setTimeout> | null = null;
   let resizeObserver: ResizeObserver | null = null;
   let mutationObserver: MutationObserver | null = null;
+
+  /** Coalesce subtree mutations (e.g. drag-and-drop DOM churn) so scaling does not thrash outer scroll. */
+  const MUTATION_SCALE_DEBOUNCE_MS = 50;
 
   const handleWindowResize = () => {
     if (resizeTimeout) clearTimeout(resizeTimeout);
@@ -66,6 +82,14 @@ export function useScreenScaling() {
 
   const handlePanelResize = () => {
     calculateScaling();
+  };
+
+  const handlePanelMutation = () => {
+    if (mutationDebounceTimer) clearTimeout(mutationDebounceTimer);
+    mutationDebounceTimer = setTimeout(() => {
+      mutationDebounceTimer = null;
+      calculateScaling();
+    }, MUTATION_SCALE_DEBOUNCE_MS);
   };
 
   const initializeScaling = async () => {
@@ -81,13 +105,15 @@ export function useScreenScaling() {
       const fixedPanels = screensPanelRef.value.querySelectorAll('.drawing-controls-panel');
       fixedPanels.forEach(el => resizeObserver!.observe(el as HTMLElement));
 
-      mutationObserver = new MutationObserver(handlePanelResize);
+      mutationObserver = new MutationObserver(handlePanelMutation);
       mutationObserver.observe(screensPanelRef.value, { childList: true, subtree: true });
     }
   };
 
   const cleanupScaling = () => {
     if (resizeTimeout) clearTimeout(resizeTimeout);
+    if (mutationDebounceTimer) clearTimeout(mutationDebounceTimer);
+    mutationDebounceTimer = null;
     window.removeEventListener('resize', handleWindowResize);
     resizeObserver?.disconnect();
     mutationObserver?.disconnect();

@@ -76,7 +76,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed, onMounted, onUnmounted, type ComputedRef } from 'vue';
+import { ref, watch, computed, onMounted, onUnmounted, nextTick, type ComputedRef } from 'vue';
 import { useScreenScaling } from '~/composables/useScreenScaling';
 import { useListSyncing } from '~/composables/useListSyncing';
 import ScreenCard from './ScreenCard.vue';
@@ -127,7 +127,13 @@ const {
 // Template refs
 const desktopScreenRef = ref<InstanceType<typeof ScreenCard> | null>(null);
 const mobileScreenRef = ref<InstanceType<typeof ScreenCard> | null>(null);
-const syncScreens = ref(false);
+const screensContainerRef = ref<HTMLElement | null>(null);
+const syncScreens = ref(true);
+
+function applyClampedScrollTop(el: HTMLElement, top: number): void {
+  const max = Math.max(0, el.scrollHeight - el.clientHeight);
+  el.scrollTop = Math.min(top, max);
+}
 
 // Local props mirroring
 const desktopCanvasWidth = ref<number>(props.desktopCanvasWidth);
@@ -160,6 +166,26 @@ useListSyncing<BlockItem>({
   onDesktopListUpdate: (list) => emit('update:desktopList', list),
   onMobileListUpdate: (list) => emit('update:mobileList', list)
 });
+
+// Preserve outer .screens-inner scroll when layout list changes (shared desktop prop is sufficient).
+watch(
+  () => props.desktopList,
+  async () => {
+    const el = screensContainerRef.value;
+    if (!el) return;
+    const saved = el.scrollTop;
+    await nextTick();
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => {
+        const node = screensContainerRef.value;
+        if (node) {
+          applyClampedScrollTop(node, saved);
+        }
+        resolve();
+      });
+    });
+  }
+);
 
 // Handle drawing state updates properly
 const handleDesktopStateUpdate = (state: DrawingState) => {

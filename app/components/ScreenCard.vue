@@ -18,6 +18,8 @@
         :screen-type="screenClass === 'mobile-screen' ? 'mobile' : 'desktop'"
         @change="$emit('list-change', $event)"
         @remove="onRemove"
+        @drag-start="onItemsDragStart"
+        @drag-end="onItemsDragEnd"
       />
 
       <DrawingOverlay
@@ -40,7 +42,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import ScreenHeader from './ScreenHeader.vue';
 import DrawingOverlay from './DrawingOverlay.vue';
@@ -106,6 +108,73 @@ const overlayRef = ref(null);
 const screenContentRef = ref(null);
 let savedScrollTop = 0;
 
+/** Coalesce scroll target; first non-forced write wins until snapshot (avoids 0 overwriting a good offset). */
+let pendingListScrollTop: number | null = null;
+/** Bumps invalidate in-flight delayed restores so rapid list changes only apply the latest generation. */
+let listScrollRestoreGeneration = 0;
+
+function applyClampedScrollTop(el: HTMLElement, top: number): void {
+  const max = Math.max(0, el.scrollHeight - el.clientHeight);
+  el.scrollTop = Math.min(top, max);
+}
+
+function queueRestoreListScroll(saved: number, force = false): void {
+  if (force) {
+    pendingListScrollTop = saved;
+  } else if (pendingListScrollTop === null) {
+    pendingListScrollTop = saved;
+  }
+
+  const gen = ++listScrollRestoreGeneration;
+
+  void (async () => {
+    await nextTick();
+    await new Promise<void>((r) => requestAnimationFrame(() => r()));
+    await new Promise<void>((r) => requestAnimationFrame(() => r()));
+    await new Promise<void>((r) => queueMicrotask(r));
+
+    if (gen !== listScrollRestoreGeneration) {
+      return;
+    }
+
+    const captured = pendingListScrollTop;
+    pendingListScrollTop = null;
+    if (captured === null) {
+      return;
+    }
+
+    const apply = (): void => {
+      if (gen !== listScrollRestoreGeneration) {
+        return;
+      }
+      const node = screenContentRef.value;
+      if (node) {
+        applyClampedScrollTop(node, captured);
+      }
+    };
+
+    apply();
+    requestAnimationFrame(apply);
+    setTimeout(apply, 0);
+    setTimeout(apply, 48);
+    setTimeout(apply, 120);
+  })();
+}
+
+const dragScrollAnchor = ref(0);
+
+function onItemsDragStart(): void {
+  const el = screenContentRef.value;
+  if (el) {
+    dragScrollAnchor.value = el.scrollTop;
+  }
+}
+
+function onItemsDragEnd(): void {
+  // Override any earlier `flush: 'pre'` capture that saw scrollTop already reset to 0.
+  queueRestoreListScroll(dragScrollAnchor.value, true);
+}
+
 // Use canvas dimensions composable to track content size
 const { canvasWidth: dynamicCanvasWidth, canvasHeight: dynamicCanvasHeight, setup: setupCanvasDimensions, cleanup: cleanupCanvasDimensions } = useCanvasDimensions(
   screenContentRef,
@@ -132,12 +201,23 @@ watch(
     await new Promise(resolve => {
       requestAnimationFrame(() => {
         if (screenContentRef.value) {
-          screenContentRef.value.scrollTop = savedScrollTop;
+          applyClampedScrollTop(screenContentRef.value, savedScrollTop);
         }
         resolve(undefined);
       });
     });
   }
+);
+
+// `flush: 'sync'` runs before child re-render so scrollTop is read before the list DOM is torn down.
+watch(
+  () => props.list,
+  () => {
+    const el = screenContentRef.value;
+    if (!el) return;
+    queueRestoreListScroll(el.scrollTop);
+  },
+  { flush: 'sync' }
 );
 
 const onToggleDrawing = () => emit('toggle-drawing');
@@ -235,7 +315,10 @@ defineExpose({ overlayRef, undo, redo, clear });
   flex: 1;
   overflow-y: auto;
   z-index: 4;
-  transition: all 0.3s ease;
+  /* Avoid `transition: all` — it interpolates layout-related properties and fights DnD/scroll restores. */
+  transition: opacity 0.3s ease;
+  /* Reduce browser scroll anchoring jumping the viewport when block list height changes. */
+  overflow-anchor: none;
   position: relative;
   min-height: 400px;
   display: flex;

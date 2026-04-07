@@ -72,7 +72,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  syncScreens: false
+  syncScreens: true
 });
 
 const emit = defineEmits<{

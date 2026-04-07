@@ -6,6 +6,9 @@
     item-key="id"
     :disabled="disabled"
     :clone="cloneItem"
+    :scroll="renderMode !== 'canvas'"
+    @start="onSortableStart"
+    @end="onSortableEnd"
   >
     <template #item="{ element }">
       <div>
@@ -61,6 +64,10 @@ const props = withDefaults(defineProps<ItemsListProps>(), {
 interface ItemsListEmits {
   change: [value: BlockItem[]];
   remove: [id: string];
+  /** Canvas: snapshot scroll before Sortable + Vue sync (Sortable AutoScroll off; see `scroll` prop). */
+  'drag-start': [];
+  /** Canvas: parent restores scroll after model/DOM settle. */
+  'drag-end': [];
 }
 
 const emit = defineEmits<ItemsListEmits>();
@@ -96,13 +103,26 @@ const BLOCK_COMPONENTS: Record<BlockType, AsyncComponentLoader<Component>> = {
   text: () => import('./BlockElements/TextBlock.vue')
 } as const;
 
+/**
+ * Stable async component per block type. Calling defineAsyncComponent() inside the render
+ * path produced a new constructor every render, so Vue tore down and remounted blocks on
+ * every list update — resetting simulation scroll and feeling broken.
+ */
+const blockAsyncComponents: Partial<Record<BlockType, Component>> = {};
+
 const getComponent = (type: BlockType): Component | null => {
+  const existing = blockAsyncComponents[type];
+  if (existing) {
+    return existing;
+  }
   const loader = BLOCK_COMPONENTS[type];
   if (!loader) {
     logger.warn(`Unknown block type: ${type}`);
     return null;
   }
-  return defineAsyncComponent(loader);
+  const comp = defineAsyncComponent(loader);
+  blockAsyncComponents[type] = comp;
+  return comp;
 };
 
 /**
@@ -112,6 +132,18 @@ const cloneItem = (original: BlockItem): BlockItem => ({
   ...original,
   id: `${original.type}-${crypto.randomUUID()}`
 });
+
+function onSortableStart(): void {
+  if (props.renderMode === 'canvas') {
+    emit('drag-start');
+  }
+}
+
+function onSortableEnd(): void {
+  if (props.renderMode === 'canvas') {
+    emit('drag-end');
+  }
+}
 </script>
 
 <style scoped>
