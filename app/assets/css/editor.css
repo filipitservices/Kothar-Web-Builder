@@ -182,46 +182,14 @@
   min-width: var(--space-sm);
 }
 
-/* Full-width info strip: hint + Sync Screens on one deliberate row */
+/* Full-width info strip: welcoming hint (Sync Screens lives in DrawingControlsPanel when request mode) */
 .builder-context-infobar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: var(--space-md);
   width: 100%;
   min-width: 0;
-}
-
-.builder-context-sync {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-xs);
-  flex-shrink: 0;
-  padding: var(--space-xs) var(--space-sm);
-  margin: 0;
-  background: color-mix(in srgb, var(--color-bg) 88%, var(--color-primary-tint));
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--color-text-muted-dark);
-  cursor: pointer;
-  user-select: none;
-  transition: border-color 0.15s ease, background-color 0.15s ease;
-}
-
-.builder-context-sync:hover {
-  border-color: var(--color-border-hover);
-  background: var(--color-bg);
-}
-
-.builder-context-sync input[type='checkbox'] {
-  width: 0.875rem;
-  height: 0.875rem;
-  margin: 0;
-  flex-shrink: 0;
-  accent-color: var(--color-primary);
-  cursor: pointer;
 }
 
 .builder-context-hint {

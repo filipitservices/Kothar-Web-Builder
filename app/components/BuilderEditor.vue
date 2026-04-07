@@ -70,13 +70,6 @@
             This is your sketchpad—try blocks, reorder sections, and preview desktop and mobile without worry.
             Nothing is final until you save.
           </p>
-          <label
-            class="builder-context-sync"
-            title="When on, desktop and mobile previews use the same block order and set. Turn off to customize each screen separately."
-          >
-            <input v-model="syncScreens" type="checkbox" />
-            <span>Sync Screens</span>
-          </label>
         </div>
       </div>
 
@@ -89,12 +82,12 @@
         :desktop-list="blocks"
         :mobile-list="blocks"
         :sync-screens="syncScreens"
+        :show-sync-screens="requestMode"
         :desktop-drawing-state="desktopDrawingState"
         :mobile-drawing-state="mobileDrawingState"
         :desktop-strokes="desktopStrokes"
         :mobile-strokes="mobileStrokes"
-        @toggle-desktop-drawing="toggleDrawing('desktop')"
-        @toggle-mobile-drawing="toggleDrawing('mobile')"
+        @update:sync-screens="setSyncScreens"
         @toggle-desktop-text-mode="toggleTextMode('desktop')"
         @toggle-mobile-text-mode="toggleTextMode('mobile')"
         @update:desktopList="handleBlocksUpdate"
@@ -175,7 +168,6 @@ const {
   desktopStrokes,
   mobileDrawingState,
   mobileStrokes,
-  toggleDrawing,
   toggleTextMode,
   setCanvasRef,
   updateDesktopDrawingState,
@@ -206,6 +198,10 @@ const { applyTemplate } = useTemplateApplication({
 });
 
 const syncScreens = ref(true);
+
+function setSyncScreens(value: boolean): void {
+  syncScreens.value = value;
+}
 
 const availableList: Ref<BlockItem[]> = ref(AVAILABLE_BLOCKS);
 const desktopCanvasWidth: Ref<number> = ref(CANVAS_DIMENSIONS.desktop.width);

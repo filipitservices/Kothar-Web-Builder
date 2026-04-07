@@ -2,15 +2,31 @@
   <div class="drawing-controls-panel">
     <div class="panel-inner">
       <div class="panel-section global-section">
-        <button
-          class="global-toggle"
-          :class="{ active: isGlobalEnabled }"
-          @click="toggleGlobalDrawing"
+        <label
+          class="builder-context-sync"
           :title="isGlobalEnabled ? 'Disable drawing' : 'Enable drawing'"
         >
-          <span v-if="isGlobalEnabled">🛑 Drawing Off</span>
-          <span v-else>✅ Drawing On</span>
-        </button>
+          <input
+            :id="drawingModeInputId"
+            type="checkbox"
+            :checked="isGlobalEnabled"
+            @change="onDrawingModeChange"
+          />
+          <span>Drawing Mode</span>
+        </label>
+        <label
+          v-if="showSyncScreens"
+          class="builder-context-sync"
+          title="When on, desktop and mobile previews use the same block order and set. Turn off to customize each screen separately."
+        >
+          <input
+            :id="syncScreensInputId"
+            type="checkbox"
+            :checked="syncScreens"
+            @change="onSyncScreensChange"
+          />
+          <span>Sync Screens</span>
+        </label>
       </div>
 
       <div class="panel-section tools-row">
@@ -53,21 +69,30 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, useId } from 'vue';
 import DualSwitch from './DualSwitch.vue';
 import DrawingToolControls from './DrawingToolControls.vue';
 import type { DrawingState } from '~/composables/useDrawing';
 
+const drawingModeInputId = useId();
+const syncScreensInputId = useId();
+
 interface Props {
   desktopDrawingState: DrawingState;
   mobileDrawingState: DrawingState;
+  showSyncScreens?: boolean;
+  syncScreens?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  showSyncScreens: false,
+  syncScreens: true
+});
 
 const emit = defineEmits<{
   'update:desktop-drawing-state': [state: DrawingState];
   'update:mobile-drawing-state': [state: DrawingState];
+  'update:syncScreens': [value: boolean];
   undo: [];
   redo: [];
   clear: [];
@@ -149,8 +174,8 @@ watch([desktopEnabled, mobileEnabled], ([dEnabled, mEnabled]) => {
   }
 }, { immediate: true });
 
-const toggleGlobalDrawing = () => {
-  if (isGlobalEnabled.value) {
+const setDrawingModeEnabled = (enabled: boolean) => {
+  if (!enabled) {
     if (desktopEnabled.value) {
       emit('update:desktop-drawing-state', { ...props.desktopDrawingState, desktopEnabled: false });
     }
@@ -160,6 +185,15 @@ const toggleGlobalDrawing = () => {
   } else {
     syncEnabledForActiveMode();
   }
+};
+
+const onDrawingModeChange = (ev: Event) => {
+  const checked = (ev.target as HTMLInputElement).checked;
+  setDrawingModeEnabled(checked);
+};
+
+const onSyncScreensChange = (ev: Event) => {
+  emit('update:syncScreens', (ev.target as HTMLInputElement).checked);
 };
 
 const toggleTextMode = () => updateState('isTextMode', !currentIsTextMode.value);
@@ -187,12 +221,17 @@ const updateState = (key: keyof DrawingState, value: DrawingState[keyof DrawingS
   grid-template-columns: auto 1fr;
   gap: var(--space-md);
   align-items: center;
-  min-height: 3.5rem;
 }
 
 .panel-section {
   display: flex;
   align-items: center;
+  gap: var(--space-sm);
+}
+
+.global-section {
+  flex-direction: column;
+  align-items: stretch;
   gap: var(--space-sm);
 }
 
@@ -214,29 +253,5 @@ const updateState = (key: keyof DrawingState, value: DrawingState[keyof DrawingS
 
 .mode-section {
   flex-shrink: 0;
-}
-
-.global-toggle {
-  padding: var(--space-sm) 0.875rem;
-  background: var(--color-bg-subtle);
-  color: var(--color-text-muted-dark);
-  border: 1px solid var(--color-border-hover);
-  border-radius: 999px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
-  min-height: 2rem;
-  white-space: nowrap;
-}
-
-.global-toggle.active {
-  background: var(--color-primary-tint);
-  color: var(--color-primary);
-  border-color: var(--color-primary);
-  box-shadow: 0 var(--space-xs) var(--space-md) color-mix(in srgb, var(--color-primary) 22%, transparent);
-}
-
-.global-toggle:hover {
-  background: var(--color-bg-muted);
 }
 </style>

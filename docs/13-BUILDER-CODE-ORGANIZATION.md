@@ -175,10 +175,10 @@ Key components and their locations (for navigation and refactoring):
 
 | Component / Symbol | Location |
 |--------------------|----------|
-| **DrawingControlsPanel** | `app/components/DrawingControlsPanel.vue`; used in ScreensPanel. Root class: `.drawing-controls-panel`. Drawing only (no block-list sync). |
+| **DrawingControlsPanel** | `app/components/DrawingControlsPanel.vue`; used in ScreensPanel. Root class: `.drawing-controls-panel`. Drawing Mode checkbox, optional **Sync Screens** checkbox (request mode), desktop/mobile target, stroke controls. |
 | **DrawingToolControls** | `app/components/DrawingToolControls.vue`; referenced in 06-COMPONENT-CATALOG, 02-ARCHITECTURE. |
-| **Builder context bar** | `app/components/BuilderEditor.vue` + `app/assets/css/editor.css` — toolbar (back, status, save) + `.builder-context-infobar`: full-width hint and **Sync Screens** on the right. |
-| **Sync Screens (block lists)** | Checkbox in `BuilderEditor`; `syncScreens` ref passed to `ScreensPanel` → `useListSyncing`. |
+| **Builder context bar** | `app/components/BuilderEditor.vue` + `app/assets/css/editor.css` — toolbar (back, status, save) + `.builder-context-infobar`: full-width welcoming hint only. |
+| **Sync Screens (block lists)** | `syncScreens` ref in `BuilderEditor`; checkbox UI in `DrawingControlsPanel` when `showSyncScreens`; passed through `ScreensPanel` → `useListSyncing`; updates via `update:syncScreens`. Pill styles: `.builder-context-sync` in `app/assets/css/components.css`. |
 | **SidebarBranding** | Removed. Was in BuilderEditor, editor.css; see docs/09-SIDEBAR-BRANDING.md. |
 | **Left sidebar header** | BuilderEditor — `.left-sidebar .sidebar-header`; solid pink (`--color-accent-palette-deep`) in `editor.css`. |
 | **Right sidebar header** | BuilderEditor — `.right-sidebar .sidebar-header` (“Templates”); solid green-toned bar in `editor.css`. |

@@ -1,10 +1,6 @@
 <template>
   <div class="screen" :class="screenClass">
-    <ScreenHeader
-      :title="title"
-      :is-enabled="isDrawingEnabled"
-      @toggle="onToggleDrawing"
-    />
+    <ScreenHeader :title="title" />
     <div 
       ref="screenContentRef"
       class="screen-content" 
@@ -89,7 +85,6 @@ const props = defineProps({
 });
 
 const emit = defineEmits([
-  'toggle-drawing',
   'update:strokeType',
   'update:color',
   'update:lineWidth',
@@ -220,7 +215,6 @@ watch(
   { flush: 'sync' }
 );
 
-const onToggleDrawing = () => emit('toggle-drawing');
 const onUpdateStrokeType = (val) => emit('update:strokeType', val);
 const onUpdateColor = (val) => emit('update:color', val);
 const onUpdateLineWidth = (val) => emit('update:lineWidth', val);

@@ -936,13 +936,12 @@ Maps `element.type` to component:
 }
 ```
 
-**Emits**:
+**Emits** (representative; see component):
 ```typescript
 {
-  'update:list': (newList: Array<Element>) => void,
-  'toggle-drawing': () => void,
-  'clear-drawing': () => void,
-  'undo-drawing': () => void
+  'list-change': (newList: BlockItem[]) => void,
+  'remove-item': (id: string) => void,
+  // stroke / text updates, undo, redo, clear — see ScreenCard.vue
 }
 ```
 
@@ -952,15 +951,18 @@ Maps `element.type` to component:
 - ItemsList container
 - Drawing overlay per screen
 
-**Usage**:
+**Usage** (see `ScreensPanel.vue` for production wiring):
 ```vue
 <ScreenCard
   title="Desktop"
-  listId="desktopList"
-  :list="desktopElements"
-  screenType="desktop"
-  @update:list="desktopElements = $event"
-  @toggle-drawing="toggleDrawing"
+  screen-class="desktop-screen"
+  canvas-id="desktop-canvas"
+  :canvas-width="700"
+  :canvas-height="550"
+  :list="desktopList"
+  :is-drawing-enabled="desktopDrawingState.desktopEnabled"
+  :drawing-state="desktopDrawingState"
+  :strokes="desktopStrokes"
 />
 ```
 
@@ -1036,16 +1038,17 @@ Maps `element.type` to component:
 
 **Note:** There is no `DrawingDashboard` component; the canonical name is `DrawingControlsPanel`.
 
-**Purpose**: Drawing toolbar: global drawing toggle, Desktop/Mobile target switch, and stroke/text tool controls.
+**Purpose**: Drawing toolbar: **Drawing Mode** checkbox (global enable), optional **Sync Screens** checkbox (request mode), Desktop/Mobile target switch, and stroke/text tool controls.
 
 **Position**: At top of ScreensPanel, under the builder context bar when in request mode.
 
-**Props**: `desktopDrawingState`, `mobileDrawingState`
+**Props**: `desktopDrawingState`, `mobileDrawingState`, optional `showSyncScreens` (default `false`), optional `syncScreens` (default `true`)
 
-**Emits**: `update:desktop-drawing-state`, `update:mobile-drawing-state`, `undo`, `redo`, `clear`
+**Emits**: `update:desktop-drawing-state`, `update:mobile-drawing-state`, `update:syncScreens`, `undo`, `redo`, `clear`
 
 **Features**:
-- Drawing mode toggle
+- Drawing Mode checkbox (same behavior as former global drawing toggle)
+- Sync Screens checkbox when `showSyncScreens` (block list sync)
 - Tool selection (pen, eraser, shapes)
 - Color picker
 - Stroke width slider
@@ -1054,9 +1057,13 @@ Maps `element.type` to component:
 **Usage**:
 ```vue
 <DrawingControlsPanel
-  @toggle-drawing="toggleDrawing"
-  @clear-drawing="clearCanvas"
-  @undo-drawing="undoStroke"
+  :desktop-drawing-state="desktopDrawingState"
+  :mobile-drawing-state="mobileDrawingState"
+  :show-sync-screens="requestMode"
+  :sync-screens="syncScreens"
+  @update:desktop-drawing-state="handleDesktopDrawingStateUpdate"
+  @update:mobile-drawing-state="handleMobileDrawingStateUpdate"
+  @update:sync-screens="setSyncScreens"
 />
 ```
 
@@ -1100,13 +1107,18 @@ Maps `element.type` to component:
 
 **Purpose**: Container for desktop and mobile screen cards
 
-**Props** (representative; see component for full list): `desktopList`, `mobileList`, canvas dimensions, drawing state, strokes, and optional **`syncScreens`** (default `true`) for `useListSyncing` between desktop and mobile block lists.
+**Props** (representative; see component for full list): `desktopList`, `mobileList`, canvas dimensions, drawing state, strokes, optional **`syncScreens`** (default `true`) for `useListSyncing`, optional **`showSyncScreens`** (default `false`) to show the Sync Screens control inside `DrawingControlsPanel`.
 
 **Emits**:
 ```typescript
 {
-  'update:desktopList': (newList: Array<Element>) => void,
-  'update:mobileList': (newList: Array<Element>) => void
+  'update:desktopList': (newList: BlockItem[]) => void,
+  'update:mobileList': (newList: BlockItem[]) => void,
+  'update:syncScreens': (value: boolean) => void,
+  'update:desktopDrawingState': (partial: Partial<DrawingState>) => void,
+  'update:mobileDrawingState': (partial: Partial<DrawingState>) => void,
+  'set-desktop-canvas-ref': (el: unknown) => void,
+  'set-mobile-canvas-ref': (el: unknown) => void
 }
 ```
 

@@ -335,9 +335,9 @@ BuilderEditor  [builder layout; full viewport]
 ├── screens-container
 │   ├── builder-context-bar (when request layout is active)
 │   │   ├── Toolbar: back, "Editing page layout", Save
-│   │   └── Info row (full width): welcoming hint + **Sync Screens** (list sync) on the right
+│   │   └── Info row (full width): welcoming hint only
 │   └── ScreensPanel
-│       ├── DrawingControlsPanel (drawing toggle, desktop/mobile tool target, stroke controls)
+│       ├── DrawingControlsPanel (Drawing Mode + **Sync Screens** when request mode, desktop/mobile tool target, stroke controls)
 │       ├── .screens-area (flex: 1, position: relative)
 │       │   ├── .screens-inner — ScreenCard (Desktop), ScreenCard (Mobile)
 │       │   └── AiChatPanel (overlay, does not affect layout)
@@ -352,7 +352,7 @@ BuilderEditor  [builder layout; full viewport]
     └── TemplatesList
 ```
 
-**Sync Screens** lives in the context bar and is owned by `BuilderEditor`; `ScreensPanel` receives `syncScreens` as a prop for `useListSyncing`. It is not part of `DrawingControlsPanel`.
+**Sync Screens** is owned by `BuilderEditor` (`syncScreens` ref). The checkbox appears in `DrawingControlsPanel` when request layout is active (`showSyncScreens`); `ScreensPanel` passes `syncScreens` through and forwards `update:syncScreens` for `useListSyncing`. Shared pill styling uses global class `.builder-context-sync` in `app/assets/css/components.css`.
 
 ---
 

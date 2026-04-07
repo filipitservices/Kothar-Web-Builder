@@ -4,8 +4,11 @@
     <DrawingControlsPanel
       :desktop-drawing-state="props.desktopDrawingState"
       :mobile-drawing-state="props.mobileDrawingState"
+      :show-sync-screens="props.showSyncScreens"
+      :sync-screens="props.syncScreens"
       @update:desktop-drawing-state="handleDesktopStateUpdate"
       @update:mobile-drawing-state="handleMobileStateUpdate"
+      @update:sync-screens="emit('update:syncScreens', $event)"
       @undo="handleUndo"
       @redo="handleRedo"
       @clear="handleClear"
@@ -96,13 +99,13 @@ const props = withDefaults(
     desktopStrokes: unknown[];
     mobileStrokes: unknown[];
     syncScreens?: boolean;
+    showSyncScreens?: boolean;
   }>(),
-  { syncScreens: true }
+  { syncScreens: true, showSyncScreens: false }
 );
 
 const emit = defineEmits<{
-  (e: 'toggle-desktop-drawing'): void;
-  (e: 'toggle-mobile-drawing'): void;
+  (e: 'update:syncScreens', value: boolean): void;
   (e: 'toggle-desktop-text-mode'): void;
   (e: 'toggle-mobile-text-mode'): void;
   (e: 'update:desktopList', value: BlockItem[]): void;

@@ -766,8 +766,12 @@ interface ScreenBlocks {
 @update:mobileList="(list) => mobileList = list"
 ```
 
-**`toggle-desktop-drawing`**: Toggle desktop drawing mode
-**`toggle-mobile-drawing`**: Toggle mobile drawing mode
+**`update:syncScreens`**: Block-list sync toggle (from `DrawingControlsPanel` when `showSyncScreens` is true)
+```typescript
+@update:syncScreens="setSyncScreens"
+// setSyncScreens(value: boolean) { syncScreens.value = value; }
+```
+
 **`set-desktop-canvas-ref`**: Set desktop canvas reference
 **`set-mobile-canvas-ref`**: Set mobile canvas reference
 
