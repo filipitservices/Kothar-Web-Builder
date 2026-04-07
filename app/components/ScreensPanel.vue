@@ -4,10 +4,8 @@
     <DrawingControlsPanel
       :desktop-drawing-state="props.desktopDrawingState"
       :mobile-drawing-state="props.mobileDrawingState"
-      :sync-screens="syncScreens"
       @update:desktop-drawing-state="handleDesktopStateUpdate"
       @update:mobile-drawing-state="handleMobileStateUpdate"
-      @update:sync-screens="(val) => syncScreens = val"
       @undo="handleUndo"
       @redo="handleRedo"
       @clear="handleClear"
@@ -76,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed, onMounted, onUnmounted, nextTick, type ComputedRef } from 'vue';
+import { ref, watch, computed, onMounted, onUnmounted, nextTick, toRef, type ComputedRef } from 'vue';
 import { useScreenScaling } from '~/composables/useScreenScaling';
 import { useListSyncing } from '~/composables/useListSyncing';
 import ScreenCard from './ScreenCard.vue';
@@ -85,18 +83,22 @@ import AiChatPanel from './AiChatPanel.vue';
 import type { BlockItem, ScreenCardRefShape } from '~/types/builder';
 import type { DrawingState } from '~/composables/useDrawing';
 
-const props = defineProps<{
-  desktopCanvasWidth: number;
-  desktopCanvasHeight: number;
-  mobileCanvasWidth: number;
-  mobileCanvasHeight: number;
-  desktopList: BlockItem[];
-  mobileList: BlockItem[];
-  desktopDrawingState: DrawingState;
-  mobileDrawingState: DrawingState;
-  desktopStrokes: unknown[];
-  mobileStrokes: unknown[];
-}>();
+const props = withDefaults(
+  defineProps<{
+    desktopCanvasWidth: number;
+    desktopCanvasHeight: number;
+    mobileCanvasWidth: number;
+    mobileCanvasHeight: number;
+    desktopList: BlockItem[];
+    mobileList: BlockItem[];
+    desktopDrawingState: DrawingState;
+    mobileDrawingState: DrawingState;
+    desktopStrokes: unknown[];
+    mobileStrokes: unknown[];
+    syncScreens?: boolean;
+  }>(),
+  { syncScreens: true }
+);
 
 const emit = defineEmits<{
   (e: 'toggle-desktop-drawing'): void;
@@ -128,7 +130,8 @@ const {
 const desktopScreenRef = ref<InstanceType<typeof ScreenCard> | null>(null);
 const mobileScreenRef = ref<InstanceType<typeof ScreenCard> | null>(null);
 const screensContainerRef = ref<HTMLElement | null>(null);
-const syncScreens = ref(true);
+
+const syncScreensEnabled = toRef(props, 'syncScreens');
 
 function applyClampedScrollTop(el: HTMLElement, top: number): void {
   const max = Math.max(0, el.scrollHeight - el.clientHeight);
@@ -162,7 +165,7 @@ const mobileListRef: ComputedRef<BlockItem[]> = computed({
 useListSyncing<BlockItem>({
   desktopList: desktopListRef,
   mobileList: mobileListRef,
-  syncEnabled: syncScreens,
+  syncEnabled: syncScreensEnabled,
   onDesktopListUpdate: (list) => emit('update:desktopList', list),
   onMobileListUpdate: (list) => emit('update:mobileList', list)
 });

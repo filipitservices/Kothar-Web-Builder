@@ -17,50 +17,67 @@
     <div class="screens-container">
       <!-- Request-mode context bar -->
       <div v-if="requestMode" class="builder-context-bar">
-        <button class="builder-context-back" @click="handleReturnToRequest">
-          <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16" aria-hidden="true">
-            <path
-              fill-rule="evenodd"
-              d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
-              clip-rule="evenodd"
-            />
-          </svg>
-          {{ returnLabel }}
-        </button>
-        <span class="builder-context-info">Editing page layout</span>
-        <button
-          class="builder-context-save"
-          :disabled="isSaving"
-          @click="handleSaveLayout"
-        >
-          <svg
-            v-if="!isSaving && saveStatus !== 'saved'"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            width="14"
-            height="14"
-            aria-hidden="true"
+        <div class="builder-context-toolbar">
+          <button class="builder-context-back" type="button" @click="handleReturnToRequest">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16" aria-hidden="true">
+              <path
+                fill-rule="evenodd"
+                d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            {{ returnLabel }}
+          </button>
+          <div class="builder-context-meta">
+            <span class="builder-context-info">Editing page layout</span>
+            <label
+              class="builder-context-sync"
+              title="When on, desktop and mobile previews use the same block order and set. Turn off to customize each screen separately."
+            >
+              <input v-model="syncScreens" type="checkbox" />
+              <span>Sync Screens</span>
+            </label>
+          </div>
+          <span class="builder-context-spacer" aria-hidden="true" />
+          <button
+            class="builder-context-save"
+            type="button"
+            :disabled="isSaving"
+            @click="handleSaveLayout"
           >
-            <path
-              d="M3 3a2 2 0 012-2h8.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V17a2 2 0 01-2 2H5a2 2 0 01-2-2V3zm3 0v4h8V3H6zm2 8a2 2 0 114 0 2 2 0 01-4 0z"
-            />
-          </svg>
-          <svg
-            v-if="saveStatus === 'saved'"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            width="14"
-            height="14"
-            aria-hidden="true"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-              clip-rule="evenodd"
-            />
-          </svg>
-          {{ saveLabel }}
-        </button>
+            <svg
+              v-if="!isSaving && saveStatus !== 'saved'"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              width="14"
+              height="14"
+              aria-hidden="true"
+            >
+              <path
+                d="M3 3a2 2 0 012-2h8.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V17a2 2 0 01-2 2H5a2 2 0 01-2-2V3zm3 0v4h8V3H6zm2 8a2 2 0 114 0 2 2 0 01-4 0z"
+              />
+            </svg>
+            <svg
+              v-if="saveStatus === 'saved'"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              width="14"
+              height="14"
+              aria-hidden="true"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            {{ saveLabel }}
+          </button>
+        </div>
+        <p class="builder-context-hint">
+          This is your sketchpad—try blocks, reorder sections, and preview desktop and mobile without worry.
+          Nothing is final until you save.
+        </p>
       </div>
 
       <!-- Screens -->
@@ -71,6 +88,7 @@
         :mobile-canvas-height="mobileCanvasHeight"
         :desktop-list="blocks"
         :mobile-list="blocks"
+        :sync-screens="syncScreens"
         :desktop-drawing-state="desktopDrawingState"
         :mobile-drawing-state="mobileDrawingState"
         :desktop-strokes="desktopStrokes"
@@ -186,6 +204,8 @@ const { applyTemplate } = useTemplateApplication({
   desktopList: blocks,
   mobileList: dummyMobileList,
 });
+
+const syncScreens = ref(true);
 
 const availableList: Ref<BlockItem[]> = ref(AVAILABLE_BLOCKS);
 const desktopCanvasWidth: Ref<number> = ref(CANVAS_DIMENSIONS.desktop.width);

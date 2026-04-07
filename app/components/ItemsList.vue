@@ -12,10 +12,12 @@
   >
     <template #item="{ element }">
       <div>
-        <!-- Preview Mode: Sidebar Display -->
-        <div v-if="renderMode === 'preview'" class="list-group-item">
-          <div class="item-label">{{ element.label }}</div>
-          <div class="item-type">{{ element.type }}</div>
+        <!-- Preview Mode: Sidebar palette cards -->
+        <div v-if="renderMode === 'preview'" class="available-item-card">
+          <div class="available-item-card__inner">
+            <span class="available-item-card__label">{{ element.label }}</span>
+            <span class="available-item-card__type">{{ element.type }}</span>
+          </div>
         </div>
 
         <!-- Canvas Mode: Rendered Components -->
@@ -162,46 +164,80 @@ function onSortableEnd(): void {
   height: auto;
 }
 
-.list-group-item {
-  background: #f8f9fa;
-  border: 1px solid #dee2e6;
-  padding: 10px 12px;
-  margin: 6px;
-  border-radius: 6px;
+/* Soft, layered “cloud” surfaces — tokens only (see style.css :root) */
+.available-item-card {
+  margin: var(--space-sm) var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
   cursor: move;
-  transition: all 0.2s ease;
-  font-weight: 600;
-  color: #222;
-  font-size: 13px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.15s ease;
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--color-text) 6%, transparent);
+  background:
+    radial-gradient(
+      120% 85% at 92% 8%,
+      color-mix(in srgb, var(--color-accent-palette-tint) 50%, var(--color-white)) 0%,
+      transparent 58%
+    ),
+    radial-gradient(
+      110% 75% at 6% 92%,
+      color-mix(in srgb, var(--color-accent-warm-tint) 42%, var(--color-white)) 0%,
+      transparent 52%
+    ),
+    radial-gradient(
+      90% 70% at 48% 42%,
+      color-mix(in srgb, var(--color-primary-tint) 35%, var(--color-white)) 0%,
+      transparent 62%
+    ),
+    radial-gradient(
+      100% 100% at 70% 100%,
+      color-mix(in srgb, var(--color-success-tint) 30%, var(--color-white)) 0%,
+      transparent 45%
+    ),
+    linear-gradient(165deg, var(--color-white) 0%, var(--color-bg-muted) 100%);
+}
+
+.available-item-card:hover {
+  border-color: var(--color-border-hover);
+  box-shadow:
+    var(--focus-ring-primary),
+    0 var(--space-xs) var(--space-md) color-mix(in srgb, var(--color-primary) 8%, transparent);
+}
+
+.available-item-card:active {
+  opacity: 0.92;
+}
+
+.available-item-card__inner {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  min-width: 0;
 }
 
-.item-label {
-  font-weight: 700;
+.available-item-card__label {
+  font-weight: 600;
+  font-size: 0.8125rem;
+  color: var(--color-text);
+  letter-spacing: 0.01em;
+  line-height: 1.35;
 }
 
-.item-type {
-  font-size: 11px;
-  color: #667;
+.available-item-card__type {
+  flex-shrink: 0;
+  font-size: 0.625rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.list-group-item:hover {
-  background: #e9ecef;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.list-group-item:active {
-  opacity: 0.85;
-  background: #dee2e6;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-primary-tint) 65%, var(--color-white));
+  border: 1px solid color-mix(in srgb, var(--color-border) 80%, var(--color-primary-tint));
 }
 
 .canvas-block {
-  background: transparent;
   border: none;
   border-radius: 0;
   padding: 0;
@@ -210,8 +246,8 @@ function onSortableEnd(): void {
   cursor: grab;
   transition: transform 0.15s ease;
   position: relative;
-  border: 1px dashed #cbd5e1;
-  background: #f8fafc;
+  border: 1px dashed var(--color-border);
+  background: var(--color-bg-muted);
 }
 
 /* Avoid double borders when stacked */
@@ -221,16 +257,16 @@ function onSortableEnd(): void {
 
 .delete-btn {
   position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 22px;
-  height: 22px;
+  top: var(--space-xs);
+  right: var(--space-xs);
+  width: 1.375rem;
+  height: 1.375rem;
   border: none;
   border-radius: 50%;
-  background: rgba(220, 38, 38, 0.9);
-  color: #fff;
+  background: color-mix(in srgb, var(--color-error) 92%, transparent);
+  color: var(--color-white);
   font-weight: 700;
-  line-height: 20px;
+  line-height: 1.25rem;
   text-align: center;
   cursor: pointer;
   opacity: 0;

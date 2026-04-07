@@ -1036,13 +1036,13 @@ Maps `element.type` to component:
 
 **Note:** There is no `DrawingDashboard` component; the canonical name is `DrawingControlsPanel`.
 
-**Purpose**: Drawing toolbar with tool selection (Desktop/Mobile mode, sync, stroke controls)
+**Purpose**: Drawing toolbar: global drawing toggle, Desktop/Mobile target switch, and stroke/text tool controls.
 
-**Position**: At top of ScreensPanel, under the "Editing page layout" bar when in request mode.
+**Position**: At top of ScreensPanel, under the builder context bar when in request mode.
 
-**Props**: `desktopDrawingState`, `mobileDrawingState`, `syncScreens`
+**Props**: `desktopDrawingState`, `mobileDrawingState`
 
-**Emits**: `update:desktop-drawing-state`, `update:mobile-drawing-state`, `update:sync-screens`, `undo`, `redo`, `clear`
+**Emits**: `update:desktop-drawing-state`, `update:mobile-drawing-state`, `undo`, `redo`, `clear`
 
 **Features**:
 - Drawing mode toggle
@@ -1100,13 +1100,7 @@ Maps `element.type` to component:
 
 **Purpose**: Container for desktop and mobile screen cards
 
-**Props**:
-```typescript
-{
-  desktopList: Array<Element>;
-  mobileList: Array<Element>;
-}
-```
+**Props** (representative; see component for full list): `desktopList`, `mobileList`, canvas dimensions, drawing state, strokes, and optional **`syncScreens`** (default `true`) for `useListSyncing` between desktop and mobile block lists.
 
 **Emits**:
 ```typescript

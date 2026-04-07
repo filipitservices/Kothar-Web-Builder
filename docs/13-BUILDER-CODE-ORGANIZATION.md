@@ -175,9 +175,10 @@ Key components and their locations (for navigation and refactoring):
 
 | Component / Symbol | Location |
 |--------------------|----------|
-| **DrawingControlsPanel** | `app/components/DrawingControlsPanel.vue`; used in ScreensPanel. Root class: `.drawing-controls-panel`. |
+| **DrawingControlsPanel** | `app/components/DrawingControlsPanel.vue`; used in ScreensPanel. Root class: `.drawing-controls-panel`. Drawing only (no block-list sync). |
 | **DrawingToolControls** | `app/components/DrawingToolControls.vue`; referenced in 06-COMPONENT-CATALOG, 02-ARCHITECTURE. |
-| **"Editing page layout"** | `app/components/BuilderEditor.vue` line 34. |
+| **Builder context bar** | `app/components/BuilderEditor.vue` + `app/assets/css/editor.css` — `.builder-context-bar`: back, status, **Sync Screens**, save, hint. |
+| **Sync Screens (block lists)** | Checkbox in `BuilderEditor`; `syncScreens` ref passed to `ScreensPanel` → `useListSyncing`. |
 | **SidebarBranding** | Removed. Was in BuilderEditor, editor.css; see docs/09-SIDEBAR-BRANDING.md. |
 | **Left sidebar header** | BuilderEditor — `.sidebar-header` with "Available Items". |
 | **Right sidebar header** | TemplatesList — `.templates-header`. |

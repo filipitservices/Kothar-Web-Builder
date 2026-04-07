@@ -326,34 +326,33 @@ sites/index.vue  [uses default layout → AppNavbar + slot]
     └── SitesEmptyState (when no orders; CTA → Gallery)
 ```
 
-### Builder / Main Editor Page (`pages/index.vue` or builder pages)
+### Builder / Main Editor Page (`BuilderEditor` on gallery/order builder routes)
 
 ```
-index.vue (Main Page)  [uses default layout → AppNavbar + slot]
-├── InfoBar
-│   └── (Business form fields)
-├── ScreensPanel
-│   ├── DrawingControlsPanel (at top, under "Editing page layout" bar)
-│   ├── .screens-area (flex: 1, position: relative)
-│   │   ├── .screens-inner — ScreenCard (Desktop), ScreenCard (Mobile)
-│   │   └── AiChatPanel (overlay, does not affect layout)
-│   ├── ScreenCard (Desktop)
-│   │   ├── ScreenHeader
-│   │   ├── ItemsList (render-mode="canvas")
-│   │   │   └── Dynamic Block Components
-│   │   │       ├── HeroBlock
-│   │   │       ├── NavBlock
-│   │   │       └── ...
-│   │   └── DrawingOverlay
-│   │       ├── VueDrawingCanvas
-│   │       └── DrawingToolControls
-│   └── ScreenCard (Mobile)
-│       └── (Same structure)
-├── ItemsList (sidebar - "available")
-│   └── (render-mode="preview")
-└── ItemsList (sidebar - "unused")
-    └── (render-mode="preview")
+BuilderEditor  [builder layout; full viewport]
+├── Left sidebar
+│   └── ItemsList (render-mode="preview") — "Available Items" palette
+├── screens-container
+│   ├── builder-context-bar (when request layout is active)
+│   │   ├── Toolbar: back, "Editing page layout", Sync Screens (list sync), Save
+│   │   └── Hint line (subtle copy under toolbar)
+│   └── ScreensPanel
+│       ├── DrawingControlsPanel (drawing toggle, desktop/mobile tool target, stroke controls)
+│       ├── .screens-area (flex: 1, position: relative)
+│       │   ├── .screens-inner — ScreenCard (Desktop), ScreenCard (Mobile)
+│       │   └── AiChatPanel (overlay, does not affect layout)
+│       ├── ScreenCard (Desktop)
+│       │   ├── ScreenHeader
+│       │   ├── ItemsList (render-mode="canvas")
+│       │   │   └── Dynamic Block Components (HeroBlock, NavBlock, …)
+│       │   └── DrawingOverlay (VueDrawingCanvas, DrawingToolControls)
+│       └── ScreenCard (Mobile)
+│           └── (same inner structure as desktop card)
+└── Right sidebar
+    └── TemplatesList
 ```
+
+**Sync Screens** lives in the context bar and is owned by `BuilderEditor`; `ScreensPanel` receives `syncScreens` as a prop for `useListSyncing`. It is not part of `DrawingControlsPanel`.
 
 ---
 
