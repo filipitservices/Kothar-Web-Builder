@@ -28,7 +28,7 @@
                     :key="idx"
                     :d="seg.d"
                     stroke="currentColor"
-                    stroke-width="1.2"
+                    stroke-width="1.25"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                   />
@@ -94,33 +94,32 @@ interface ItemsListEmits {
 
 const emit = defineEmits<ItemsListEmits>();
 
-/** Minimal 20×20 stroke icons for palette rows (one path or several). */
+/** Tiny 20×20 stroke icons: one simple path each, reads at ~1.125rem. */
 interface PreviewIconPath {
   readonly d: string;
 }
 
 const PREVIEW_ICON_PATHS: Record<BlockType, readonly PreviewIconPath[]> = {
-  hero: [{ d: 'M3 5.5h14v3H3zM3 10h14v6H3z' }],
-  navbar: [{ d: 'M3 6.5h14M3 10h14M3 13.5h9' }],
-  footer: [{ d: 'M3 4.5h14v4.5H3zM3 11h14v5H3z' }],
-  cta: [{ d: 'M10 4.5L4.5 15h11L10 4.5z' }],
-  features: [{ d: 'M3.5 3.5h5v5h-5zM11.5 3.5h5v5h-5zM3.5 11.5h5v5h-5zM11.5 11.5h5v5h-5z' }],
-  services: [{ d: 'M3.5 6.5h3v3h-3zM8.5 6.5H17M3.5 11.5h3v3h-3zM8.5 11.5H17M3.5 16.5h3v1h-3zM8.5 16.5H15' }],
-  team: [{ d: 'M5.5 5.5h2.25v2.25H5.5zM11.25 5.5h2.25v2.25h-2.25zM4 14.5h12' }],
-  process: [{ d: 'M5 10h9M11 7l3 3-3 3' }],
-  testimonial: [{ d: 'M6.5 6.5h7v7h-7zM8 9.5h4M8 12h3' }],
-  logos: [{ d: 'M3 7h3.5v6H3zM8.25 5.5h3.5v7.5h-3.5zM13.5 8h3.5v5h-3.5z' }],
-  credentials: [{ d: 'M10 4l5 3v4.5c0 2.75-2 5-5 6-3-1-5-3.25-5-6V7l5-3z' }],
-  location: [{ d: 'M10 4.75a3 3 0 0 0-3 3c0 2.25 3 6.75 3 6.75s3-4.5 3-6.75a3 3 0 0 0-3-3zM10 7.75a1.25 1.25 0 1 1 0 .01z' }],
-  faq: [
-    { d: 'M10 5a3.25 3.25 0 1 1 0 .01z' },
-    { d: 'M10 9.5v1.25M10 13.25h.01' }
-  ],
-  pricing: [{ d: 'M5.5 7l4-2.5 6.5 6.5-4 4L5.5 11V7zM12 8.5h.01' }],
-  form: [{ d: 'M4 5h12v11H4zM7 8.5h6M7 11.5h6M7 14.5h4' }],
-  stats: [{ d: 'M4 14h3.5v3H4zM8.25 11.5h3.5v5.5h-3.5zM12.5 8h3.5v9h-3.5z' }],
-  gallery: [{ d: 'M4 5.5h12v10H4zM6.5 13l2.5-3.5 2 2L14 9l3.5 3.5V14H6.5z' }],
-  text: [{ d: 'M5 5.5h10M5 9.5h10M5 13.5h7' }]
+  hero: [{ d: 'M4 6h12v8H4z' }],
+  navbar: [{ d: 'M4 7h12M4 10h12M4 13h8' }],
+  footer: [{ d: 'M4 5h12v6H4zM4 13h12v3H4z' }],
+  cta: [{ d: 'M10 5L5 15h10L10 5z' }],
+  features: [{ d: 'M10 5v10M5 10h10' }],
+  services: [{ d: 'M4 7h12M4 10h12M4 13h12' }],
+  team: [{ d: 'M6 5v10M10 5v10M14 5v10' }],
+  process: [{ d: 'M5 10h8M11 7l3 3-3 3' }],
+  testimonial: [{ d: 'M6 7h8v6H6z' }],
+  logos: [{ d: 'M4 7h3.5v6H4zM8.25 7h3.5v6h-3.5zM12.5 7h3.5v6h-3.5z' }],
+  credentials: [{ d: 'M6.5 10.5l2.5 2.5 5.5-6' }],
+  /* Pin: circle + open V below (reads clearly at small size) */
+  location: [{ d: 'M10 7a2.5 2.5 0 1 1-.01 0zM7.5 14.5L10 10l2.5 4.5' }],
+  /* Chat bubble: rounded rect + tail (Q&A) */
+  faq: [{ d: 'M5 7h10v4h-5l-2 2v-2H5z' }],
+  pricing: [{ d: 'M5 6h10v7H5z' }],
+  form: [{ d: 'M5 5h10v9H5zM8 8h6M8 11h4' }],
+  stats: [{ d: 'M4 12h3v4H4zM8.5 9h3v7h-3zM13 6h3v10h-3z' }],
+  gallery: [{ d: 'M5 5h10v9H5z' }],
+  text: [{ d: 'M5 6h10M5 10h10M5 14h6' }]
 } as const;
 
 function previewIconSegments(type: BlockType): readonly PreviewIconPath[] {
@@ -218,53 +217,66 @@ function onSortableEnd(): void {
   height: auto;
 }
 
-/* Soft cloudy base + restrained warm (orange) accent — tokens only */
+/* Lively soft pink: layered glow + tonal variation — tokens only */
 .available-item-card {
   margin: var(--space-sm) var(--space-sm);
   padding: var(--space-md) var(--space-md);
   border-radius: var(--radius-md);
-  border: 1px solid color-mix(in srgb, var(--color-border) 88%, var(--color-accent-warm-tint));
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--color-border) 72%,
+      color-mix(in srgb, var(--color-accent-palette-tint) 65%, var(--color-accent-palette-deep))
+    );
   cursor: move;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.15s ease;
-  box-shadow: 0 1px 2px color-mix(in srgb, var(--color-text) 6%, transparent);
+  transition: border-color 0.22s ease, box-shadow 0.22s ease, opacity 0.15s ease;
+  box-shadow:
+    0 1px 2px color-mix(in srgb, var(--color-text) 5%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--color-white) 55%, transparent),
+    0 14px 28px -12px color-mix(in srgb, var(--color-accent-palette-deep) 9%, transparent);
   background:
     radial-gradient(
-      95% 80% at 8% 18%,
-      color-mix(in srgb, var(--color-accent-warm-tint) 55%, var(--color-white)) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      120% 85% at 92% 8%,
-      color-mix(in srgb, var(--color-accent-palette-tint) 48%, var(--color-white)) 0%,
-      transparent 58%
-    ),
-    radial-gradient(
-      110% 75% at 6% 92%,
-      color-mix(in srgb, var(--color-accent-warm-tint) 38%, var(--color-white)) 0%,
+      ellipse 115% 95% at 50% -8%,
+      color-mix(in srgb, var(--color-accent-palette-tint) 78%, var(--color-white)) 0%,
       transparent 52%
     ),
     radial-gradient(
-      90% 70% at 48% 42%,
-      color-mix(in srgb, var(--color-primary-tint) 35%, var(--color-white)) 0%,
-      transparent 62%
+      95% 75% at 96% 12%,
+      color-mix(in srgb, var(--color-accent-palette-deep) 14%, var(--color-white)) 0%,
+      transparent 46%
     ),
     radial-gradient(
-      100% 100% at 70% 100%,
-      color-mix(in srgb, var(--color-success-tint) 28%, var(--color-white)) 0%,
-      transparent 45%
+      85% 70% at 4% 88%,
+      color-mix(in srgb, var(--color-primary-tint) 42%, var(--color-white)) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      100% 85% at 48% 52%,
+      color-mix(in srgb, var(--color-accent-palette-tint) 32%, var(--color-white)) 0%,
+      transparent 58%
+    ),
+    radial-gradient(
+      110% 90% at 72% 100%,
+      color-mix(in srgb, var(--color-accent-warm-tint) 22%, var(--color-white)) 0%,
+      transparent 40%
     ),
     linear-gradient(
-      168deg,
+      156deg,
       var(--color-white) 0%,
-      color-mix(in srgb, var(--color-bg-muted) 92%, var(--color-accent-warm-tint)) 100%
+      color-mix(in srgb, var(--color-accent-palette-tint) 28%, var(--color-white)) 32%,
+      color-mix(in srgb, var(--color-bg-muted) 78%, var(--color-accent-palette-tint)) 72%,
+      color-mix(in srgb, var(--color-accent-palette-tint) 18%, var(--color-bg-muted)) 100%
     );
 }
 
 .available-item-card:hover {
-  border-color: color-mix(in srgb, var(--color-border-hover) 75%, var(--color-accent-warm-deep));
+  border-color: color-mix(in srgb, var(--color-border-hover) 55%, var(--color-accent-palette-deep));
   box-shadow:
     var(--focus-ring-primary),
-    0 var(--space-xs) var(--space-md) color-mix(in srgb, var(--color-accent-warm-deep) 10%, transparent);
+    0 1px 2px color-mix(in srgb, var(--color-text) 5%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--color-white) 45%, var(--color-accent-palette-tint)),
+    0 var(--space-xs) var(--space-md) color-mix(in srgb, var(--color-accent-palette-deep) 14%, transparent),
+    0 18px 36px -14px color-mix(in srgb, var(--color-accent-palette-deep) 11%, transparent);
 }
 
 .available-item-card:active {
@@ -294,9 +306,17 @@ function onSortableEnd(): void {
   width: 2rem;
   height: 2rem;
   border-radius: var(--radius-sm);
-  color: color-mix(in srgb, var(--color-accent-warm-deep) 42%, var(--color-text-muted));
-  background: color-mix(in srgb, var(--color-accent-warm-tint) 45%, var(--color-white));
-  border: 1px solid color-mix(in srgb, var(--color-border) 70%, var(--color-accent-warm-tint));
+  color: color-mix(in srgb, var(--color-accent-palette-deep) 44%, var(--color-text-muted-dark));
+  background:
+    radial-gradient(
+      90% 90% at 35% 25%,
+      color-mix(in srgb, var(--color-white) 55%, var(--color-accent-palette-tint)) 0%,
+      color-mix(in srgb, var(--color-accent-palette-tint) 48%, var(--color-white)) 100%
+    );
+  border: 1px solid color-mix(in srgb, var(--color-border) 55%, var(--color-accent-palette-tint));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--color-white) 65%, transparent),
+    0 1px 3px color-mix(in srgb, var(--color-accent-palette-deep) 7%, transparent);
 }
 
 .available-item-card__svg {
@@ -319,11 +339,16 @@ function onSortableEnd(): void {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--color-text-muted);
+  color: color-mix(in srgb, var(--color-text-muted) 70%, var(--color-accent-palette-deep));
   padding: var(--space-xs) var(--space-sm);
   border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--color-primary-tint) 55%, var(--color-accent-warm-tint));
-  border: 1px solid color-mix(in srgb, var(--color-border) 72%, var(--color-accent-warm-tint));
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--color-primary-tint) 42%, var(--color-accent-palette-tint)) 0%,
+    color-mix(in srgb, var(--color-accent-palette-tint) 58%, var(--color-white)) 100%
+  );
+  border: 1px solid color-mix(in srgb, var(--color-border) 58%, var(--color-accent-palette-tint));
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--color-white) 50%, transparent);
 }
 
 .canvas-block {
