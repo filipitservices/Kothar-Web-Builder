@@ -334,8 +334,8 @@ BuilderEditor  [builder layout; full viewport]
 │   └── ItemsList (render-mode="preview") — "Available Items" palette
 ├── screens-container
 │   ├── builder-context-bar (when request layout is active)
-│   │   ├── Toolbar: back, "Editing page layout", Sync Screens (list sync), Save
-│   │   └── Hint line (subtle copy under toolbar)
+│   │   ├── Toolbar: back, "Editing page layout", Save
+│   │   └── Info row (full width): welcoming hint + **Sync Screens** (list sync) on the right
 │   └── ScreensPanel
 │       ├── DrawingControlsPanel (drawing toggle, desktop/mobile tool target, stroke controls)
 │       ├── .screens-area (flex: 1, position: relative)

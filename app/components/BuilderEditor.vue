@@ -28,16 +28,7 @@
             </svg>
             {{ returnLabel }}
           </button>
-          <div class="builder-context-meta">
-            <span class="builder-context-info">Editing page layout</span>
-            <label
-              class="builder-context-sync"
-              title="When on, desktop and mobile previews use the same block order and set. Turn off to customize each screen separately."
-            >
-              <input v-model="syncScreens" type="checkbox" />
-              <span>Sync Screens</span>
-            </label>
-          </div>
+          <span class="builder-context-info">Editing page layout</span>
           <span class="builder-context-spacer" aria-hidden="true" />
           <button
             class="builder-context-save"
@@ -74,10 +65,19 @@
             {{ saveLabel }}
           </button>
         </div>
-        <p class="builder-context-hint">
-          This is your sketchpad—try blocks, reorder sections, and preview desktop and mobile without worry.
-          Nothing is final until you save.
-        </p>
+        <div class="builder-context-infobar">
+          <p class="builder-context-hint">
+            This is your sketchpad—try blocks, reorder sections, and preview desktop and mobile without worry.
+            Nothing is final until you save.
+          </p>
+          <label
+            class="builder-context-sync"
+            title="When on, desktop and mobile previews use the same block order and set. Turn off to customize each screen separately."
+          >
+            <input v-model="syncScreens" type="checkbox" />
+            <span>Sync Screens</span>
+          </label>
+        </div>
       </div>
 
       <!-- Screens -->
