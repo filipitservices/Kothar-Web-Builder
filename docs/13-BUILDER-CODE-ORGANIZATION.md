@@ -180,8 +180,8 @@ Key components and their locations (for navigation and refactoring):
 | **Builder context bar** | `app/components/BuilderEditor.vue` + `app/assets/css/editor.css` — toolbar (back, status, save) + `.builder-context-infobar`: full-width hint and **Sync Screens** on the right. |
 | **Sync Screens (block lists)** | Checkbox in `BuilderEditor`; `syncScreens` ref passed to `ScreensPanel` → `useListSyncing`. |
 | **SidebarBranding** | Removed. Was in BuilderEditor, editor.css; see docs/09-SIDEBAR-BRANDING.md. |
-| **Left sidebar header** | BuilderEditor — `.sidebar-header` with "Available Items". |
-| **Right sidebar header** | TemplatesList — `.templates-header`. |
+| **Left sidebar header** | BuilderEditor — `.left-sidebar .sidebar-header`; solid pink (`--color-accent-palette-deep`) in `editor.css`. |
+| **Right sidebar header** | BuilderEditor — `.right-sidebar .sidebar-header` (“Templates”); solid green-toned bar in `editor.css`. |
 
 **Note:** There is no `DrawingDashboard` component; the canonical name is `DrawingControlsPanel`. The `.drawing-controls-panel` class is used in `useScreenScaling.ts` for height calculations.
 

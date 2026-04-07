@@ -82,8 +82,8 @@ const handleWheel = (event: WheelEvent) => {
 .category-nav {
   display: flex;
   align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid #e2e8f0;
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--color-border);
   overflow-x: auto;
   overflow-y: hidden;
   gap: 0;
@@ -102,42 +102,42 @@ const handleWheel = (event: WheelEvent) => {
   z-index: 10;
   display: flex;
   align-items: center;
-  background: white;
+  background: var(--color-bg);
   flex-shrink: 0;
-  padding: 0 8px;
+  padding: 0 var(--space-sm);
 }
 
 .category-nav-divider {
   width: 1px;
-  height: 24px;
-  background: #e2e8f0;
-  margin: 0 4px;
+  height: 1.5rem;
+  background: var(--color-border);
+  margin: 0 var(--space-xs);
   flex-shrink: 0;
 }
 
 .category-nav-btn {
-  padding: 8px 12px;
-  font-size: 12px;
+  padding: var(--space-sm) var(--space-sm);
+  font-size: 0.75rem;
   font-weight: 600;
   white-space: nowrap;
-  color: #64748b;
+  color: var(--color-text-muted);
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
   flex-shrink: 0;
-  margin-left: 8px;
+  margin-left: var(--space-sm);
 }
 
 .category-nav-btn:hover {
-  color: #334155;
-  background: rgba(30, 58, 138, 0.04);
+  color: var(--color-text-muted-dark);
+  background: color-mix(in srgb, var(--color-primary) 5%, var(--color-white));
 }
 
 .category-nav-btn.is-active {
-  color: #1e3a8a;
-  border-bottom-color: #1e3a8a;
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
   font-weight: 700;
 }
 </style>

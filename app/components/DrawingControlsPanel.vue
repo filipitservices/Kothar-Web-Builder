@@ -175,10 +175,7 @@ const updateState = (key: keyof DrawingState, value: DrawingState[keyof DrawingS
 
 <style scoped>
 .drawing-controls-panel {
-  background: var(--color-bg-muted);
-  border-top: 1px solid var(--color-border);
-  box-shadow: 0 -6px 18px color-mix(in srgb, var(--color-text) 8%, transparent);
-  padding: var(--space-md) var(--space-md);
+  padding: 0 var(--space-md);
   display: flex;
   justify-content: center;
 }
@@ -202,15 +199,17 @@ const updateState = (key: keyof DrawingState, value: DrawingState[keyof DrawingS
 .tools-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: var(--space-md);
+  width: 100%;
   min-width: 0;
 }
 
 .controls-section {
+  display: flex;
+  flex: 0 0 auto;
+  margin-left: auto;
   justify-content: flex-end;
-  flex: 1;
-  min-width: 0;
 }
 
 .mode-section {

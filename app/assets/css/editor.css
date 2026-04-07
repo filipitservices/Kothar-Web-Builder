@@ -32,7 +32,26 @@
 .sidebar-header h3 {
   margin: 0;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 0.875rem;
+  letter-spacing: 0.02em;
+}
+
+/* Column identity: confident solid headers (builder sidebars) */
+.left-sidebar .sidebar-header {
+  background: var(--color-accent-palette-deep);
+  color: var(--color-white);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-white) 12%, var(--color-accent-palette-deep));
+}
+
+.right-sidebar .sidebar-header {
+  background: color-mix(in srgb, var(--color-success) 48%, var(--color-primary-dark));
+  color: var(--color-white);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-white) 10%, var(--color-success));
+}
+
+.left-sidebar .sidebar-header h3,
+.right-sidebar .sidebar-header h3 {
+  font-weight: 600;
 }
 
 .sidebar-list {
@@ -67,6 +86,36 @@
   flex: 1;
   min-height: 0;
   overflow: hidden;
+}
+
+/* Templates column: category nav harmonizes with green sidebar identity */
+.right-sidebar .category-nav {
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.right-sidebar .category-nav-all-wrapper {
+  background: color-mix(in srgb, var(--color-success-tint) 40%, var(--color-white));
+  padding: 0 var(--space-sm);
+}
+
+.right-sidebar .category-nav-divider {
+  background: color-mix(in srgb, var(--color-border) 70%, var(--color-success-tint));
+}
+
+.right-sidebar .category-nav-btn {
+  color: var(--color-text-muted);
+}
+
+.right-sidebar .category-nav-btn:hover {
+  color: var(--color-text-muted-dark);
+  background: color-mix(in srgb, var(--color-success) 6%, var(--color-white));
+}
+
+.right-sidebar .category-nav-btn.is-active {
+  color: color-mix(in srgb, var(--color-success) 55%, var(--color-primary-dark));
+  border-bottom-color: color-mix(in srgb, var(--color-success) 70%, var(--color-primary));
+  font-weight: 700;
 }
 
 /* .sidebar-list already has flex: 1, overflow-y: auto, min-height: 0 */

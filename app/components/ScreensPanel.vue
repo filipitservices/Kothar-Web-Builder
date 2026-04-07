@@ -22,7 +22,7 @@
       >
         <ScreenCard
           ref="desktopScreenRef"
-          title="Desktop Screen"
+          title="Desktop"
           screen-class="desktop-screen"
           canvas-id="desktop-canvas"
           :canvas-width="desktopCanvasWidth"
@@ -305,7 +305,7 @@ watch(() => props.mobileDrawingState.mobileEnabled, (enabled) => {
   align-items: center;
   flex: 1;
   overflow: auto;
-  padding: var(--space-lg);
+  padding: var(--space-lg) var(--space-lg) 3.5rem;
   width: 100%;
   min-height: 0;
   scrollbar-width: none;

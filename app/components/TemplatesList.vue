@@ -93,30 +93,30 @@ const closeScreenSelector = () => {
 }
 
 .templates-header {
-  padding: 16px;
-  border-bottom: 1px solid #e2e8f0;
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .templates-header h3 {
   margin: 0;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-text);
 }
 
 .subtitle {
-  margin: 4px 0 0 0;
-  font-size: 12px;
-  color: #64748b;
+  margin: var(--space-xs) 0 0 0;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
 }
 
 .templates-container {
   flex: 1;
   overflow-y: auto;
-  padding: 12px;
+  padding: var(--space-sm) var(--space-md);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-sm);
   scrollbar-width: none;
   -ms-overflow-style: none;
 }

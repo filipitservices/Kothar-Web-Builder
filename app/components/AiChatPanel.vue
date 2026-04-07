@@ -166,11 +166,13 @@ watch(messages, async () => {
   align-items: center;
   gap: var(--space-sm);
   padding: var(--space-sm) var(--space-md);
-  background: var(--color-primary);
-  color: var(--color-white);
-  border-bottom: 1px solid var(--color-primary);
+  background: var(--color-primary-tint);
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
   cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
   user-select: none;
 }
 
@@ -192,7 +194,7 @@ watch(messages, async () => {
 }
 
 .header-btn {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--color-primary);
   border: none;
   border-radius: var(--radius-sm);
   color: var(--color-white);
@@ -206,10 +208,6 @@ watch(messages, async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.header-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
 }
 
 .minimize-btn {
