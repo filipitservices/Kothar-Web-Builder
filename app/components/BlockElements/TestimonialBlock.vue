@@ -54,7 +54,6 @@ const updateTestimonial = (e: FocusEvent) => updateField('testimonial', e);
 .testimonial-block {
   padding: 14px;
   background: #f8fafc;
-  border-left: 4px solid #1e3a8a;
   text-align: center;
 }
 
