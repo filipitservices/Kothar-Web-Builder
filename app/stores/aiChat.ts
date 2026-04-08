@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { useFirebaseAi } from '~/composables/useFirebaseAi';
+import { useRequestLayoutStore } from '~/stores/requestLayout';
 
 export interface AiMessage {
   id: string;
@@ -52,19 +53,32 @@ export const useAiChatStore = defineStore('aiChat', () => {
     setProcessing(false);
   };
 
+  function buildContextualMessage(userMessage: string): string {
+    const layoutStore = useRequestLayoutStore();
+    if (!layoutStore.active || layoutStore.blocks.length === 0) {
+      return userMessage;
+    }
+    const numbered = layoutStore.blocks
+      .map((b, i) => `${i + 1}. ${b.label}`)
+      .join(', ');
+    return `[Current screen layout, top to bottom: ${numbered}]\n${userMessage}`;
+  }
+
   const sendMessage = async (content: string): Promise<void> => {
     if (!content.trim() || isProcessing.value) return;
 
-    addMessage('user', content.trim());
+    const userText = content.trim();
+    addMessage('user', userText);
     setInputText('');
     setProcessing(true);
 
+    const contextualMessage = buildContextualMessage(userText);
     const assistantMessageId = addMessage('assistant', '');
     const firebaseAi = useFirebaseAi();
 
     try {
       const fullText = await firebaseAi.streamMessage(
-        content.trim(),
+        contextualMessage,
         (chunk) => {
           const current = messages.value.find((m) => m.id === assistantMessageId);
           const nextContent = (current?.content ?? '') + chunk;

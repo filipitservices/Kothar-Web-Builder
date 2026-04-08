@@ -22,11 +22,23 @@ The chat runs entirely in the browser; no server-side AI proxy is required.
 **File**: `app/composables/useFirebaseAi.ts`
 
 - **getAI**: `getAI(firebaseApp, { backend: new GoogleAIBackend() })` — Uses Gemini Developer API backend
-- **getGenerativeModel**: `getGenerativeModel(ai, { model, systemInstruction })`
+- **getGenerativeModel**: `getGenerativeModel(ai, { model, systemInstruction, generationConfig })`
 - **Model**: `gemini-2.5-flash` (configurable per Firebase docs; `gemini-2.0-flash` is deprecated)
 - **Start chat**: `model.startChat()` — Returns a `ChatSession` that manages history
 
 The composable is a singleton for the chat session: `getOrCreateChat()` creates a session once and reuses it until `resetChat()` is called (e.g. when the user clears messages).
+
+### Generation Config
+
+The model is configured with constrained generation parameters to enforce brevity and consistency:
+
+```typescript
+generationConfig: {
+  maxOutputTokens: 256,  // Hard cap (~800 chars); system instruction enforces 400-char soft limit
+  temperature: 0.4,      // Focused, consistent answers
+  topP: 0.85,            // Slightly constrained token sampling
+}
+```
 
 ---
 
@@ -59,9 +71,26 @@ For admin features (prompt templates, configs), document `roles/firebasevertexai
 
 ## Assistant Role
 
-**System instruction** (used in `useFirebaseAi`):
+The system instruction in `useFirebaseAi` is purpose-built for the builder context. It defines:
 
-> You are the Small Business Website Assistant: a content strategist, concise copywriter, SEO advisor, and UX-aware design consultant for small and mid-size business websites. Stay focused on website content, structure, and user experience.
+- **Role**: Builder assistant for Kothar (not a generic AI or public search bot).
+- **Builder knowledge**: Describes the builder as a layout sketchpad where users arrange section blocks. Enumerates all 18 block types with purpose descriptions. Lists builder capabilities (drag, reorder, remove, templates, drawing, sync, save). Lists template categories.
+- **Output constraints**: Under 400 characters by default. No markdown, HTML, formatting, emojis, bullet/numbered lists. No padding or filler.
+- **Scope rules**: Builder-only answers. No app internals. Out-of-scope questions get a short redirect or a suggestion to contact customer support.
+- **Layout awareness rule**: Only reference the user's current block arrangement when the user explicitly asks about layout or placement.
+
+The full instruction text lives in `SYSTEM_INSTRUCTION` at the top of `app/composables/useFirebaseAi.ts`.
+
+### Builder Context Injection
+
+When the user sends a message, the `aiChat` store reads the current block layout from `requestLayoutStore` and prepends a context line to the message sent to the model. The UI displays the user's original message unchanged.
+
+- Format: `[Current layout: Navigation, Hero Section, Services, Contact Form, Footer]\n{user message}`
+- Only included when `requestLayoutStore.active` is true and blocks are non-empty.
+- Uses block labels only (no IDs, types, or internal identifiers).
+- The system instruction tells the assistant to only reference this context when the user asks about layout.
+
+**Data sent to Gemini**: Block labels from the current layout (e.g. "Navigation", "Hero Section"). No user PII, no block IDs, no internal state.
 
 ---
 
@@ -93,7 +122,10 @@ For admin features (prompt templates, configs), document `roles/firebasevertexai
 
 ```
 User types → AiChatPanel handleSend → useAiChat.sendMessage → aiChatStore.sendMessage
-  → useFirebaseAi.streamMessage
+  → store reads requestLayoutStore.blocks (context injection)
+  → builds contextualMessage = "[Current layout: ...]\n" + userText
+  → stores userText in messages (for UI display)
+  → sends contextualMessage to useFirebaseAi.streamMessage
   → Firebase Chat API (sendMessageStream)
   → Chunks streamed → aiChatStore.updateAssistantMessage (immutable)
   → Vue reactivity → AiChatPanel re-renders

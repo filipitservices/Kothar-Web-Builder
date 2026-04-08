@@ -392,36 +392,33 @@ The chat panel maintains fixed height across all viewports:
 
 ### Firebase AI Logic Integration
 
-The chat uses **Firebase AI Logic** (Gemini) via `useFirebaseAi` composable. See [Firebase AI Logic Chat](19-FIREBASE-AI-LOGIC-CHAT.md) for:
+The chat uses **Firebase AI Logic** (Gemini) via `useFirebaseAi` composable. The model is configured with a builder-specific system instruction and constrained generation config (low temperature, capped output tokens). See [Firebase AI Logic Chat](19-FIREBASE-AI-LOGIC-CHAT.md) for:
 
-- SDK initialization and model configuration
+- SDK initialization, model configuration, and generation config
+- Builder-scoped system instruction and context injection
 - App Check setup (recommended before production)
 - Function calling (planned)
 - Rollback procedure
 
-### Adding Context Awareness
+### Builder Context Injection (Implemented)
 
-To make the AI aware of the current editor state:
+The AI assistant is aware of the current builder state. When the user sends a message, the `aiChat` store reads the current block layout from `requestLayoutStore` and prepends a context line to the message sent to the model. The UI displays the user's original message unchanged.
 
 ```typescript
-import { useBusinessStore } from '~/stores/business';
-import { useBlocksStore } from '~/stores/blocks';
-
-const sendMessage = async (content: string): Promise<void> => {
-  const businessData = useBusinessStore().getBusinessInfo();
-  const blocksData = useBlocksStore().screens;
-  
-  const contextualMessage = {
-    userMessage: content,
-    context: {
-      business: businessData,
-      blocks: blocksData
-    }
-  };
-  
-  // Send contextualMessage to AI service
-};
+// In aiChat store — simplified
+function buildContextualMessage(userMessage: string): string {
+  const layoutStore = useRequestLayoutStore();
+  if (!layoutStore.active || layoutStore.blocks.length === 0) {
+    return userMessage;
+  }
+  const labels = layoutStore.blocks.map((b) => b.label).join(', ');
+  return `[Current layout: ${labels}]\n${userMessage}`;
+}
 ```
+
+- Context uses block labels only (no IDs, types, or internal identifiers).
+- The system instruction tells the assistant to only reference layout context when the user asks about layout or placement.
+- See [Firebase AI Logic Chat](19-FIREBASE-AI-LOGIC-CHAT.md) for full details on context injection and the system instruction.
 
 ### Streaming Responses
 
@@ -508,24 +505,26 @@ const messages = useLocalStorage<AiMessage[]>('kothar-ai-chat-history', []);
 
 ## Future Enhancements
 
+### Implemented
+
+1. **Context-Aware Responses**: Assistant sees the current block layout and can comment on arrangement when asked.
+2. **Builder-Scoped System Instruction**: Assistant understands all 18 block types, template categories, and builder capabilities.
+3. **Generation Config**: Temperature, maxOutputTokens, and topP tuned for brevity and consistency.
+
 ### Planned Features
 
-1. **Context-Aware Responses**: AI suggestions based on current blocks and business data
-2. **Quick Actions**: Buttons to apply AI suggestions (e.g., "Add this block")
+1. **Quick Actions**: Buttons to apply AI suggestions (e.g., "Add this block")
+2. **Function Calling**: Model returns structured actions the client validates and executes
 3. **Voice Input**: Speech-to-text for message composition
 4. **Message History Search**: Filter and search past conversations
-5. **Multi-Turn Context**: AI remembers previous messages in conversation
-6. **Code Snippets**: Syntax-highlighted code blocks in assistant responses
-7. **Attachment Support**: Upload images or files for AI analysis
-8. **Chat Export**: Download conversation as text or PDF
+5. **Attachment Support**: Upload images or files for AI analysis
+6. **Chat Export**: Download conversation as text or PDF
 
 ### Integration Opportunities
 
 - **Template Suggestions**: AI recommends templates based on business type
 - **Content Generation**: Generate block content from business data
 - **Design Feedback**: AI critiques layout and suggests improvements
-- **Accessibility Review**: AI checks for WCAG compliance issues
-- **SEO Optimization**: AI provides meta tag and content recommendations
 
 ---
 

@@ -151,7 +151,7 @@ watch(messages, async () => {
   border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
-  height: 260px;
+  height: 350px;
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
   overflow: hidden;
   transition: height 0.3s ease;
