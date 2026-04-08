@@ -219,7 +219,7 @@ function onSortableEnd(): void {
 
 /* Lively soft pink: layered glow + tonal variation — tokens only */
 .available-item-card {
-  margin: var(--space-sm) var(--space-sm);
+  margin: var(--space-sm) var(--space-md);
   padding: var(--space-md) var(--space-md);
   border-radius: var(--radius-md);
   border: 1px solid
