@@ -65,7 +65,7 @@ function isValidOrderLayout(value: unknown): value is OrderLayout {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const layout = value as Record<string, unknown>;
   if (typeof layout.customized !== 'boolean' || !Array.isArray(layout.blocks)) return false;
-  return layout.blocks.every((block) => {
+  const hasValidBlocks = layout.blocks.every((block) => {
     if (!block || typeof block !== 'object' || Array.isArray(block)) return false;
     const record = block as Record<string, unknown>;
     return (
@@ -74,6 +74,37 @@ function isValidOrderLayout(value: unknown): value is OrderLayout {
       typeof record.label === 'string'
     );
   });
+  if (!hasValidBlocks) return false;
+  if (layout.builderAnnotations === undefined) return true;
+  if (!layout.builderAnnotations || typeof layout.builderAnnotations !== 'object' || Array.isArray(layout.builderAnnotations)) {
+    return false;
+  }
+  const annotations = layout.builderAnnotations as Record<string, unknown>;
+  const validateScreen = (screen: unknown): boolean => {
+    if (!screen || typeof screen !== 'object' || Array.isArray(screen)) return false;
+    const value = screen as Record<string, unknown>;
+    if (!Array.isArray(value.strokes) || !Array.isArray(value.textBoxes)) return false;
+    return value.textBoxes.every((entry) => {
+      if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return false;
+      const box = entry as Record<string, unknown>;
+      return (
+        typeof box.id === 'string' &&
+        typeof box.x === 'number' &&
+        typeof box.y === 'number' &&
+        typeof box.width === 'number' &&
+        typeof box.height === 'number' &&
+        typeof box.text === 'string' &&
+        typeof box.fontSize === 'number' &&
+        typeof box.color === 'string' &&
+        (box.emphasis === 'normal' || box.emphasis === 'bold' || box.emphasis === 'italic')
+      );
+    });
+  };
+  return (
+    annotations.version === 1 &&
+    validateScreen(annotations.desktop) &&
+    validateScreen(annotations.mobile)
+  );
 }
 
 function normalizeStashFormData(data: TemplateRequestFormData): TemplateRequestFormData {
@@ -131,6 +162,39 @@ export function useOrderEditStash(): UseOrderEditStashReturn {
               type: block.type,
               label: block.label,
             })),
+            builderAnnotations: layout.builderAnnotations
+              ? {
+                  version: 1,
+                  desktop: {
+                    strokes: [...layout.builderAnnotations.desktop.strokes],
+                    textBoxes: layout.builderAnnotations.desktop.textBoxes.map((box) => ({
+                      id: box.id,
+                      x: box.x,
+                      y: box.y,
+                      width: box.width,
+                      height: box.height,
+                      text: box.text,
+                      fontSize: box.fontSize,
+                      color: box.color,
+                      emphasis: box.emphasis,
+                    })),
+                  },
+                  mobile: {
+                    strokes: [...layout.builderAnnotations.mobile.strokes],
+                    textBoxes: layout.builderAnnotations.mobile.textBoxes.map((box) => ({
+                      id: box.id,
+                      x: box.x,
+                      y: box.y,
+                      width: box.width,
+                      height: box.height,
+                      text: box.text,
+                      fontSize: box.fontSize,
+                      color: box.color,
+                      emphasis: box.emphasis,
+                    })),
+                  },
+                }
+              : undefined,
           }
         : undefined,
     };

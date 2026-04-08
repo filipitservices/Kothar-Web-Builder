@@ -8,6 +8,9 @@ import type {
   OrderWithId,
   OrderLayout,
   OrderLayoutBlock,
+  BuilderAnnotations,
+  BuilderScreenAnnotations,
+  BuilderTextBox,
   OrderBusinessInfo,
   OrderContactInfo,
   OrderProjectDetails,
@@ -53,11 +56,62 @@ function validateOrderLayoutBlock(v: unknown): v is OrderLayoutBlock {
   return isString(v.id) && isString(v.type) && isString(v.label);
 }
 
+const MAX_LAYOUT_BLOCKS = 200;
+const MAX_SCREEN_STROKES = 500;
+const MAX_SCREEN_TEXT_BOXES = 100;
+const MAX_TEXT_BOX_SIZE = 10000;
+const MAX_TEXT_BOX_TEXT_LENGTH = 4000;
+
+function isFiniteWithin(v: unknown, min: number, max: number): boolean {
+  return isNumber(v) && v >= min && v <= max;
+}
+
+function validateTextEmphasis(v: unknown): v is BuilderTextBox['emphasis'] {
+  return v === 'normal' || v === 'bold' || v === 'italic';
+}
+
+function validateBuilderTextBox(v: unknown): v is BuilderTextBox {
+  if (!isObject(v)) return false;
+  return (
+    isString(v.id) &&
+    isFiniteWithin(v.x, -MAX_TEXT_BOX_SIZE, MAX_TEXT_BOX_SIZE) &&
+    isFiniteWithin(v.y, -MAX_TEXT_BOX_SIZE, MAX_TEXT_BOX_SIZE) &&
+    isFiniteWithin(v.width, 1, MAX_TEXT_BOX_SIZE) &&
+    isFiniteWithin(v.height, 1, MAX_TEXT_BOX_SIZE) &&
+    isString(v.text) &&
+    v.text.length <= MAX_TEXT_BOX_TEXT_LENGTH &&
+    isFiniteWithin(v.fontSize, 8, 200) &&
+    isString(v.color) &&
+    validateTextEmphasis(v.emphasis)
+  );
+}
+
+function validateBuilderScreenAnnotations(v: unknown): v is BuilderScreenAnnotations {
+  if (!isObject(v)) return false;
+  if (!Array.isArray(v.strokes) || v.strokes.length > MAX_SCREEN_STROKES) return false;
+  if (!Array.isArray(v.textBoxes) || v.textBoxes.length > MAX_SCREEN_TEXT_BOXES) return false;
+  return v.textBoxes.every((entry: unknown) => validateBuilderTextBox(entry));
+}
+
+function validateBuilderAnnotations(v: unknown): v is BuilderAnnotations {
+  if (!isObject(v)) return false;
+  return (
+    v.version === 1 &&
+    validateBuilderScreenAnnotations(v.desktop) &&
+    validateBuilderScreenAnnotations(v.mobile)
+  );
+}
+
 function validateOrderLayout(v: unknown): v is OrderLayout {
   if (!isObject(v)) return false;
   if (typeof v.customized !== 'boolean') return false;
   if (!Array.isArray(v.blocks)) return false;
-  return v.blocks.every((b: unknown) => validateOrderLayoutBlock(b));
+  if (v.blocks.length > MAX_LAYOUT_BLOCKS) return false;
+  if (!v.blocks.every((b: unknown) => validateOrderLayoutBlock(b))) return false;
+  if (v.builderAnnotations !== undefined && v.builderAnnotations !== null) {
+    return validateBuilderAnnotations(v.builderAnnotations);
+  }
+  return true;
 }
 
 /**

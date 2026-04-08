@@ -17,11 +17,38 @@ import type { BlockItem } from '~/types/builder';
  */
 export type OrderLayoutBlock = BlockItem;
 
+export type BuilderTextEmphasis = 'normal' | 'bold' | 'italic';
+
+export interface BuilderTextBox {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  text: string;
+  fontSize: number;
+  color: string;
+  emphasis: BuilderTextEmphasis;
+}
+
+export interface BuilderScreenAnnotations {
+  strokes: unknown[];
+  textBoxes: BuilderTextBox[];
+}
+
+export interface BuilderAnnotations {
+  version: 1;
+  desktop: BuilderScreenAnnotations;
+  mobile: BuilderScreenAnnotations;
+}
+
 /** Page layout configuration stored with the order. */
 export interface OrderLayout {
   blocks: OrderLayoutBlock[];
   /** True when the user has modified the layout from the original template arrangement. */
   customized: boolean;
+  /** Persisted drawing/text annotations for builder overlays. */
+  builderAnnotations?: BuilderAnnotations;
 }
 
 /**

@@ -22,15 +22,15 @@ export interface InfoField {
 
 /** Drawing tool state; used by builder and DrawingOverlay. */
 export interface DrawingState {
-  desktopEnabled?: boolean;
-  mobileEnabled?: boolean;
-  strokeType?: 'dash' | 'line' | 'circle' | 'square' | 'triangle' | 'half_triangle';
-  color?: string;
-  lineWidth?: number;
-  isTextMode?: boolean;
-  textFontSize?: number;
-  textColor?: string;
-  textFontFamily?: string;
+  desktopEnabled: boolean;
+  mobileEnabled: boolean;
+  strokeType: 'dash' | 'line' | 'circle' | 'square' | 'triangle' | 'half_triangle';
+  color: string;
+  lineWidth: number;
+  isTextMode: boolean;
+  textFontSize: number;
+  textColor: string;
+  textEmphasis: 'normal' | 'bold' | 'italic';
 }
 
 export type ScreenId = 'desktop' | 'mobile' | 'both';
@@ -40,5 +40,8 @@ export type ScreenId = 'desktop' | 'mobile' | 'both';
  * Used to type ref access without reaching into component internals with untyped casts.
  */
 export interface ScreenCardRefShape {
-  overlayRef?: { canvas?: unknown } | null;
+  overlayRef?: {
+    canvas?: unknown;
+    getTextBoxes?: () => unknown[];
+  } | null;
 }

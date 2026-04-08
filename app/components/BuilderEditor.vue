@@ -75,6 +75,7 @@
 
       <!-- Screens -->
       <ScreensPanel
+        ref="screensPanelRef"
         :desktop-canvas-width="desktopCanvasWidth"
         :desktop-canvas-height="desktopCanvasHeight"
         :mobile-canvas-width="mobileCanvasWidth"
@@ -87,11 +88,15 @@
         :mobile-drawing-state="mobileDrawingState"
         :desktop-strokes="desktopStrokes"
         :mobile-strokes="mobileStrokes"
+        :desktop-text-boxes="desktopTextBoxes"
+        :mobile-text-boxes="mobileTextBoxes"
         @update:sync-screens="setSyncScreens"
         @toggle-desktop-text-mode="toggleTextMode('desktop')"
         @toggle-mobile-text-mode="toggleTextMode('mobile')"
         @update:desktopList="handleBlocksUpdate"
         @update:mobileList="handleBlocksUpdate"
+        @update:desktopTextBoxes="handleDesktopTextBoxesUpdate"
+        @update:mobileTextBoxes="handleMobileTextBoxesUpdate"
         @update:desktop-drawing-state="handleDesktopDrawingStateUpdate"
         @update:mobile-drawing-state="handleMobileDrawingStateUpdate"
         @set-desktop-canvas-ref="setCanvasRef('desktop', $event)"
@@ -112,7 +117,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onUnmounted, type Ref } from 'vue';
+import { ref, computed, watch, onUnmounted, onMounted, type Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useDrawing } from '~/composables/useDrawing';
 import { useTemplateApplication } from '~/composables/useTemplateApplication';
@@ -125,6 +130,7 @@ import ScreensPanel from '~/components/ScreensPanel.vue';
 import ItemsList from '~/components/ItemsList.vue';
 import TemplatesList from '~/components/TemplatesList.vue';
 import type { BlockItem, DrawingState, ScreenId } from '~/types/builder';
+import type { BuilderAnnotations, BuilderTextBox } from '~/types/order';
 import {
   AVAILABLE_BLOCKS,
   CANVAS_DIMENSIONS,
@@ -138,7 +144,7 @@ const requestLayoutStore = useRequestLayoutStore();
 const builderEphemeral = useBuilderEphemeralStore();
 const { saveLayout } = useCreateRequest();
 
-const { isSaving, saveStatus, saveLabel, handleSaveLayout } = useBuilderSave({
+const { isSaving, saveStatus, saveLabel, handleSaveLayout: persistLayout } = useBuilderSave({
   requestLayoutStore,
   authStore,
   saveLayout,
@@ -170,22 +176,74 @@ const {
   mobileStrokes,
   toggleTextMode,
   setCanvasRef,
+  setStrokes,
   updateDesktopDrawingState,
   updateMobileDrawingState,
 } = useDrawing();
+
+interface ScreensPanelExpose {
+  getDesktopTextBoxes?: () => BuilderTextBox[];
+  getMobileTextBoxes?: () => BuilderTextBox[];
+}
+
+const screensPanelRef = ref<ScreensPanelExpose | null>(null);
+const desktopTextBoxes = ref<BuilderTextBox[]>([]);
+const mobileTextBoxes = ref<BuilderTextBox[]>([]);
+
+function buildAnnotationsSnapshot(): BuilderAnnotations {
+  return {
+    version: 1,
+    desktop: {
+      strokes: [...desktopStrokes.value],
+      textBoxes: desktopTextBoxes.value.map((box) => ({ ...box })),
+    },
+    mobile: {
+      strokes: [...mobileStrokes.value],
+      textBoxes: mobileTextBoxes.value.map((box) => ({ ...box })),
+    },
+  };
+}
+
+function hydrateFromStoreAnnotations(): void {
+  const source = requestLayoutStore.builderAnnotations;
+  setStrokes('desktop', source.desktop.strokes);
+  setStrokes('mobile', source.mobile.strokes);
+  desktopTextBoxes.value = source.desktop.textBoxes.map((box) => ({ ...box }));
+  mobileTextBoxes.value = source.mobile.textBoxes.map((box) => ({ ...box }));
+}
+
+function flushBuilderAnnotationsToStore(): void {
+  const latestDesktopText = screensPanelRef.value?.getDesktopTextBoxes?.() ?? desktopTextBoxes.value;
+  const latestMobileText = screensPanelRef.value?.getMobileTextBoxes?.() ?? mobileTextBoxes.value;
+  desktopTextBoxes.value = latestDesktopText.map((box) => ({ ...box }));
+  mobileTextBoxes.value = latestMobileText.map((box) => ({ ...box }));
+  requestLayoutStore.setBuilderAnnotations(buildAnnotationsSnapshot());
+}
+
+async function handleSaveLayout(): Promise<void> {
+  flushBuilderAnnotationsToStore();
+  await persistLayout();
+}
 
 /**
  * Drawing annotations are not persisted on the order layout; treat as unsaved for leave guards.
  */
 watch(
-  [desktopStrokes, mobileStrokes],
+  [desktopStrokes, mobileStrokes, desktopTextBoxes, mobileTextBoxes],
   () => {
     const hasMarks =
-      desktopStrokes.value.length > 0 || mobileStrokes.value.length > 0;
+      desktopStrokes.value.length > 0 ||
+      mobileStrokes.value.length > 0 ||
+      desktopTextBoxes.value.length > 0 ||
+      mobileTextBoxes.value.length > 0;
     builderEphemeral.setDrawingHasUnsavedMarks(hasMarks);
   },
   { deep: true }
 );
+
+onMounted(() => {
+  hydrateFromStoreAnnotations();
+});
 
 onUnmounted(() => {
   builderEphemeral.reset();
@@ -211,6 +269,14 @@ const mobileCanvasHeight: Ref<number> = ref(CANVAS_DIMENSIONS.mobile.height);
 
 function handleBlocksUpdate(val: BlockItem[]): void {
   blocks.value = val;
+}
+
+function handleDesktopTextBoxesUpdate(next: BuilderTextBox[]): void {
+  desktopTextBoxes.value = next.map((box) => ({ ...box }));
+}
+
+function handleMobileTextBoxesUpdate(next: BuilderTextBox[]): void {
+  mobileTextBoxes.value = next.map((box) => ({ ...box }));
 }
 
 const handleDesktopDrawingStateUpdate = (newState: Partial<DrawingState>): void => {

@@ -1,100 +1,177 @@
-import { ref, computed, watch, type Ref } from 'vue';
-
-export interface TextBox {
-  id: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  text: string;
-  fontSize: number;
-  color: string;
-  fontFamily: string;
-}
+import { ref, watch, type Ref } from 'vue';
+import type { BuilderTextBox, BuilderTextEmphasis } from '~/types/order';
 
 interface UseTextBoxManagerOptions {
   defaultFontSize: () => number;
   defaultColor: () => string;
-  defaultFontFamily: () => string;
+  defaultEmphasis: () => BuilderTextEmphasis;
+  initialTextBoxes?: () => BuilderTextBox[];
 }
 
-const MIN_TEXTBOX_WIDTH = 100;
-const MIN_TEXTBOX_HEIGHT = 40;
-const MIN_DRAG_DISTANCE = 20;
+type UpdatableTextField = 'x' | 'y' | 'width' | 'height' | 'text' | 'fontSize' | 'color' | 'emphasis';
 
-export function useTextBoxManager(options: UseTextBoxManagerOptions) {
-  const textBoxes: Ref<TextBox[]> = ref([]);
-  const selectedTextBoxId: Ref<string | null> = ref(null);
-  let textBoxIdCounter = 0;
+const MIN_TEXT_BOX_WIDTH = 100;
+const MIN_TEXT_BOX_HEIGHT = 40;
 
-  const createTextBox = (x: number, y: number, width: number, height: number) => {
-    const newTextBox: TextBox = {
-      id: `text-${textBoxIdCounter++}`,
+function areTextBoxesEqual(a: BuilderTextBox[], b: BuilderTextBox[]): boolean {
+  if (a.length !== b.length) return false;
+  return a.every((box, index) => {
+    const other = b[index];
+    return (
+      box.id === other?.id &&
+      box.x === other?.x &&
+      box.y === other?.y &&
+      box.width === other?.width &&
+      box.height === other?.height &&
+      box.text === other?.text &&
+      box.fontSize === other?.fontSize &&
+      box.color === other?.color &&
+      box.emphasis === other?.emphasis
+    );
+  });
+}
+
+export function useTextBoxManager(options: UseTextBoxManagerOptions): {
+  textBoxes: Ref<BuilderTextBox[]>;
+  selectedTextBoxId: Ref<string | null>;
+  createTextBox: (x: number, y: number, width: number, height: number) => void;
+  updateTextBox: (id: string, field: UpdatableTextField, value: number | string) => void;
+  selectTextBox: (id: string | null) => void;
+  deleteTextBox: (id: string) => void;
+  clearAll: () => void;
+  setTextBoxes: (next: BuilderTextBox[]) => void;
+  setupWatchers: (
+    isTextMode: () => boolean,
+    textFontSize: () => number,
+    textColor: () => string,
+    textEmphasis: () => BuilderTextEmphasis
+  ) => void;
+} {
+  const textBoxes = ref<BuilderTextBox[]>([]);
+  const selectedTextBoxId = ref<string | null>(null);
+
+  function setTextBoxes(next: BuilderTextBox[]): void {
+    const normalized = next.map((box) => ({ ...box }));
+    if (areTextBoxesEqual(textBoxes.value, normalized)) return;
+    textBoxes.value = normalized;
+    const selected = selectedTextBoxId.value;
+    if (!selected) return;
+    const stillSelected = textBoxes.value.some((entry) => entry.id === selected);
+    if (!stillSelected) selectedTextBoxId.value = null;
+  }
+
+  function createTextBox(x: number, y: number, width: number, height: number): void {
+    const box: BuilderTextBox = {
+      id: crypto.randomUUID(),
       x,
       y,
-      width: Math.max(width, MIN_TEXTBOX_WIDTH),
-      height: Math.max(height, MIN_TEXTBOX_HEIGHT),
+      width: Math.max(MIN_TEXT_BOX_WIDTH, width),
+      height: Math.max(MIN_TEXT_BOX_HEIGHT, height),
       text: '',
       fontSize: options.defaultFontSize(),
       color: options.defaultColor(),
-      fontFamily: options.defaultFontFamily()
+      emphasis: options.defaultEmphasis(),
     };
-    
-    textBoxes.value.push(newTextBox);
-    selectedTextBoxId.value = newTextBox.id;
-    return newTextBox;
-  };
+    textBoxes.value = [...textBoxes.value, box];
+    selectedTextBoxId.value = box.id;
+  }
 
-  const updateTextBox = <K extends keyof TextBox>(id: string, property: K, value: TextBox[K]) => {
-    const textBox = textBoxes.value.find((tb) => tb.id === id);
-    if (textBox) {
-      textBox[property] = value;
-    }
-  };
-
-  const selectTextBox = (id: string) => {
-    selectedTextBoxId.value = id;
-  };
-
-  const deleteTextBox = (id: string) => {
-    const index = textBoxes.value.findIndex(tb => tb.id === id);
-    if (index > -1) {
-      textBoxes.value.splice(index, 1);
-      if (selectedTextBoxId.value === id) {
-        selectedTextBoxId.value = null;
+  function updateTextBox(id: string, field: UpdatableTextField, value: number | string): void {
+    let changed = false;
+    const next = textBoxes.value.map((box) => {
+      if (box.id !== id) return box;
+      if (field === 'width') {
+        const width = Math.max(MIN_TEXT_BOX_WIDTH, Number(value));
+        if (box.width === width) return box;
+        changed = true;
+        return { ...box, width };
       }
-    }
-  };
+      if (field === 'height') {
+        const height = Math.max(MIN_TEXT_BOX_HEIGHT, Number(value));
+        if (box.height === height) return box;
+        changed = true;
+        return { ...box, height };
+      }
+      if (field === 'x' || field === 'y' || field === 'fontSize') {
+        const numeric = Number(value);
+        if (box[field] === numeric) return box;
+        changed = true;
+        return { ...box, [field]: numeric };
+      }
+      if (field === 'emphasis') {
+        const emphasis = value === 'bold' || value === 'italic' ? value : 'normal';
+        if (box.emphasis === emphasis) return box;
+        changed = true;
+        return { ...box, emphasis };
+      }
+      const stringValue = String(value);
+      if (box[field] === stringValue) return box;
+      changed = true;
+      return { ...box, [field]: stringValue };
+    });
+    if (!changed) return;
+    textBoxes.value = next;
+  }
 
-  const clearAll = () => {
+  function selectTextBox(id: string | null): void {
+    selectedTextBoxId.value = id;
+  }
+
+  function deleteTextBox(id: string): void {
+    textBoxes.value = textBoxes.value.filter((box) => box.id !== id);
+    if (selectedTextBoxId.value === id) {
+      selectedTextBoxId.value = null;
+    }
+  }
+
+  function clearAll(): void {
     textBoxes.value = [];
     selectedTextBoxId.value = null;
-  };
+  }
 
-  const setupWatchers = (
-    isTextModeGetter: () => boolean,
-    fontSizeGetter: () => number
-  ) => {
-    // Deselect when text mode disabled
+  function setupWatchers(
+    isTextMode: () => boolean,
+    textFontSize: () => number,
+    textColor: () => string,
+    textEmphasis: () => BuilderTextEmphasis
+  ): void {
     watch(
-      () => isTextModeGetter(),
-      (isTextMode) => {
-        if (!isTextMode) {
+      () => options.initialTextBoxes?.(),
+      (incoming) => {
+        if (!incoming) return;
+        setTextBoxes(incoming);
+      },
+      { immediate: true, deep: true }
+    );
+
+    watch(
+      () => isTextMode(),
+      (enabled) => {
+        if (!enabled) {
           selectedTextBoxId.value = null;
         }
       }
     );
 
-    // Update selected textbox font size
     watch(
-      () => fontSizeGetter(),
-      (newSize) => {
-        if (selectedTextBoxId.value) {
-          updateTextBox(selectedTextBoxId.value, 'fontSize', newSize);
-        }
+      [() => textFontSize(), () => textColor(), () => textEmphasis()],
+      ([size, color, emphasis]) => {
+        const selected = selectedTextBoxId.value;
+        if (!selected) return;
+        let changed = false;
+        const next = textBoxes.value.map((box) => {
+          if (box.id !== selected) return box;
+          if (box.fontSize === size && box.color === color && box.emphasis === emphasis) {
+            return box;
+          }
+          changed = true;
+          return { ...box, fontSize: size, color, emphasis };
+        });
+        if (!changed) return;
+        textBoxes.value = next;
       }
     );
-  };
+  }
 
   return {
     textBoxes,
@@ -104,7 +181,7 @@ export function useTextBoxManager(options: UseTextBoxManagerOptions) {
     selectTextBox,
     deleteTextBox,
     clearAll,
+    setTextBoxes,
     setupWatchers,
-    MIN_DRAG_DISTANCE
   };
 }

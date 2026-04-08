@@ -1,6 +1,6 @@
 <template>
   <div class="screen" :class="screenClass">
-    <ScreenHeader :title="title" />
+    <ScreenHeader :title="title" :show-drawing-active="isDrawingEnabled" />
     <div 
       ref="screenContentRef"
       class="screen-content" 
@@ -24,6 +24,7 @@
         :is-enabled="isDrawingEnabled"
         :drawing-state="drawingState"
         :strokes="strokes"
+        :initial-text-boxes="textBoxes"
         :width="dynamicCanvasWidth"
         :height="dynamicCanvasHeight"
         @update:stroke-type="onUpdateStrokeType"
@@ -32,7 +33,8 @@
         @toggle-text-mode="onToggleTextMode"
         @update:text-font-size="onUpdateTextFontSize"
         @update:text-color="onUpdateTextColor"
-        @update:text-font-family="onUpdateTextFontFamily"
+        @update:text-emphasis="onUpdateTextEmphasis"
+        @update:text-boxes="onTextBoxesChange"
       />
     </div>
   </div>
@@ -44,6 +46,7 @@ import ScreenHeader from './ScreenHeader.vue';
 import DrawingOverlay from './DrawingOverlay.vue';
 import ItemsList from './ItemsList.vue';
 import { useCanvasDimensions } from '~/composables/useCanvasDimensions';
+import type { BuilderTextBox } from '~/types/order';
 
 const props = defineProps({
   title: {
@@ -81,6 +84,10 @@ const props = defineProps({
   strokes: {
     type: Array,
     required: true
+  },
+  textBoxes: {
+    type: Array as () => BuilderTextBox[],
+    default: () => []
   }
 });
 
@@ -91,7 +98,8 @@ const emit = defineEmits([
   'toggle-text-mode',
   'update:textFontSize',
   'update:textColor',
-  'update:textFontFamily',
+  'update:textEmphasis',
+  'update:textBoxes',
   'undo',
   'redo',
   'clear',
@@ -221,7 +229,8 @@ const onUpdateLineWidth = (val) => emit('update:lineWidth', val);
 const onToggleTextMode = () => emit('toggle-text-mode');
 const onUpdateTextFontSize = (val) => emit('update:textFontSize', val);
 const onUpdateTextColor = (val) => emit('update:textColor', val);
-const onUpdateTextFontFamily = (val) => emit('update:textFontFamily', val);
+const onUpdateTextEmphasis = (val) => emit('update:textEmphasis', val);
+const onTextBoxesChange = (next: BuilderTextBox[]) => emit('update:textBoxes', next);
 const onRemove = (id) => emit('remove-item', id);
 
 const undo = () => overlayRef.value?.undo();

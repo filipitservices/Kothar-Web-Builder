@@ -47,6 +47,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onBeforeUnmount } from 'vue';
+import type { BuilderTextEmphasis } from '~/types/order';
+import { styleFromTextEmphasis } from '~/utils/builderTextEmphasis';
 
 interface TextBoxProps {
   id: string;
@@ -57,7 +59,7 @@ interface TextBoxProps {
   text?: string;
   fontSize: number;
   color: string;
-  fontFamily: string;
+  emphasis: BuilderTextEmphasis;
   isSelected?: boolean;
 }
 
@@ -112,7 +114,8 @@ const textBoxStyle = computed(() => ({
 const textStyle = computed(() => ({
   fontSize: `${props.fontSize}px`,
   color: props.color,
-  fontFamily: props.fontFamily
+  fontWeight: styleFromTextEmphasis(props.emphasis).fontWeight,
+  fontStyle: styleFromTextEmphasis(props.emphasis).fontStyle
 }));
 
 watch(() => props.text, (newVal) => {

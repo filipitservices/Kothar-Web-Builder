@@ -14,7 +14,7 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { BlockItem, BlockType } from '~/types/builder';
 import type { ShowcaseTemplate, ShowcaseSection } from '~/stores/showcase';
-import type { OrderLayout, OrderLayoutBlock } from '~/types/order';
+import type { OrderLayout, OrderLayoutBlock, BuilderAnnotations } from '~/types/order';
 
 /* -------------------------------------------------------------------------- */
 /*  Showcase section → builder block mapping                                  */
@@ -50,6 +50,29 @@ function sectionToBlock(section: ShowcaseSection): BlockItem {
   return { id: generateBlockId(type), type, label };
 }
 
+function createEmptyBuilderAnnotations(): BuilderAnnotations {
+  return {
+    version: 1,
+    desktop: { strokes: [], textBoxes: [] },
+    mobile: { strokes: [], textBoxes: [] },
+  };
+}
+
+function cloneBuilderAnnotations(value?: BuilderAnnotations): BuilderAnnotations {
+  const source = value ?? createEmptyBuilderAnnotations();
+  return {
+    version: 1,
+    desktop: {
+      strokes: [...source.desktop.strokes],
+      textBoxes: source.desktop.textBoxes.map((box) => ({ ...box })),
+    },
+    mobile: {
+      strokes: [...source.mobile.strokes],
+      textBoxes: source.mobile.textBoxes.map((box) => ({ ...box })),
+    },
+  };
+}
+
 /**
  * Convert a ShowcaseTemplate's sections array into builder BlockItem[].
  * Prepends a navbar block when the showcase does not already start with a
@@ -79,6 +102,7 @@ export const useRequestLayoutStore = defineStore('requestLayout', () => {
 
   /** Snapshot of the original layout for customization detection. */
   const originalBlocks = ref<BlockItem[]>([]);
+  const builderAnnotations = ref<BuilderAnnotations>(createEmptyBuilderAnnotations());
 
   /** Source showcase template id (new request flow). */
   const sourceTemplateId = ref<string | null>(null);
@@ -129,6 +153,7 @@ export const useRequestLayoutStore = defineStore('requestLayout', () => {
     sourceTemplateId.value = template.id;
     sourceOrderId.value = null;
     returnRoute.value = returnTo;
+    builderAnnotations.value = createEmptyBuilderAnnotations();
     active.value = true;
     syncLayoutBaselineFromCurrent();
   }
@@ -152,6 +177,7 @@ export const useRequestLayoutStore = defineStore('requestLayout', () => {
     sourceTemplateId.value = null;
     sourceOrderId.value = orderId;
     returnRoute.value = returnTo;
+    builderAnnotations.value = cloneBuilderAnnotations(layout.builderAnnotations);
     active.value = true;
     syncLayoutBaselineFromCurrent();
   }
@@ -171,6 +197,7 @@ export const useRequestLayoutStore = defineStore('requestLayout', () => {
     sourceTemplateId.value = template.id;
     sourceOrderId.value = orderId;
     returnRoute.value = returnTo;
+    builderAnnotations.value = createEmptyBuilderAnnotations();
     active.value = true;
     syncLayoutBaselineFromCurrent();
   }
@@ -185,6 +212,10 @@ export const useRequestLayoutStore = defineStore('requestLayout', () => {
     returnRoute.value = returnTo;
   }
 
+  function setBuilderAnnotations(next: BuilderAnnotations): void {
+    builderAnnotations.value = cloneBuilderAnnotations(next);
+  }
+
   /** Produce the layout payload for order submission / update. */
   function getLayoutForSubmission(): OrderLayout {
     return {
@@ -194,6 +225,7 @@ export const useRequestLayoutStore = defineStore('requestLayout', () => {
         label: b.label,
       } satisfies OrderLayoutBlock)),
       customized: isCustomized.value,
+      builderAnnotations: cloneBuilderAnnotations(builderAnnotations.value),
     };
   }
 
@@ -204,6 +236,7 @@ export const useRequestLayoutStore = defineStore('requestLayout', () => {
     sourceTemplateId.value = null;
     sourceOrderId.value = null;
     returnRoute.value = null;
+    builderAnnotations.value = createEmptyBuilderAnnotations();
     active.value = false;
     persistedLayoutFingerprint.value = null;
   }
@@ -212,6 +245,7 @@ export const useRequestLayoutStore = defineStore('requestLayout', () => {
     active,
     blocks,
     originalBlocks,
+    builderAnnotations,
     sourceTemplateId,
     sourceOrderId,
     returnRoute,
@@ -221,6 +255,7 @@ export const useRequestLayoutStore = defineStore('requestLayout', () => {
     initFromTemplateForOrder,
     updateBlocks,
     setReturnRoute,
+    setBuilderAnnotations,
     getLayoutForSubmission,
     syncLayoutBaselineFromCurrent,
     isLayoutDirtyVsBaseline,

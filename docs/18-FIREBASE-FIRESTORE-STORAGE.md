@@ -62,7 +62,7 @@ Each order document matches the **OrderRequest** type (see `app/types/order.ts`)
 | `projectDetails` | object | `goals` (string[]), `audienceTags` (string[]), `additionalNotes`, `requestCategories` (string[]), `colorCustomization`. |
 | `attachments` | array | Metadata for brand material files (see below). |
 | `logoAttachments` | array | Metadata for logo files (same shape as attachments). |
-| `layout` | object? | Page layout configuration: `{ blocks: OrderLayoutBlock[], customized: boolean }`. Set on draft creation from the template sections; updated when user saves from the builder. |
+| `layout` | object? | Page layout configuration: `{ blocks: OrderLayoutBlock[], customized: boolean, builderAnnotations?: { version: 1, desktop: { strokes, textBoxes }, mobile: { strokes, textBoxes } } }`. `builderAnnotations` stores drawing strokes and text overlays for both screens. Set on draft creation from the template sections; updated when user saves from the builder. |
 | `status` | string | Lifecycle stage: `draft` (initial creation, form not yet submitted), `submitted`, `under_review`, `in_production`, `awaiting_feedback`, `finalizing`, `completed`, `cancelled`. `draft` → `submitted` transition happens on form submission; other transitions are admin-only. Legacy values `in_review`, `in_progress`, `delivered` are supported for display. |
 | `modificationLocked` | boolean | Optional. When `true`, order is locked (e.g. being processed). Admin-assignable only; client must not write. Edit UI is disabled when true. |
 | `createdAt` | server timestamp | Set via `serverTimestamp()` on create. |
@@ -130,7 +130,7 @@ The **builder** and **layout save** (`saveLayout`) do not require Whop access. *
 
 ### Layout Persistence
 
-The builder's Save button is handled by **`useBuilderSave`** (`app/composables/useBuilderSave.ts`). It reads the canonical layout from the request layout store via `getLayoutForSubmission()`, then calls `saveLayout(userId, orderId, layout)` from `useCreateRequest()`, which writes the layout to the draft's `layout` field via `updateDoc`. **BuilderEditor** does not perform persistence inline; it only wires the composable. This ensures layout changes persist across page refresh, navigation, and browser close.
+The builder's Save button is handled by **`useBuilderSave`** (`app/composables/useBuilderSave.ts`). It reads the canonical layout from the request layout store via `getLayoutForSubmission()`, then calls `saveLayout(userId, orderId, layout)` from `useCreateRequest()`, which writes the layout to the draft's `layout` field via `updateDoc`. The saved payload includes both block layout and `builderAnnotations` (desktop/mobile strokes + text boxes). This ensures layout and annotations persist across page refresh, navigation, and browser close.
 
 **Builder URL and rehydration:** When the user clicks "Customize page layout" on the request page, the app navigates to `/gallery/request/{orderId}/builder`. The route param `orderId` allows the builder to rehydrate layout state after a page refresh or direct navigation while remaining structurally tied to that specific request. On mount, the builder pages use the route `:id` to fetch the order from Firestore and initialize from `order.layout` (or from the template if no layout is saved). If the store is already initialized (e.g. user navigated from the request page), the existing state is preserved to avoid overwriting unsaved changes.
 
@@ -164,7 +164,7 @@ Choosing a design creates a **draft** order immediately. If the user leaves befo
 - `status` is **`draft`**, `modificationLocked` is not **`true`**
 - `createdAt` is older than **24 hours** (server time)
 - **No persisted progress:** `attachments` and `logoAttachments` are empty arrays; all `businessInfo` and `contactInfo` strings are empty after trim; `projectDetails.goals` is empty and `audienceTags` / `additionalNotes` / `requestCategories` are empty after trim
-- **`layout` is missing or `layout.customized === false`** (builder save sets `customized: true`; those drafts are kept)
+- **`layout` is missing, or `layout.customized === false` and `layout.builderAnnotations` has no strokes/text boxes** (any persisted annotation keeps the draft)
 
 **Implementation:** [`server/utils/abandoned-draft-cleanup.ts`](../server/utils/abandoned-draft-cleanup.ts) runs a paginated **`collectionGroup('orders')`** query (`status == 'draft'`, `createdAt` before cutoff, `orderBy('createdAt')`), applies the predicate above, deletes each matching document with the Admin SDK, then deletes Storage objects under **`orders/{userId}/{orderId}/`**. This does **not** change **`requestLimits/daily`** (creation counts remain as under [Daily Request Limit](#daily-request-limit)).
 

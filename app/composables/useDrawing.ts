@@ -1,19 +1,8 @@
 import { ref, reactive } from 'vue';
+import type { DrawingState } from '~/types/builder';
 
 type ScreenType = 'desktop' | 'mobile';
 type StrokeType = 'dash' | 'line' | 'circle' | 'square' | 'triangle' | 'half_triangle';
-
-export interface DrawingState {
-  desktopEnabled: boolean;
-  mobileEnabled: boolean;
-  strokeType: StrokeType;
-  color: string;
-  lineWidth: number;
-  isTextMode: boolean;
-  textFontSize: number;
-  textColor: string;
-  textFontFamily: string;
-}
 
 const defaultState: DrawingState = {
   desktopEnabled: false,
@@ -24,7 +13,7 @@ const defaultState: DrawingState = {
   isTextMode: false,
   textFontSize: 16,
   textColor: '#000000',
-  textFontFamily: 'Arial',
+  textEmphasis: 'normal',
 };
 
 interface DrawingCanvasRef {
@@ -117,8 +106,12 @@ export const useDrawing = () => {
     getState(screen).textColor = color;
   };
 
-  const setTextFontFamily = (screen: ScreenType, family: string) => {
-    getState(screen).textFontFamily = family;
+  const setTextEmphasis = (screen: ScreenType, emphasis: 'normal' | 'bold' | 'italic') => {
+    getState(screen).textEmphasis = emphasis;
+  };
+
+  const setStrokes = (screen: ScreenType, strokes: unknown[]) => {
+    getStrokes(screen).value = [...strokes];
   };
 
   /** Update desktop drawing state with a partial; use from parent instead of mutating state. */
@@ -194,7 +187,8 @@ export const useDrawing = () => {
     toggleTextMode,
     setTextFontSize,
     setTextColor,
-    setTextFontFamily,
+    setTextEmphasis,
+    setStrokes,
     updateDesktopDrawingState,
     updateMobileDrawingState,
     resetState,

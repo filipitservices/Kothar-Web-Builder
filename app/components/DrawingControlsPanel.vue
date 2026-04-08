@@ -49,7 +49,7 @@
             :line-width="currentLineWidth"
             :text-font-size="currentTextFontSize"
             :text-color="currentTextColor"
-            :text-font-family="currentTextFontFamily"
+            :text-emphasis="currentTextEmphasis"
             :disabled="!isGlobalEnabled"
             @update:is-text-mode="toggleTextMode"
             @update:stroke-type="currentStrokeType = $event"
@@ -57,7 +57,7 @@
             @update:line-width="currentLineWidth = $event"
             @update:text-font-size="currentTextFontSize = $event"
             @update:text-color="currentTextColor = $event"
-            @update:text-font-family="currentTextFontFamily = $event"
+            @update:text-emphasis="currentTextEmphasis = $event"
             @undo="$emit('undo')"
             @redo="$emit('redo')"
             @clear="$emit('clear')"
@@ -72,7 +72,7 @@
 import { ref, computed, watch, useId } from 'vue';
 import DualSwitch from './DualSwitch.vue';
 import DrawingToolControls from './DrawingToolControls.vue';
-import type { DrawingState } from '~/composables/useDrawing';
+import type { DrawingState } from '~/types/builder';
 
 const drawingModeInputId = useId();
 const syncScreensInputId = useId();
@@ -108,36 +108,36 @@ const currentState = computed(() =>
   activeMode.value === 'mobile' ? props.mobileDrawingState : props.desktopDrawingState
 );
 
-const currentIsTextMode = computed(() => currentState.value.isTextMode);
+const currentIsTextMode = computed(() => currentState.value.isTextMode ?? false);
 
 const currentStrokeType = computed({
-  get: (): string => currentState.value.strokeType,
+  get: (): string => currentState.value.strokeType ?? 'dash',
   set: (val: string) => updateState('strokeType', val)
 });
 
 const currentColor = computed({
-  get: (): string => currentState.value.color,
+  get: (): string => currentState.value.color ?? '#000000',
   set: (val: string) => updateState('color', val)
 });
 
 const currentLineWidth = computed({
-  get: (): number => currentState.value.lineWidth,
+  get: (): number => currentState.value.lineWidth ?? 3,
   set: (val: number) => updateState('lineWidth', val)
 });
 
 const currentTextFontSize = computed({
-  get: (): number => currentState.value.textFontSize,
+  get: (): number => currentState.value.textFontSize ?? 16,
   set: (val: number) => updateState('textFontSize', val)
 });
 
 const currentTextColor = computed({
-  get: (): string => currentState.value.textColor,
+  get: (): string => currentState.value.textColor ?? '#000000',
   set: (val: string) => updateState('textColor', val)
 });
 
-const currentTextFontFamily = computed({
-  get: (): string => currentState.value.textFontFamily,
-  set: (val: string) => updateState('textFontFamily', val)
+const currentTextEmphasis = computed({
+  get: (): 'normal' | 'bold' | 'italic' => currentState.value.textEmphasis ?? 'normal',
+  set: (val: 'normal' | 'bold' | 'italic') => updateState('textEmphasis', val)
 });
 
 const syncEnabledForActiveMode = () => {

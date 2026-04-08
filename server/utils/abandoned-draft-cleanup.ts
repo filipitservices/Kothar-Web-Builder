@@ -78,7 +78,25 @@ function isEmptyProjectDetailsText(v: unknown): boolean {
 function layoutAllowsCleanup(layout: unknown): boolean {
   if (layout === undefined || layout === null) return true;
   if (typeof layout !== 'object') return false;
-  return (layout as { customized?: unknown }).customized === false;
+  const candidate = layout as {
+    customized?: unknown;
+    builderAnnotations?: {
+      desktop?: { strokes?: unknown[]; textBoxes?: unknown[] };
+      mobile?: { strokes?: unknown[]; textBoxes?: unknown[] };
+    };
+  };
+  if (candidate.customized !== false) return false;
+  const annotations = candidate.builderAnnotations;
+  if (!annotations || typeof annotations !== 'object') return true;
+  const desktopHasMarks =
+    Array.isArray(annotations.desktop?.strokes) && annotations.desktop.strokes.length > 0;
+  const mobileHasMarks =
+    Array.isArray(annotations.mobile?.strokes) && annotations.mobile.strokes.length > 0;
+  const desktopHasText =
+    Array.isArray(annotations.desktop?.textBoxes) && annotations.desktop.textBoxes.length > 0;
+  const mobileHasText =
+    Array.isArray(annotations.mobile?.textBoxes) && annotations.mobile.textBoxes.length > 0;
+  return !(desktopHasMarks || mobileHasMarks || desktopHasText || mobileHasText);
 }
 
 /**

@@ -30,15 +30,14 @@
     <!-- Text controls -->
     <select
       v-else
-      v-model="textFontFamilyModel"
+      v-model="textEmphasisModel"
       :disabled="disabled"
-      title="Font Family"
+      title="Text Emphasis"
       class="compact-select"
     >
-      <option value="Arial">Arial</option>
-      <option value="Georgia">Georgia</option>
-      <option value="Courier New">Courier</option>
-      <option value="Verdana">Verdana</option>
+      <option value="normal">Normal</option>
+      <option value="bold">Bold</option>
+      <option value="italic">Italic</option>
     </select>
 
     <!-- Color picker (both modes) -->
@@ -74,8 +73,8 @@
 
     <!-- Shared action buttons -->
     <div class="button-group">
-      <button :disabled="disabled" @click="$emit('undo')" title="Undo">↶</button>
-      <button :disabled="disabled" @click="$emit('redo')" title="Redo">↷</button>
+      <button :disabled="disabled || isTextMode" @click="$emit('undo')" title="Undo">↶</button>
+      <button :disabled="disabled || isTextMode" @click="$emit('redo')" title="Redo">↷</button>
     </div>
 
     <button class="trash-btn" :disabled="disabled" @click="$emit('clear')" title="Clear all">🗑️</button>
@@ -93,7 +92,7 @@ interface Props {
   lineWidth: number;
   textFontSize: number;
   textColor: string;
-  textFontFamily: string;
+  textEmphasis: 'normal' | 'bold' | 'italic';
   disabled?: boolean;
 }
 
@@ -108,7 +107,7 @@ interface Emits {
   'update:lineWidth': [value: number];
   'update:textFontSize': [value: number];
   'update:textColor': [value: string];
-  'update:textFontFamily': [value: string];
+  'update:textEmphasis': [value: 'normal' | 'bold' | 'italic'];
   undo: [];
   redo: [];
   clear: [];
@@ -122,9 +121,9 @@ const strokeTypeModel = computed({
   set: (value: string) => emit('update:strokeType', value)
 });
 
-const textFontFamilyModel = computed({
-  get: () => props.textFontFamily,
-  set: (value: string) => emit('update:textFontFamily', value)
+const textEmphasisModel = computed({
+  get: () => props.textEmphasis,
+  set: (value: 'normal' | 'bold' | 'italic') => emit('update:textEmphasis', value)
 });
 
 const colorModel = computed({
@@ -152,13 +151,13 @@ const textFontSizeModel = computed({
 <style scoped>
 .controls-group {
   display: flex;
-  gap: 10px;
+  gap: var(--space-sm);
   align-items: center;
-  padding: 8px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+  padding: var(--space-sm);
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 8px rgb(15 23 42 / 6%);
   transition: opacity 0.2s ease;
 }
 
@@ -168,48 +167,48 @@ const textFontSizeModel = computed({
 }
 
 .controls-group button {
-  padding: 8px 12px;
-  background: #ffffff;
-  color: #1f2937;
-  border: 1px solid #d6dee9;
-  border-radius: 10px;
+  padding: var(--space-sm) 0.75rem;
+  background: var(--color-white);
+  color: var(--color-text-muted-dark);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   min-height: 36px;
   white-space: nowrap;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 1px 3px rgb(15 23 42 / 6%);
 }
 
 .controls-group button:hover {
-  background: #f3f6fb;
-  border-color: #cbd5e1;
+  background: var(--color-bg-subtle);
+  border-color: var(--color-border-hover);
 }
 
 .controls-group button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  background: #f8fafc;
+  background: var(--color-bg-subtle);
 }
 
 .controls-group button:disabled:hover {
-  background: #f8fafc;
-  border-color: #d6dee9;
+  background: var(--color-bg-subtle);
+  border-color: var(--color-border);
 }
 
 .compact-select,
 .line-width {
   padding: 6px 10px;
-  background: #f8fafc;
-  color: #0f172a;
-  border: 1px solid #d6dee9;
-  border-radius: 8px;
+  background: var(--color-bg-subtle);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 6%);
 }
 
 .compact-select {
@@ -221,27 +220,27 @@ const textFontSizeModel = computed({
   width: 80px;
   height: 20px;
   padding: 0;
-  accent-color: #1e3a8a;
+  accent-color: var(--color-primary);
 }
 
 .compact-select:hover {
-  border-color: #94a3b8;
-  background: #f1f5f9;
+  border-color: var(--color-border-hover);
+  background: var(--color-bg);
 }
 
 .compact-select:disabled,
 .line-width:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  background: #f8fafc;
+  background: var(--color-bg-subtle);
 }
 
 .color-picker {
   width: 32px;
   height: 32px;
   padding: 2px;
-  border: 1px solid #d6dee9;
-  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   cursor: pointer;
   flex-shrink: 0;
 }
@@ -254,9 +253,9 @@ const textFontSizeModel = computed({
 .button-group {
   display: flex;
   gap: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   overflow: hidden;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 6%);
 }
 
 .button-group button {
@@ -273,13 +272,13 @@ const textFontSizeModel = computed({
 
 .button-group button:first-child {
   border-right: none;
-  border-top-left-radius: 8px;
-  border-bottom-left-radius: 8px;
+  border-top-left-radius: var(--radius-md);
+  border-bottom-left-radius: var(--radius-md);
 }
 
 .button-group button:last-child {
-  border-top-right-radius: 8px;
-  border-bottom-right-radius: 8px;
+  border-top-right-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
 }
 
 .trash-btn {
@@ -303,11 +302,11 @@ const textFontSizeModel = computed({
 }
 
 .controls-group::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: var(--color-border-hover);
   border-radius: 2px;
 }
 
 .controls-group::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: var(--color-text-muted);
 }
 </style>

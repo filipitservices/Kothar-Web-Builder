@@ -31,14 +31,16 @@
           :canvas-width="desktopCanvasWidth"
           :canvas-height="desktopCanvasHeight"
           :list="props.desktopList"
-          :is-drawing-enabled="props.desktopDrawingState.desktopEnabled"
+          :is-drawing-enabled="props.desktopDrawingState.desktopEnabled ?? false"
           :drawing-state="props.desktopDrawingState"
           :strokes="props.desktopStrokes"
+          :text-boxes="props.desktopTextBoxes"
           :style="{ transform: `translateX(-50%) scale(${desktopScale})`, transformOrigin: 'top center' }"
           @undo="() => desktopScreenRef?.undo()"
           @redo="() => desktopScreenRef?.redo()"
           @clear="() => desktopScreenRef?.clear()"
           @list-change="(list) => emit('update:desktopList', list)"
+          @update:text-boxes="(next) => emit('update:desktopTextBoxes', next)"
           @remove-item="removeDesktopItem"
         />
       </div>
@@ -57,14 +59,16 @@
           :canvas-width="mobileCanvasWidth"
           :canvas-height="mobileCanvasHeight"
           :list="props.mobileList"
-          :is-drawing-enabled="props.mobileDrawingState.mobileEnabled"
+          :is-drawing-enabled="props.mobileDrawingState.mobileEnabled ?? false"
           :drawing-state="props.mobileDrawingState"
           :strokes="props.mobileStrokes"
+          :text-boxes="props.mobileTextBoxes"
           :style="{ transform: `translateX(-50%) scale(${mobileScale})`, transformOrigin: 'top center' }"
           @undo="() => mobileScreenRef?.undo()"
           @redo="() => mobileScreenRef?.redo()"
           @clear="() => mobileScreenRef?.clear()"
           @list-change="(list) => emit('update:mobileList', list)"
+          @update:text-boxes="(next) => emit('update:mobileTextBoxes', next)"
           @remove-item="removeMobileItem"
         />
       </div>
@@ -84,7 +88,8 @@ import ScreenCard from './ScreenCard.vue';
 import DrawingControlsPanel from './DrawingControlsPanel.vue';
 import AiChatPanel from './AiChatPanel.vue';
 import type { BlockItem, ScreenCardRefShape } from '~/types/builder';
-import type { DrawingState } from '~/composables/useDrawing';
+import type { DrawingState } from '~/types/builder';
+import type { BuilderTextBox } from '~/types/order';
 
 const props = withDefaults(
   defineProps<{
@@ -98,6 +103,8 @@ const props = withDefaults(
     mobileDrawingState: DrawingState;
     desktopStrokes: unknown[];
     mobileStrokes: unknown[];
+    desktopTextBoxes: BuilderTextBox[];
+    mobileTextBoxes: BuilderTextBox[];
     syncScreens?: boolean;
     showSyncScreens?: boolean;
   }>(),
@@ -112,6 +119,8 @@ const emit = defineEmits<{
   (e: 'update:mobileList', value: BlockItem[]): void;
   (e: 'update:desktopDrawingState', value: Partial<DrawingState>): void;
   (e: 'update:mobileDrawingState', value: Partial<DrawingState>): void;
+  (e: 'update:desktopTextBoxes', value: BuilderTextBox[]): void;
+  (e: 'update:mobileTextBoxes', value: BuilderTextBox[]): void;
   (e: 'set-desktop-canvas-ref', el: unknown): void;
   (e: 'set-mobile-canvas-ref', el: unknown): void;
 }>();
@@ -279,6 +288,19 @@ watch(() => props.mobileDrawingState.mobileEnabled, (enabled) => {
       }
     }, 0);
   }
+});
+
+function getDesktopTextBoxes(): BuilderTextBox[] {
+  return ((desktopScreenRef.value as ScreenCardRefShape | null)?.overlayRef?.getTextBoxes?.() as BuilderTextBox[] | undefined) ?? [];
+}
+
+function getMobileTextBoxes(): BuilderTextBox[] {
+  return ((mobileScreenRef.value as ScreenCardRefShape | null)?.overlayRef?.getTextBoxes?.() as BuilderTextBox[] | undefined) ?? [];
+}
+
+defineExpose({
+  getDesktopTextBoxes,
+  getMobileTextBoxes,
 });
 </script>
 

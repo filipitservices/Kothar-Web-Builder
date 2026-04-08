@@ -219,7 +219,7 @@ The app uses Nuxt 4 layouts for global structure:
 - **layouts/default.vue**: Used by landing, gallery, gallery request, login, and reset-password. Renders the shared **AppNavbar** and a slot for the page.
 - **layouts/builder.vue**: Used only by the builder page. Renders only the slot (no navbar), so the editor has full viewport for the 3-column layout.
 
-**Request layout and builder save:** The page layout being edited for a request/order lives in the request layout store; a single canonical type (`OrderLayoutBlock` is an alias of `BlockItem`) is used from builder UI through to Firestore. Save is performed only via the **`useBuilderSave`** composable; the BuilderEditor component wires it and does not persist directly. Order documents read from Firestore are validated at the boundary with **`parseOrderDocument`** before entering store state (see `docs/18-FIREBASE-FIRESTORE-STORAGE.md`).
+**Request layout and builder save:** The page layout being edited for a request/order lives in the request layout store; a single canonical type (`OrderLayoutBlock` is an alias of `BlockItem`) is used from builder UI through to Firestore. `OrderLayout` also carries `builderAnnotations` (versioned desktop/mobile `strokes` and `textBoxes`) so drawing and text overlays persist with the request. Save is performed only via the **`useBuilderSave`** composable after BuilderEditor snapshots current overlay state into the store. Order documents read from Firestore are validated at the boundary with **`parseOrderDocument`** before entering store state (see `docs/18-FIREBASE-FIRESTORE-STORAGE.md`).
 
 **AppNavbar** (`components/AppNavbar.vue`) is the single source of global navigation:
 - Logo (Kothar) links to `/`.
@@ -483,18 +483,19 @@ ScreenCard
 **Drawing State** (per screen):
 ```typescript
 {
-  isDrawingMode: boolean,
+  desktopEnabled: boolean,
+  mobileEnabled: boolean,
   strokeType: 'dash' | 'line',
   color: '#000000',
-  lineWidth: 5,
+  lineWidth: 3,
   isTextMode: boolean,
   textFontSize: 16,
   textColor: '#000000',
-  textFontFamily: 'Arial'
+  textEmphasis: 'normal' | 'bold' | 'italic'
 }
 ```
 
-**Strokes Array**: Stores all drawn paths for persistence
+**Annotations Persistence**: The builder saves a versioned `builderAnnotations` object in `layout` for both desktop and mobile. Each screen stores `strokes` (from `vue-drawing-canvas`) and `textBoxes` (`id`, position, size, text, font size, color, emphasis). Reopening the builder rehydrates both arrays and redraws overlays.
 
 ---
 

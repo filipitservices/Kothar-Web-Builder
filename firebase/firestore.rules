@@ -96,7 +96,44 @@ service cloud.firestore {
         && layout.customized is bool
         && layout.blocks is list
         && layout.blocks.size() <= 200
+        && (
+          layout.builderAnnotations == null
+          || (
+            layout.builderAnnotations is map
+            && layout.builderAnnotations.version == 1
+            && isValidScreenAnnotations(layout.builderAnnotations.desktop)
+            && isValidScreenAnnotations(layout.builderAnnotations.mobile)
+          )
+        )
       );
+    }
+
+    function isValidScreenAnnotations(value) {
+      return value is map
+        && value.strokes is list
+        && value.strokes.size() <= 500
+        && value.textBoxes is list
+        && value.textBoxes.size() <= 100
+        && value.textBoxes.all(box,
+          box is map
+          && isSafeString(box.id, 120)
+          && box.x is number
+          && box.y is number
+          && box.width is number
+          && box.width > 0
+          && box.height is number
+          && box.height > 0
+          && box.fontSize is number
+          && box.fontSize >= 8
+          && box.fontSize <= 200
+          && isSafeString(box.color, 40)
+          && isOptionalSafeString(box.text, 4000)
+          && (
+            box.emphasis == 'normal'
+            || box.emphasis == 'bold'
+            || box.emphasis == 'italic'
+          )
+        );
     }
 
     function isValidOrderContent(data) {

@@ -45,7 +45,7 @@
           :text="textBox.text"
           :font-size="textBox.fontSize"
           :color="textBox.color"
-          :font-family="textBox.fontFamily"
+          :emphasis="textBox.emphasis"
           :is-selected="selectedTextBoxId === textBox.id"
           @update:x="(val) => updateTextBox(textBox.id, 'x', val)"
           @update:y="(val) => updateTextBox(textBox.id, 'y', val)"
@@ -60,11 +60,30 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, watch, nextTick } from 'vue';
 import TextBox from './TextBox.vue';
 import { useTextBoxManager } from '~/composables/useTextBoxManager';
 import { useDragToCreate } from '~/composables/useDragToCreate';
+import type { BuilderTextBox } from '~/types/order';
+
+function areTextBoxesEqual(a: BuilderTextBox[], b: BuilderTextBox[]): boolean {
+  if (a.length !== b.length) return false;
+  return a.every((box, index) => {
+    const other = b[index];
+    return (
+      box.id === other?.id &&
+      box.x === other?.x &&
+      box.y === other?.y &&
+      box.width === other?.width &&
+      box.height === other?.height &&
+      box.text === other?.text &&
+      box.fontSize === other?.fontSize &&
+      box.color === other?.color &&
+      box.emphasis === other?.emphasis
+    );
+  });
+}
 
 const props = defineProps({
   canvasId: {
@@ -90,6 +109,10 @@ const props = defineProps({
   height: {
     type: Number,
     required: true
+  },
+  initialTextBoxes: {
+    type: Array as () => BuilderTextBox[],
+    default: () => []
   }
 });
 
@@ -100,7 +123,8 @@ const emit = defineEmits([
   'toggle-text-mode',
   'update:textFontSize',
   'update:textColor',
-  'update:textFontFamily'
+  'update:textEmphasis',
+  'update:text-boxes'
 ]);
 
 const localCanvasRef = ref(null);
@@ -110,7 +134,8 @@ const canvasContainerRef = ref(null);
 const { textBoxes, selectedTextBoxId, createTextBox, updateTextBox, selectTextBox, deleteTextBox, clearAll, setupWatchers: setupTextBoxWatchers } = useTextBoxManager({
   defaultFontSize: () => props.drawingState.textFontSize,
   defaultColor: () => props.drawingState.textColor,
-  defaultFontFamily: () => props.drawingState.textFontFamily
+  defaultEmphasis: () => props.drawingState.textEmphasis,
+  initialTextBoxes: () => props.initialTextBoxes
 });
 
 // Drag-to-create interaction
@@ -124,30 +149,25 @@ const { isDraggingNewBox, dragPreviewStyle, handleMouseDown, handleCanvasClick }
   }
 });
 
-const onUpdateStrokeType = (val) => emit('update:strokeType', val);
-const onUpdateColor = (val) => emit('update:color', val);
-const onUpdateLineWidth = (val) => emit('update:lineWidth', val);
-const onToggleTextMode = () => emit('toggle-text-mode');
-
-const onUpdateTextFontSize = (val) => {
+const onUpdateTextFontSize = (val: number) => {
   if (selectedTextBoxId.value) {
     updateTextBox(selectedTextBoxId.value, 'fontSize', val);
   }
   emit('update:textFontSize', val);
 };
 
-const onUpdateTextColor = (val) => {
+const onUpdateTextColor = (val: string) => {
   if (selectedTextBoxId.value) {
     updateTextBox(selectedTextBoxId.value, 'color', val);
   }
   emit('update:textColor', val);
 };
 
-const onUpdateTextFontFamily = (val) => {
+const onUpdateTextEmphasis = (val: 'normal' | 'bold' | 'italic') => {
   if (selectedTextBoxId.value) {
-    updateTextBox(selectedTextBoxId.value, 'fontFamily', val);
+    updateTextBox(selectedTextBoxId.value, 'emphasis', val);
   }
-  emit('update:textFontFamily', val);
+  emit('update:textEmphasis', val);
 };
 
 const handleUndo = () => {
@@ -169,7 +189,20 @@ const handleClear = () => {
 // Setup text box watchers
 setupTextBoxWatchers(
   () => props.drawingState.isTextMode,
-  () => props.drawingState.textFontSize
+  () => props.drawingState.textFontSize,
+  () => props.drawingState.textColor,
+  () => props.drawingState.textEmphasis
+);
+
+watch(
+  textBoxes,
+  (next) => {
+    const current = next.map((box) => ({ ...box }));
+    const incoming = props.initialTextBoxes.map((box) => ({ ...box }));
+    if (areTextBoxesEqual(current, incoming)) return;
+    emit('update:text-boxes', current);
+  },
+  { deep: true }
 );
 
 // Watch for strokes changes and redraw canvas when strokes are restored
@@ -189,6 +222,9 @@ defineExpose({
   clear: handleClear,
   canvas: localCanvasRef,
   createTextBox,
+  updateTextFontSize: onUpdateTextFontSize,
+  updateTextColor: onUpdateTextColor,
+  updateTextEmphasis: onUpdateTextEmphasis,
   getTextBoxes: () => textBoxes.value,
   clearTextBoxes: () => clearAll()
 });
