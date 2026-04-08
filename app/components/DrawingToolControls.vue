@@ -16,10 +16,11 @@
       v-if="!isTextMode"
       v-model="strokeTypeModel"
       :disabled="disabled"
-      title="Stroke Type"
+      title="Drawing tool"
       class="compact-select"
+      aria-label="Drawing tool"
     >
-      <option value="dash">Freehand (dash)</option>
+      <option value="dash">Freehand (dashed)</option>
       <option value="line">Straight line</option>
       <option value="circle">Circle</option>
       <option value="square">Square</option>

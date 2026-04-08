@@ -101,6 +101,7 @@
         @update:mobile-drawing-state="handleMobileDrawingStateUpdate"
         @set-desktop-canvas-ref="setCanvasRef('desktop', $event)"
         @set-mobile-canvas-ref="setCanvasRef('mobile', $event)"
+        @annotation-interaction="scheduleAnnotationFlush"
       />
     </div>
 
@@ -113,36 +114,47 @@
         <TemplatesList :show-header="false" @apply="handleTemplateApply" />
       </div>
     </div>
+
+    <BuilderLeaveDialog
+      v-if="requestMode"
+      :open="leaveDialogOpen"
+      :saving="isSaving"
+      @cancel="leaveDialogOpen = false"
+      @discard="handleLeaveDiscard"
+      @save="handleLeaveSave"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onUnmounted, onMounted, type Ref } from 'vue';
+import { ref, computed, onUnmounted, onMounted, type Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useDrawing } from '~/composables/useDrawing';
 import { useTemplateApplication } from '~/composables/useTemplateApplication';
 import { useBuilderSave } from '~/composables/useBuilderSave';
 import { useRequestLayoutStore } from '~/stores/requestLayout';
-import { useBuilderEphemeralStore } from '~/stores/builderEphemeral';
 import { useAuthStore } from '~/stores/auth';
 import { useCreateRequest } from '~/composables/useCreateRequest';
 import ScreensPanel from '~/components/ScreensPanel.vue';
 import ItemsList from '~/components/ItemsList.vue';
 import TemplatesList from '~/components/TemplatesList.vue';
+import BuilderLeaveDialog from '~/components/BuilderLeaveDialog.vue';
 import type { BlockItem, DrawingState, ScreenId } from '~/types/builder';
 import type { BuilderAnnotations, BuilderTextBox } from '~/types/order';
 import {
   AVAILABLE_BLOCKS,
   CANVAS_DIMENSIONS,
 } from '~/constants/builder';
-import { writeBuilderSessionStash } from '~/utils/builderSessionStash';
 
 defineOptions({ name: 'BuilderEditor' });
+
+const props = defineProps<{
+  onLeaveDiscard?: () => Promise<void>;
+}>();
 
 const router = useRouter();
 const authStore = useAuthStore();
 const requestLayoutStore = useRequestLayoutStore();
-const builderEphemeral = useBuilderEphemeralStore();
 const { saveLayout } = useCreateRequest();
 
 const { isSaving, saveStatus, saveLabel, handleSaveLayout: persistLayout } = useBuilderSave({
@@ -155,6 +167,8 @@ const requestMode = computed(() => requestLayoutStore.active);
 const returnLabel = computed(() =>
   requestLayoutStore.sourceOrderId ? 'Back to order' : 'Back to request'
 );
+
+const leaveDialogOpen = ref(false);
 
 /**
  * Single shared block list.
@@ -235,33 +249,32 @@ function flushBuilderAnnotationsToStore(): void {
   requestLayoutStore.setBuilderAnnotations(buildAnnotationsSnapshot());
 }
 
+let annotationFlushTimer: ReturnType<typeof setTimeout> | null = null;
+
+function scheduleAnnotationFlush(): void {
+  if (annotationFlushTimer !== null) {
+    clearTimeout(annotationFlushTimer);
+  }
+  annotationFlushTimer = setTimeout(() => {
+    annotationFlushTimer = null;
+    flushBuilderAnnotationsToStore();
+  }, 120);
+}
+
 async function handleSaveLayout(): Promise<void> {
   flushBuilderAnnotationsToStore();
   await persistLayout();
 }
-
-/**
- * Drawing annotations are not persisted on the order layout; treat as unsaved for leave guards.
- */
-watch(
-  [desktopStrokes, mobileStrokes, desktopTextBoxes, mobileTextBoxes],
-  () => {
-    const hasMarks =
-      desktopStrokes.value.length > 0 ||
-      mobileStrokes.value.length > 0 ||
-      desktopTextBoxes.value.length > 0 ||
-      mobileTextBoxes.value.length > 0;
-    builderEphemeral.setDrawingHasUnsavedMarks(hasMarks);
-  },
-  { deep: true }
-);
 
 onMounted(() => {
   hydrateFromStoreAnnotations();
 });
 
 onUnmounted(() => {
-  builderEphemeral.reset();
+  if (annotationFlushTimer !== null) {
+    clearTimeout(annotationFlushTimer);
+    annotationFlushTimer = null;
+  }
 });
 
 const dummyMobileList: Ref<BlockItem[]> = ref([]);
@@ -288,10 +301,12 @@ function handleBlocksUpdate(val: BlockItem[]): void {
 
 function handleDesktopTextBoxesUpdate(next: BuilderTextBox[]): void {
   desktopTextBoxes.value = next.map((box) => ({ ...box }));
+  scheduleAnnotationFlush();
 }
 
 function handleMobileTextBoxesUpdate(next: BuilderTextBox[]): void {
   mobileTextBoxes.value = next.map((box) => ({ ...box }));
+  scheduleAnnotationFlush();
 }
 
 const handleDesktopDrawingStateUpdate = (newState: Partial<DrawingState>): void => {
@@ -306,7 +321,7 @@ const handleTemplateApply = (templateId: string, _screen: ScreenId): void => {
   applyTemplate(templateId, 'desktop');
 };
 
-function handleReturnToRequest(): void {
+function navigateReturn(): void {
   const route = requestLayoutStore.returnRoute;
   if (route) {
     router.push(route);
@@ -315,26 +330,29 @@ function handleReturnToRequest(): void {
   }
 }
 
-function stashSnapshotToSession(orderId: string): void {
-  if (!orderId.trim()) return;
+function handleReturnToRequest(): void {
   flushBuilderAnnotationsToStore();
-  const layout = requestLayoutStore.getLayoutForSubmission();
-  writeBuilderSessionStash({
-    orderId,
-    layout,
-    syncScreens: syncScreens.value,
-  });
+  if (!requestLayoutStore.isLayoutDirtyVsBaseline()) {
+    navigateReturn();
+    return;
+  }
+  leaveDialogOpen.value = true;
 }
 
-function applyRestoredStashSync(syncScreensValue: boolean): void {
-  syncScreens.value = syncScreensValue;
-  hydrateFromStoreAnnotations();
+async function handleLeaveSave(): Promise<void> {
+  await handleSaveLayout();
+  if (saveStatus.value === 'error') return;
+  leaveDialogOpen.value = false;
+  navigateReturn();
 }
 
-defineExpose({
-  stashSnapshotToSession,
-  applyRestoredStashSync,
-});
+async function handleLeaveDiscard(): Promise<void> {
+  if (props.onLeaveDiscard) {
+    await props.onLeaveDiscard();
+  }
+  leaveDialogOpen.value = false;
+  navigateReturn();
+}
 </script>
 
 <style scoped src="~/assets/css/editor.css"></style>

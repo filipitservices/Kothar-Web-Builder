@@ -10,11 +10,11 @@ The template system provides pre-built website layouts that users can apply with
 
 ### Key Features
 
-- **13 wireframe templates** in [`stores/templates.ts`](../app/stores/templates.ts): each is a block sequence for the builder sidebar (distinct from gallery **showcase** templates in `stores/showcase.ts`).
-- **Layout-intent categories** (not niche trade labels): Service & trust, Gallery & visuals, Information & credibility, Leads & conversion, Portfolio & work, Brochure & story — plus **All**.
-- **Screen selection**: Apply to desktop, mobile, or both (via `TemplateScreenSelector`).
-- **State transformation**: Pure list replacement in the request layout store; no DOM manipulation.
-- **Unique block IDs**: Each application generates fresh block instances (`useTemplateApplication`).
+- **Predefined Templates**: Grouped by **site intent** (service & offerings, showcase, information-first, lead & conversion, trust, minimal)—not niche industry labels
+- **Category Filtering**: Service & offerings, Showcase & gallery, Information-first, Lead & conversion, Trust & credibility, Simple & compact
+- **Screen Selection**: Apply to desktop, mobile, or both (request builder applies to the shared layout list)
+- **State Transformation**: Pure state updates, no DOM manipulation
+- **Unique Block IDs**: Each application generates fresh block instances
 
 ---
 
@@ -60,7 +60,7 @@ TemplatesList emits 'apply' event
   { templateId: string, screen: 'desktop' | 'mobile' | 'both' }
          │
          ↓
-`BuilderEditor` calls `handleTemplateApply()` (or equivalent on the builder page)
+index.vue calls handleTemplateApply()
          │
          ↓
 useTemplateApplication.applyTemplate()
@@ -99,7 +99,7 @@ Block components mount with blockId props
 **Purpose**: Display available templates with category filtering and screen selection
 
 **Features**:
-- Category filter buttons (layout-intent categories from the template store, plus **All**)
+- Category filter buttons (Business, Portfolio, Landing, Ecommerce, All)
 - Template cards with name, description, block preview
 - Modal for screen selection (Desktop, Mobile, Both)
 - Icon preview of first 3 blocks
@@ -176,7 +176,7 @@ Flow:
 4. Vue reactivity handles UI update
 
 ```typescript
-const success = applyTemplate('small-business', 'desktop');
+const success = applyTemplate('service-focused', 'desktop');
 // desktopList.value = [
 //   { id: 'navbar-1234-abc123', type: 'navbar', label: 'Navigation' },
 //   { id: 'hero-1234-def456', type: 'hero', label: 'Hero Section' },
@@ -189,7 +189,7 @@ const success = applyTemplate('small-business', 'desktop');
 Returns preview information for a template (useful for confirmation dialogs).
 
 ```typescript
-const preview = getTemplatePreview('landing-page');
+const preview = getTemplatePreview('lead-generation');
 // {
 //   name: 'Landing Page',
 //   description: 'High-converting landing page...',
@@ -242,7 +242,13 @@ interface Template {
   id: string;
   name: string;
   description: string;
-  category: 'business' | 'portfolio' | 'landing' | 'ecommerce';
+  category:
+    | 'services'
+    | 'showcase'
+    | 'information'
+    | 'conversion'
+    | 'trust'
+    | 'minimal';
   thumbnail?: string;
   blocks: TemplateBlock[];
 }
@@ -265,7 +271,7 @@ const templates = templatesStore.getAllTemplates;
 
 ```typescript
 const cats = templatesStore.categories;
-// ['business', 'portfolio', 'landing', 'ecommerce']
+// e.g. ['services', 'showcase', 'information', 'conversion', 'trust', 'minimal']
 ```
 
 #### Methods
@@ -275,7 +281,7 @@ const cats = templatesStore.categories;
 Returns templates filtered by category.
 
 ```typescript
-const businessTemplates = templatesStore.getTemplatesByCategory('business');
+const serviceTemplates = templatesStore.getTemplatesByCategory('services');
 ```
 
 **`getTemplateById(id)`**
@@ -283,135 +289,25 @@ const businessTemplates = templatesStore.getTemplatesByCategory('business');
 Returns a specific template by ID.
 
 ```typescript
-const template = templatesStore.getTemplateById('small-business');
+const template = templatesStore.getTemplateById('service-focused');
 ```
 
 ---
 
 ## Predefined Templates
 
-### 1. Small Business
+Templates are named for **what the site is meant to do**. IDs and block lists live in [`app/stores/templates.ts`](../app/stores/templates.ts).
 
-**ID**: `small-business`  
-**Category**: Business  
-**Blocks**: 7
-
-```
-Navigation
-Hero Section
-Services (Features)
-Testimonials
-Call To Action
-Contact Form
-Footer
-```
-
-**Use Case**: Local businesses, consultants, service providers
-
----
-
-### 2. Landing Page
-
-**ID**: `landing-page`  
-**Category**: Landing  
-**Blocks**: 8
-
-```
-Navigation
-Hero Section
-Key Features
-Statistics
-Pricing
-FAQ
-Final CTA
-Footer
-```
-
-**Use Case**: Product launches, marketing campaigns, lead generation
-
----
-
-### 3. Portfolio
-
-**ID**: `portfolio`  
-**Category**: Portfolio  
-**Blocks**: 7
-
-```
-Navigation
-Hero Section
-Portfolio Gallery
-About Section (Text)
-Client Testimonials
-Contact Form
-Footer
-```
-
-**Use Case**: Designers, photographers, freelancers, agencies
-
----
-
-### 4. SaaS Product
-
-**ID**: `saas-product`  
-**Category**: Ecommerce  
-**Blocks**: 9
-
-```
-Navigation
-Product Hero
-Product Features
-Key Metrics (Stats)
-Customer Reviews
-Pricing Plans
-FAQ
-Sign Up CTA
-Footer
-```
-
-**Use Case**: Software products, SaaS platforms, subscription services
-
----
-
-### 5. Simple Contact
-
-**ID**: `simple-contact`  
-**Category**: Business  
-**Blocks**: 5
-
-```
-Navigation
-Header
-About Text
-Contact Form
-Footer
-```
-
-**Use Case**: Minimal contact pages, coming soon pages
-
----
-
-### 6. Full Featured
-
-**ID**: `full-featured`  
-**Category**: Business  
-**Blocks**: 11
-
-```
-Navigation
-Hero Section
-Features
-Statistics
-Gallery
-Testimonials
-Pricing
-FAQ
-Call To Action
-Contact Form
-Footer
-```
-
-**Use Case**: Comprehensive websites, showcasing all block types
+| ID | Category (intent) | Summary |
+|----|-------------------|--------|
+| `service-focused` | Service & offerings | Services, process, proof, location, contact |
+| `full-marketing` | Service & offerings | Broad marketing page with gallery, pricing, FAQ, CTA |
+| `showcase-gallery` | Showcase & gallery | Gallery-led with offerings and inquiry |
+| `information-first` | Information-first | Overview, key points, FAQ, contact |
+| `lead-generation` | Lead & conversion | Benefits, stats, CTA, short path to form |
+| `landing-one-page` | Lead & conversion | Single scrolling story to one conversion goal |
+| `trust-credibility` | Trust & credentials | Credentials, partners, testimonials, team |
+| `compact-presence` | Simple & compact | Minimal hero, about, contact |
 
 ---
 
@@ -511,7 +407,7 @@ Edit `stores/templates.ts`:
   id: 'my-template',
   name: 'My Template',
   description: 'Custom template description',
-  category: 'business', // or portfolio, landing, ecommerce
+  category: 'services', // or showcase, information, conversion, trust, minimal
   blocks: [
     { type: 'navbar', label: 'Navigation' },
     { type: 'hero', label: 'Hero Section' },
@@ -582,7 +478,7 @@ Uses native `crypto.randomUUID()` (supported in all modern browsers and Node.js)
 ### Template Application Flow
 
 ```
-applyTemplate('small-business', 'desktop')
+applyTemplate('service-focused', 'desktop')
          │
          ↓
 desktopList.value = newBlocks
@@ -732,7 +628,13 @@ interface Template {
   id: string;
   name: string;
   description: string;
-  category: 'business' | 'portfolio' | 'landing' | 'ecommerce';
+  category:
+    | 'services'
+    | 'showcase'
+    | 'information'
+    | 'conversion'
+    | 'trust'
+    | 'minimal';
   thumbnail?: string;
   blocks: TemplateBlock[];
 }

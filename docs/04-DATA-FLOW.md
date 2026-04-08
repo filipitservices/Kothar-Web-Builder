@@ -692,6 +692,8 @@ The guard (`app/plugins/unsaved-changes-guard.client.ts`) classifies navigation 
 
 This keeps untouched drafts protected on external exits while preventing false prompts on internal edit/builder transitions.
 
+**Builder layout dirty state:** `requestLayoutStore.isLayoutDirtyVsBaseline()` compares a JSON fingerprint of the full order layout payload from `getLayoutForSubmission()`, including **`builderAnnotations`** (desktop/mobile strokes and text boxes). `BuilderEditor` debounces flushing live canvas/text state into `requestLayoutStore` so drawing and text overlays participate in that diff. The **Back to request / Back to order** control uses a dedicated **`BuilderLeaveDialog`**: Save runs the same `useBuilderSave` path as the toolbar; Discard runs the page’s rehydrate-from-order handler passed as `onLeaveDiscard`; Cancel closes the dialog.
+
 `/orders/:id/edit` additionally provides a stash action in the same global dialog. The page wires `onStashLeave` to persist a session-scoped snapshot (form + layout) keyed by order id. On return to that order edit page, the stash is restored before editing resumes; discard and successful submit/update clear the stash.
 
 ---

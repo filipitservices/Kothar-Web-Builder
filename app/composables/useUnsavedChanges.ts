@@ -9,14 +9,13 @@
  * in `useAuth` and via the unsaved guard’s unauthenticated check (see plugin).
  */
 import { onMounted, onUnmounted, useId, type MaybeRefOrGetter } from 'vue';
-import { useUnsavedChangesStore, type UnsavedDialogCopy } from '~/stores/unsavedChanges';
+import { useUnsavedChangesStore } from '~/stores/unsavedChanges';
 
 export interface UseUnsavedChangesOptions {
   isDirty: MaybeRefOrGetter<boolean>;
   hasUnsavedSession: MaybeRefOrGetter<boolean>;
   onDiscard: () => void | Promise<void>;
   onStashLeave?: () => void | Promise<void>;
-  dialogCopy?: UnsavedDialogCopy;
 }
 
 /**
@@ -34,7 +33,6 @@ export function useUnsavedChanges(options: UseUnsavedChangesOptions): void {
       hasUnsavedSession: options.hasUnsavedSession,
       onDiscard: options.onDiscard,
       onStashLeave: options.onStashLeave,
-      dialogCopy: options.dialogCopy,
     });
   });
 

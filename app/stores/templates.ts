@@ -4,13 +4,11 @@ import type { BlockType } from '~/types/builder';
 
 /**
  * Template Store
- * Manages pre-built website layouts (block sequences) for the builder sidebar.
- *
- * Categories describe layout intent for typical SMB sites—not narrow trade labels.
+ * Builder wireframe templates: block sequences grouped by **site intent** (what the
+ * business needs the site to do), not by niche industry labels.
  */
 
 export interface TemplateBlock {
-  /** Builder block type; constrained to the canonical BlockType union. */
   type: BlockType;
   label: string;
 }
@@ -20,12 +18,12 @@ export interface Template {
   name: string;
   description: string;
   category:
-    | 'service-led'
-    | 'gallery-forward'
-    | 'information-first'
-    | 'lead-capture'
-    | 'portfolio-showcase'
-    | 'brochure-story';
+    | 'services'
+    | 'showcase'
+    | 'information'
+    | 'conversion'
+    | 'trust'
+    | 'minimal';
   thumbnail?: string;
   blocks: TemplateBlock[];
 }
@@ -33,229 +31,135 @@ export interface Template {
 export const useTemplatesStore = defineStore('templates', () => {
   const templates = ref<Template[]>([
     {
-      id: 'local-contractor',
-      name: 'Services & credentials',
+      id: 'service-focused',
+      name: 'Service & offerings',
       description:
-        'Service blocks up front, proof and service area, then reviews and a strong contact path—ideal when credibility and reach matter more than a niche label.',
-      category: 'service-led',
-      blocks: [
-        { type: 'navbar', label: 'Navigation' },
-        { type: 'hero', label: 'Hero Section' },
-        { type: 'services', label: 'Our Services' },
-        { type: 'credentials', label: 'Licenses & Certifications' },
-        { type: 'location', label: 'Service Area & Hours' },
-        { type: 'testimonial', label: 'Customer Reviews' },
-        { type: 'cta', label: 'Call To Action' },
-        { type: 'form', label: 'Contact Form' },
-        { type: 'footer', label: 'Footer' },
-      ],
-    },
-    {
-      id: 'home-services',
-      name: 'Packages & quotes',
-      description:
-        'Process and pricing before social proof and a quote form—built for estimates, bookings, and clear next steps.',
-      category: 'lead-capture',
-      blocks: [
-        { type: 'navbar', label: 'Navigation' },
-        { type: 'hero', label: 'Hero Section' },
-        { type: 'services', label: 'Services Offered' },
-        { type: 'process', label: 'How It Works' },
-        { type: 'pricing', label: 'Pricing Options' },
-        { type: 'testimonial', label: 'Customer Testimonials' },
-        { type: 'form', label: 'Request Quote' },
-        { type: 'footer', label: 'Footer' },
-      ],
-    },
-    {
-      id: 'law-firm',
-      name: 'Practice & answers',
-      description:
-        'Practice areas, people, credentials, and FAQ—an information-first flow for firms that sell expertise and reassurance.',
-      category: 'information-first',
-      blocks: [
-        { type: 'navbar', label: 'Navigation' },
-        { type: 'hero', label: 'Hero Section' },
-        { type: 'services', label: 'Practice Areas' },
-        { type: 'team', label: 'Our Attorneys' },
-        { type: 'credentials', label: 'Bar Admissions & Awards' },
-        { type: 'testimonial', label: 'Client Testimonials' },
-        { type: 'faq', label: 'Common Legal Questions' },
-        { type: 'form', label: 'Free Consultation' },
-        { type: 'footer', label: 'Footer' },
-      ],
-    },
-    {
-      id: 'consulting-firm',
-      name: 'Expertise & proof',
-      description:
-        'Expertise, methodology, logos, team, and results—a brochure-style arc for advisory and professional firms.',
-      category: 'brochure-story',
-      blocks: [
-        { type: 'navbar', label: 'Navigation' },
-        { type: 'hero', label: 'Hero Section' },
-        { type: 'services', label: 'Our Expertise' },
-        { type: 'process', label: 'Our Approach' },
-        { type: 'logos', label: "Clients We've Served" },
-        { type: 'team', label: 'Meet The Team' },
-        { type: 'stats', label: 'Results & Impact' },
-        { type: 'cta', label: 'Schedule Consultation' },
-        { type: 'footer', label: 'Footer' },
-      ],
-    },
-    {
-      id: 'accounting-firm',
-      name: 'Services & assurance',
-      description:
-        'Straightforward services, certifications, team, and reviews—balanced information layout for compliance-minded visitors.',
-      category: 'information-first',
+        'Lead with what you do, how it works, proof, and a clear way to reach you—typical for consultants, trades, and local services.',
+      category: 'services',
       blocks: [
         { type: 'navbar', label: 'Navigation' },
         { type: 'hero', label: 'Hero Section' },
         { type: 'services', label: 'Services' },
-        { type: 'credentials', label: 'Certifications' },
-        { type: 'team', label: 'Our Team' },
-        { type: 'testimonial', label: 'Client Reviews' },
-        { type: 'form', label: 'Contact Us' },
+        { type: 'process', label: 'How it works' },
+        { type: 'testimonial', label: 'Testimonials' },
+        { type: 'location', label: 'Service area & hours' },
+        { type: 'form', label: 'Contact' },
         { type: 'footer', label: 'Footer' },
       ],
     },
     {
-      id: 'photography-portfolio',
-      name: 'Gallery & booking',
+      id: 'full-marketing',
+      name: 'Full marketing site',
       description:
-        'Gallery-forward with services, story, and a form—great when visuals lead and you still need a clear inquiry path.',
-      category: 'portfolio-showcase',
+        'A complete single-site flow: offerings, social proof, gallery, pricing questions, and multiple conversion points.',
+      category: 'services',
       blocks: [
         { type: 'navbar', label: 'Navigation' },
         { type: 'hero', label: 'Hero Section' },
-        { type: 'gallery', label: 'Portfolio' },
-        { type: 'services', label: 'Photography Services' },
-        { type: 'text', label: 'About Me' },
-        { type: 'testimonial', label: 'Client Reviews' },
-        { type: 'form', label: 'Book Session' },
-        { type: 'footer', label: 'Footer' },
-      ],
-    },
-    {
-      id: 'design-agency',
-      name: 'Work & team',
-      description:
-        'Services, work samples, process, team, and clients—a classic creative portfolio structure.',
-      category: 'portfolio-showcase',
-      blocks: [
-        { type: 'navbar', label: 'Navigation' },
-        { type: 'hero', label: 'Hero Section' },
-        { type: 'services', label: 'What We Do' },
-        { type: 'gallery', label: 'Our Work' },
-        { type: 'process', label: 'Our Process' },
-        { type: 'team', label: 'The Team' },
-        { type: 'logos', label: 'Clients' },
-        { type: 'cta', label: 'Start A Project' },
-        { type: 'footer', label: 'Footer' },
-      ],
-    },
-    {
-      id: 'retail-store',
-      name: 'Visit & shop',
-      description:
-        'Benefits, product gallery, store visit, and offers—retail flow without locking you to a single product type.',
-      category: 'brochure-story',
-      blocks: [
-        { type: 'navbar', label: 'Navigation' },
-        { type: 'hero', label: 'Hero Section' },
-        { type: 'features', label: 'Why Shop With Us' },
-        { type: 'gallery', label: 'Products' },
-        { type: 'location', label: 'Visit Our Store' },
-        { type: 'testimonial', label: 'Customer Reviews' },
-        { type: 'cta', label: 'Special Offers' },
-        { type: 'footer', label: 'Footer' },
-      ],
-    },
-    {
-      id: 'online-shop',
-      name: 'Catalog & pricing',
-      description:
-        'Product gallery, value props, pricing, and FAQ—commerce-leaning without implying a specific cart integration.',
-      category: 'lead-capture',
-      blocks: [
-        { type: 'navbar', label: 'Navigation' },
-        { type: 'hero', label: 'Hero Section' },
-        { type: 'gallery', label: 'Products' },
-        { type: 'features', label: 'Why Buy From Us' },
+        { type: 'services', label: 'Services' },
+        { type: 'features', label: 'Highlights' },
+        { type: 'gallery', label: 'Gallery' },
+        { type: 'testimonial', label: 'Testimonials' },
         { type: 'pricing', label: 'Pricing' },
-        { type: 'testimonial', label: 'Reviews' },
-        { type: 'faq', label: 'Shipping & Returns' },
+        { type: 'faq', label: 'FAQ' },
+        { type: 'cta', label: 'Call to action' },
+        { type: 'form', label: 'Contact' },
         { type: 'footer', label: 'Footer' },
       ],
     },
     {
-      id: 'medical-practice',
-      name: 'Care & access',
+      id: 'showcase-gallery',
+      name: 'Showcase & gallery',
       description:
-        'Treatments, providers, credentials, hours, and patient FAQ—service-led with compliance-friendly structure.',
-      category: 'service-led',
+        'Image-forward layout for portfolios, makers, and anyone whose work should carry the first impression.',
+      category: 'showcase',
       blocks: [
         { type: 'navbar', label: 'Navigation' },
         { type: 'hero', label: 'Hero Section' },
-        { type: 'services', label: 'Services & Treatments' },
-        { type: 'team', label: 'Our Providers' },
+        { type: 'gallery', label: 'Gallery' },
+        { type: 'services', label: 'Offerings' },
+        { type: 'text', label: 'About' },
+        { type: 'testimonial', label: 'Testimonials' },
+        { type: 'form', label: 'Inquire' },
+        { type: 'footer', label: 'Footer' },
+      ],
+    },
+    {
+      id: 'information-first',
+      name: 'Information & resources',
+      description:
+        'Explain, educate, and answer questions before asking for contact—policies, guides, and FAQs up front.',
+      category: 'information',
+      blocks: [
+        { type: 'navbar', label: 'Navigation' },
+        { type: 'hero', label: 'Hero Section' },
+        { type: 'text', label: 'Overview' },
+        { type: 'features', label: 'Key points' },
+        { type: 'faq', label: 'FAQ' },
+        { type: 'form', label: 'Contact' },
+        { type: 'footer', label: 'Footer' },
+      ],
+    },
+    {
+      id: 'lead-generation',
+      name: 'Lead generation',
+      description:
+        'Focused on conversion: benefits, proof in numbers, strong CTAs, and a short path to your form.',
+      category: 'conversion',
+      blocks: [
+        { type: 'navbar', label: 'Navigation' },
+        { type: 'hero', label: 'Hero Section' },
+        { type: 'features', label: 'Benefits' },
+        { type: 'stats', label: 'By the numbers' },
+        { type: 'cta', label: 'Call to action' },
+        { type: 'form', label: 'Get in touch' },
+        { type: 'footer', label: 'Footer' },
+      ],
+    },
+    {
+      id: 'landing-one-page',
+      name: 'Single-page landing',
+      description:
+        'One scrolling story: pitch, objection handling, and a single conversion goal—good for campaigns and focused offers.',
+      category: 'conversion',
+      blocks: [
+        { type: 'navbar', label: 'Navigation' },
+        { type: 'hero', label: 'Hero Section' },
+        { type: 'features', label: 'Value proposition' },
+        { type: 'testimonial', label: 'Social proof' },
+        { type: 'faq', label: 'FAQ' },
+        { type: 'cta', label: 'Primary CTA' },
+        { type: 'form', label: 'Sign up / contact' },
+        { type: 'footer', label: 'Footer' },
+      ],
+    },
+    {
+      id: 'trust-credibility',
+      name: 'Trust & credibility',
+      description:
+        'Emphasize legitimacy: certifications, partners, team, and testimonials before the ask.',
+      category: 'trust',
+      blocks: [
+        { type: 'navbar', label: 'Navigation' },
+        { type: 'hero', label: 'Hero Section' },
         { type: 'credentials', label: 'Credentials' },
-        { type: 'location', label: 'Location & Hours' },
-        { type: 'faq', label: 'Patient FAQ' },
-        { type: 'form', label: 'Schedule Appointment' },
+        { type: 'logos', label: 'Partners & clients' },
+        { type: 'testimonial', label: 'Testimonials' },
+        { type: 'team', label: 'Team' },
         { type: 'footer', label: 'Footer' },
       ],
     },
     {
-      id: 'wellness-center',
-      name: 'Calm & services',
+      id: 'compact-presence',
+      name: 'Simple presence',
       description:
-        'Story-first intro, services, team, and soft conversion—brochure pacing for consultative or care-oriented brands.',
-      category: 'brochure-story',
+        'Minimal pages: who you are, what you offer in one breath, and how to contact you.',
+      category: 'minimal',
       blocks: [
         { type: 'navbar', label: 'Navigation' },
         { type: 'hero', label: 'Hero Section' },
-        { type: 'text', label: 'About Our Practice' },
-        { type: 'services', label: 'Services Offered' },
-        { type: 'team', label: 'Meet The Team' },
-        { type: 'testimonial', label: 'Client Testimonials' },
-        { type: 'location', label: 'Location & Contact' },
-        { type: 'form', label: 'Book Consultation' },
-        { type: 'footer', label: 'Footer' },
-      ],
-    },
-    {
-      id: 'restaurant',
-      name: 'Menu & visit',
-      description:
-        'Visual menu gallery, story, location, and reservation CTA—image-heavy hospitality layout.',
-      category: 'gallery-forward',
-      blocks: [
-        { type: 'navbar', label: 'Navigation' },
-        { type: 'hero', label: 'Hero Section' },
-        { type: 'gallery', label: 'Our Menu' },
-        { type: 'text', label: 'About Us' },
-        { type: 'location', label: 'Visit Us' },
-        { type: 'testimonial', label: 'Customer Reviews' },
-        { type: 'cta', label: 'Make Reservation' },
-        { type: 'footer', label: 'Footer' },
-      ],
-    },
-    {
-      id: 'catering-service',
-      name: 'Events & catering',
-      description:
-        'Packages, food gallery, process, and quote form—lead-focused for events and catering inquiries.',
-      category: 'lead-capture',
-      blocks: [
-        { type: 'navbar', label: 'Navigation' },
-        { type: 'hero', label: 'Hero Section' },
-        { type: 'services', label: 'Catering Packages' },
-        { type: 'gallery', label: 'Our Dishes' },
-        { type: 'process', label: 'How It Works' },
-        { type: 'testimonial', label: 'Client Reviews' },
-        { type: 'form', label: 'Request Quote' },
+        { type: 'text', label: 'About' },
+        { type: 'form', label: 'Contact' },
         { type: 'footer', label: 'Footer' },
       ],
     },
@@ -278,12 +182,12 @@ export const useTemplatesStore = defineStore('templates', () => {
 
   const getCategoryLabel = (category: Template['category']): string => {
     const labels: Record<Template['category'], string> = {
-      'service-led': 'Service & trust',
-      'gallery-forward': 'Gallery & visuals',
-      'information-first': 'Information & credibility',
-      'lead-capture': 'Leads & conversion',
-      'portfolio-showcase': 'Portfolio & work',
-      'brochure-story': 'Brochure & story',
+      services: 'Service & offerings',
+      showcase: 'Showcase & gallery',
+      information: 'Information-first',
+      conversion: 'Lead & conversion',
+      trust: 'Trust & credibility',
+      minimal: 'Simple & compact',
     };
     return labels[category];
   };

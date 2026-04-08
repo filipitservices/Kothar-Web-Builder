@@ -11,7 +11,7 @@
       @update:sync-screens="emit('update:syncScreens', $event)"
       @undo="handleUndo"
       @redo="handleRedo"
-      @clear="onClearToolbar"
+      @clear="onClearRequest"
     />
 
     <!-- Screens area (screens + overlay) -->
@@ -42,6 +42,7 @@
           @list-change="(list) => emit('update:desktopList', list)"
           @update:text-boxes="(next) => emit('update:desktopTextBoxes', next)"
           @remove-item="removeDesktopItem"
+          @annotation-interaction="emit('annotation-interaction')"
         />
       </div>
 
@@ -70,6 +71,7 @@
           @list-change="(list) => emit('update:mobileList', list)"
           @update:text-boxes="(next) => emit('update:mobileTextBoxes', next)"
           @remove-item="removeMobileItem"
+          @annotation-interaction="emit('annotation-interaction')"
         />
       </div>
     </div>
@@ -83,28 +85,26 @@
         v-if="clearConfirmOpen"
         class="modal-overlay"
         role="presentation"
-        @click.self="closeClearConfirm"
+        @click.self="clearConfirmOpen = false"
       >
         <div
-          class="modal-container overlay-clear-confirm-dialog"
+          class="modal-container drawing-clear-dialog"
           role="dialog"
           aria-modal="true"
-          :aria-labelledby="clearDialogTitleId"
-          tabindex="-1"
-          ref="clearDialogRef"
-          @keydown.escape.prevent="closeClearConfirm"
+          aria-labelledby="drawing-clear-title"
+          aria-describedby="drawing-clear-desc"
         >
           <div class="modal-header">
-            <h2 :id="clearDialogTitleId" class="text-title">{{ clearConfirmTitle }}</h2>
+            <h2 id="drawing-clear-title" class="text-title">Clear annotations?</h2>
           </div>
-          <div class="modal-body overlay-clear-confirm-dialog__body">
-            <p class="text-muted">{{ clearConfirmDescription }}</p>
+          <div class="modal-body drawing-clear-dialog__body">
+            <p id="drawing-clear-desc" class="text-muted">{{ clearConfirmMessage }}</p>
           </div>
-          <div class="modal-footer overlay-clear-confirm-dialog__footer">
-            <button type="button" class="btn btn--secondary" @click="closeClearConfirm">
+          <div class="modal-footer drawing-clear-dialog__footer">
+            <button type="button" class="btn btn--secondary" @click="clearConfirmOpen = false">
               Cancel
             </button>
-            <button type="button" class="btn btn--danger" @click="confirmClearOverlay">
+            <button type="button" class="btn btn--danger" @click="runClearAfterConfirm">
               Clear all
             </button>
           </div>
@@ -115,17 +115,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  ref,
-  watch,
-  computed,
-  onMounted,
-  onUnmounted,
-  nextTick,
-  toRef,
-  useId,
-  type ComputedRef,
-} from 'vue';
+import { ref, watch, computed, onMounted, onUnmounted, nextTick, toRef, type ComputedRef } from 'vue';
 import { useScreenScaling } from '~/composables/useScreenScaling';
 import { useListSyncing } from '~/composables/useListSyncing';
 import ScreenCard from './ScreenCard.vue';
@@ -167,7 +157,64 @@ const emit = defineEmits<{
   (e: 'update:mobileTextBoxes', value: BuilderTextBox[]): void;
   (e: 'set-desktop-canvas-ref', el: unknown): void;
   (e: 'set-mobile-canvas-ref', el: unknown): void;
+  (e: 'annotation-interaction'): void;
 }>();
+
+const clearConfirmOpen = ref(false);
+const clearConfirmMessage = ref('');
+
+function clearImpactDescription(): string | null {
+  let hasText = false;
+  let hasDraw = false;
+  if (props.desktopDrawingState.desktopEnabled) {
+    if (props.desktopDrawingState.isTextMode && props.desktopTextBoxes.length > 0) {
+      hasText = true;
+    }
+    if (!props.desktopDrawingState.isTextMode && props.desktopStrokes.length > 0) {
+      hasDraw = true;
+    }
+  }
+  if (props.mobileDrawingState.mobileEnabled) {
+    if (props.mobileDrawingState.isTextMode && props.mobileTextBoxes.length > 0) {
+      hasText = true;
+    }
+    if (!props.mobileDrawingState.isTextMode && props.mobileStrokes.length > 0) {
+      hasDraw = true;
+    }
+  }
+  if (!hasText && !hasDraw) return null;
+  if (hasText && hasDraw) {
+    return 'This will remove text boxes and drawing marks from the active preview. This cannot be undone.';
+  }
+  if (hasText) {
+    return 'This will remove text boxes from the active preview. This cannot be undone.';
+  }
+  return 'This will remove drawing marks and shapes from the active preview. This cannot be undone.';
+}
+
+function onClearRequest(): void {
+  const desc = clearImpactDescription();
+  if (!desc) {
+    runClearCanvas();
+    return;
+  }
+  clearConfirmMessage.value = desc;
+  clearConfirmOpen.value = true;
+}
+
+function runClearAfterConfirm(): void {
+  runClearCanvas();
+  clearConfirmOpen.value = false;
+}
+
+function runClearCanvas(): void {
+  if (props.desktopDrawingState.desktopEnabled) {
+    desktopScreenRef.value?.clear();
+  }
+  if (props.mobileDrawingState.mobileEnabled) {
+    mobileScreenRef.value?.clear();
+  }
+}
 
 // Composables
 const {
@@ -186,23 +233,6 @@ const {
 const desktopScreenRef = ref<InstanceType<typeof ScreenCard> | null>(null);
 const mobileScreenRef = ref<InstanceType<typeof ScreenCard> | null>(null);
 const screensContainerRef = ref<HTMLElement | null>(null);
-const clearDialogRef = ref<HTMLElement | null>(null);
-const clearDialogTitleId = useId();
-const clearConfirmOpen = ref(false);
-const clearConfirmMode = ref<'draw' | 'text' | null>(null);
-
-const clearConfirmTitle = computed(() =>
-  clearConfirmMode.value === 'text'
-    ? 'Discard all text annotations?'
-    : 'Discard all drawing strokes?',
-);
-
-const clearConfirmDescription = computed(() => {
-  if (clearConfirmMode.value === 'text') {
-    return 'This removes every text box on the desktop and mobile previews. This cannot be undone.';
-  }
-  return 'This removes every drawing stroke on the desktop and mobile previews. This cannot be undone.';
-});
 
 const syncScreensEnabled = toRef(props, 'syncScreens');
 
@@ -304,58 +334,6 @@ const handleRedo = () => {
   }
 };
 
-function closeClearConfirm(): void {
-  clearConfirmOpen.value = false;
-  clearConfirmMode.value = null;
-}
-
-function confirmClearOverlay(): void {
-  closeClearConfirm();
-  runClearOverlay();
-}
-
-function onClearToolbar(payload: { isTextMode: boolean }): void {
-  const isText = payload.isTextMode;
-  const desktopCard = desktopScreenRef.value as ScreenCardRefShape | null;
-  const mobileCard = mobileScreenRef.value as ScreenCardRefShape | null;
-
-  if (isText) {
-    const hasText =
-      (props.desktopDrawingState.desktopEnabled && desktopCard?.hasTextWorkToClear?.() === true) ||
-      (props.mobileDrawingState.mobileEnabled && mobileCard?.hasTextWorkToClear?.() === true);
-    if (!hasText) {
-      runClearOverlay();
-      return;
-    }
-    clearConfirmMode.value = 'text';
-    clearConfirmOpen.value = true;
-    void nextTick(() => {
-      clearDialogRef.value?.focus();
-    });
-    return;
-  }
-  const hasDraw =
-    (props.desktopDrawingState.desktopEnabled && desktopCard?.hasDrawWorkToClear?.() === true) ||
-    (props.mobileDrawingState.mobileEnabled && mobileCard?.hasDrawWorkToClear?.() === true);
-  if (!hasDraw) {
-    runClearOverlay();
-    return;
-  }
-  clearConfirmMode.value = 'draw';
-  clearConfirmOpen.value = true;
-  void nextTick(() => {
-    clearDialogRef.value?.focus();
-  });
-}
-
-function runClearOverlay(): void {
-  if (props.desktopDrawingState.desktopEnabled) {
-    desktopScreenRef.value?.clear();
-  }
-  if (props.mobileDrawingState.mobileEnabled) {
-    mobileScreenRef.value?.clear();
-  }
-}
 
 // Lifecycle
 onMounted(async () => {
@@ -467,15 +445,15 @@ defineExpose({
   }
 }
 
-.overlay-clear-confirm-dialog {
+.drawing-clear-dialog {
   max-width: 26rem;
 }
 
-.overlay-clear-confirm-dialog__body {
+.drawing-clear-dialog__body {
   padding: var(--space-lg);
 }
 
-.overlay-clear-confirm-dialog__footer {
+.drawing-clear-dialog__footer {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-sm);

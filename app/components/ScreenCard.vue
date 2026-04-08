@@ -35,6 +35,7 @@
         @update:text-color="onUpdateTextColor"
         @update:text-emphasis="onUpdateTextEmphasis"
         @update:text-boxes="onTextBoxesChange"
+        @annotation-interaction="$emit('annotation-interaction')"
       />
     </div>
   </div>
@@ -104,7 +105,8 @@ const emit = defineEmits([
   'redo',
   'clear',
   'list-change',
-  'remove-item'
+  'remove-item',
+  'annotation-interaction',
 ]);
 
 const overlayRef = ref(null);
@@ -237,20 +239,6 @@ const undo = () => overlayRef.value?.undo();
 const redo = () => overlayRef.value?.redo();
 const clear = () => overlayRef.value?.clear();
 
-function hasDrawWorkToClear(): boolean {
-  const overlay = overlayRef.value as {
-    hasDrawingContent?: () => boolean;
-  } | null;
-  return overlay?.hasDrawingContent?.() ?? false;
-}
-
-function hasTextWorkToClear(): boolean {
-  const overlay = overlayRef.value as {
-    hasTextContent?: () => boolean;
-  } | null;
-  return overlay?.hasTextContent?.() ?? false;
-}
-
 // Initialize canvas dimension tracking with list watcher
 onMounted(() => {
   setupCanvasDimensions(() => props.list);
@@ -260,7 +248,7 @@ onUnmounted(() => {
   cleanupCanvasDimensions();
 });
 
-defineExpose({ overlayRef, undo, redo, clear, hasDrawWorkToClear, hasTextWorkToClear });
+defineExpose({ overlayRef, undo, redo, clear });
 </script>
 
 <style scoped>

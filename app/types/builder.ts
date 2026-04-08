@@ -43,9 +43,5 @@ export interface ScreenCardRefShape {
   overlayRef?: {
     canvas?: unknown;
     getTextBoxes?: () => unknown[];
-    hasDrawingContent?: () => boolean;
-    hasTextContent?: () => boolean;
   } | null;
-  hasDrawWorkToClear?: () => boolean;
-  hasTextWorkToClear?: () => boolean;
 }

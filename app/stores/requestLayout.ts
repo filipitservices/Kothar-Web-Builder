@@ -229,20 +229,6 @@ export const useRequestLayoutStore = defineStore('requestLayout', () => {
     };
   }
 
-  /**
-   * Replace working layout and annotations from a session stash without updating the
-   * persisted baseline fingerprint — keeps comparison against last saved server state.
-   */
-  function applyStashedOrderLayout(layout: OrderLayout): void {
-    const restored: BlockItem[] = layout.blocks.map(b => ({
-      id: b.id,
-      type: b.type as BlockType,
-      label: b.label,
-    }));
-    blocks.value = restored;
-    builderAnnotations.value = cloneBuilderAnnotations(layout.builderAnnotations);
-  }
-
   /** Clear all state (e.g. after submission or explicit discard). */
   function reset(): void {
     blocks.value = [];
@@ -273,7 +259,6 @@ export const useRequestLayoutStore = defineStore('requestLayout', () => {
     getLayoutForSubmission,
     syncLayoutBaselineFromCurrent,
     isLayoutDirtyVsBaseline,
-    applyStashedOrderLayout,
     reset,
   };
 });

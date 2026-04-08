@@ -17,12 +17,12 @@
         @keydown.escape.prevent="onStay"
       >
         <div class="modal-header">
-          <h2 id="unsaved-changes-title" class="text-title">{{ dialogCopy.title }}</h2>
+          <h2 id="unsaved-changes-title" class="text-title">Leave without saving?</h2>
           <button
             type="button"
             class="modal-close"
-            :title="dialogCopy.stayLabel"
-            :aria-label="dialogCopy.stayLabel"
+            title="Stay on page"
+            aria-label="Stay on page"
             @click="onStay"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -33,32 +33,30 @@
         </div>
         <div class="modal-body unsaved-changes-dialog__body">
           <p id="unsaved-changes-desc" class="text-muted">
-            {{ dialogCopy.description }}
+            You have an in-progress request. If you leave now, unsaved progress may be lost.
           </p>
         </div>
         <div class="modal-footer unsaved-changes-dialog__footer">
           <button type="button" class="btn btn--secondary" @click="onStay">
-            {{ dialogCopy.stayLabel }}
+            Stay on page
           </button>
-          <div class="unsaved-changes-dialog__footer-trail">
-            <button
-              v-if="unsaved.hasStashAction"
-              type="button"
-              class="btn btn--secondary"
-              :disabled="discarding || stashing"
-              @click="onStashLeave"
-            >
-              {{ stashing ? 'Stashing…' : dialogCopy.stashLabel }}
-            </button>
-            <button
-              type="button"
-              class="btn btn--danger"
-              :disabled="discarding || stashing"
-              @click="onDiscardLeave"
-            >
-              {{ discarding ? 'Leaving…' : dialogCopy.discardLabel }}
-            </button>
-          </div>
+          <button
+            v-if="unsaved.hasStashAction"
+            type="button"
+            class="btn btn--secondary"
+            :disabled="discarding || stashing"
+            @click="onStashLeave"
+          >
+            {{ stashing ? 'Stashing…' : 'Stash changes upon leave' }}
+          </button>
+          <button
+            type="button"
+            class="btn btn--danger"
+            :disabled="discarding || stashing"
+            @click="onDiscardLeave"
+          >
+            {{ discarding ? 'Leaving…' : 'Discard changes' }}
+          </button>
         </div>
       </div>
     </div>
@@ -66,26 +64,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick, computed } from 'vue';
+import { ref, watch, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUnsavedChangesStore } from '~/stores/unsavedChanges';
 
 defineOptions({ name: 'UnsavedChangesDialog' });
 
 const unsaved = useUnsavedChangesStore();
-
-const dialogCopy = computed(() => {
-  const o = unsaved.active?.dialogCopy;
-  return {
-    title: o?.title ?? 'Leave without saving?',
-    description:
-      o?.description ??
-      'You have an in-progress request. If you leave now, unsaved progress may be lost.',
-    stayLabel: o?.stayLabel ?? 'Stay on page',
-    stashLabel: o?.stashLabel ?? 'Stash changes upon leave',
-    discardLabel: o?.discardLabel ?? 'Discard changes',
-  };
-});
 const router = useRouter();
 const dialogRef = ref<HTMLElement | null>(null);
 const discarding = ref(false);
@@ -150,18 +135,9 @@ async function onStashLeave(): Promise<void> {
 .unsaved-changes-dialog__footer {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
   gap: var(--space-sm);
+  justify-content: flex-end;
   padding: var(--space-md) var(--space-lg);
   border-top: 1px solid var(--color-border);
-}
-
-.unsaved-changes-dialog__footer-trail {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-sm);
-  margin-left: auto;
-  justify-content: flex-end;
 }
 </style>

@@ -60,7 +60,7 @@
             @update:text-emphasis="currentTextEmphasis = $event"
             @undo="$emit('undo')"
             @redo="$emit('redo')"
-            @clear="onToolbarClear"
+            @clear="$emit('clear')"
           />
         </div>
       </div>
@@ -95,7 +95,7 @@ const emit = defineEmits<{
   'update:syncScreens': [value: boolean];
   undo: [];
   redo: [];
-  clear: [payload: { isTextMode: boolean }];
+  clear: [];
 }>();
 
 const activeMode = ref('desktop');
@@ -197,10 +197,6 @@ const onSyncScreensChange = (ev: Event) => {
 };
 
 const toggleTextMode = () => updateState('isTextMode', !currentIsTextMode.value);
-
-const onToolbarClear = () => {
-  emit('clear', { isTextMode: currentIsTextMode.value });
-};
 
 const updateState = (key: keyof DrawingState, value: DrawingState[keyof DrawingState]) => {
   if (activeMode.value === 'mobile') {

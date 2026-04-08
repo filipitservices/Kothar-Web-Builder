@@ -5,6 +5,8 @@
       ref="canvasContainerRef"
       :style="{ width: `${width}px`, height: `${height}px` }"
       @mousedown="handleMouseDown"
+      @mouseup="onAnnotationPointerUp"
+      @touchend="onAnnotationPointerUp"
       @click="handleCanvasClick"
     >
       <VueDrawingCanvas
@@ -116,16 +118,17 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits([
-  'update:strokeType',
-  'update:color',
-  'update:lineWidth',
-  'toggle-text-mode',
-  'update:textFontSize',
-  'update:textColor',
-  'update:textEmphasis',
-  'update:text-boxes'
-]);
+const emit = defineEmits<{
+  'update:strokeType': [value: string];
+  'update:color': [value: string];
+  'update:lineWidth': [value: number];
+  'toggle-text-mode': [];
+  'update:textFontSize': [value: number];
+  'update:textColor': [value: string];
+  'update:textEmphasis': [value: 'normal' | 'bold' | 'italic'];
+  'update:text-boxes': [value: BuilderTextBox[]];
+  'annotation-interaction': [];
+}>();
 
 const localCanvasRef = ref(null);
 const canvasContainerRef = ref(null);
@@ -178,6 +181,12 @@ const handleRedo = () => {
   localCanvasRef.value?.redo();
 };
 
+function onAnnotationPointerUp(): void {
+  if (!props.isEnabled) return;
+  if (props.drawingState.isTextMode) return;
+  emit('annotation-interaction');
+}
+
 const handleClear = () => {
   if (props.drawingState.isTextMode) {
     clearAll();
@@ -185,19 +194,6 @@ const handleClear = () => {
     localCanvasRef.value?.reset();
   }
 };
-
-/** Live canvas state: parent stroke arrays are not always synced while drawing. */
-function hasDrawingContent(): boolean {
-  const canvas = localCanvasRef.value as { isEmpty?: () => boolean } | null;
-  if (canvas && typeof canvas.isEmpty === 'function') {
-    return !canvas.isEmpty();
-  }
-  return Array.isArray(props.strokes) && props.strokes.length > 0;
-}
-
-function hasTextContent(): boolean {
-  return textBoxes.value.length > 0;
-}
 
 // Setup text box watchers
 setupTextBoxWatchers(
@@ -252,9 +248,7 @@ defineExpose({
   updateTextColor: onUpdateTextColor,
   updateTextEmphasis: onUpdateTextEmphasis,
   getTextBoxes: () => textBoxes.value,
-  clearTextBoxes: () => clearAll(),
-  hasDrawingContent,
-  hasTextContent,
+  clearTextBoxes: () => clearAll()
 });
 </script>
 
