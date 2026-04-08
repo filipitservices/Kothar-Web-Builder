@@ -215,6 +215,19 @@ watch(() => props.strokes, (newStrokes) => {
   }
 }, { deep: true });
 
+// When overlay is re-enabled after route reload/session reopen, force a redraw
+// so persisted strokes are painted even if the strokes prop identity is unchanged.
+watch(
+  () => props.isEnabled,
+  (enabled) => {
+    if (!enabled) return;
+    if (!props.strokes || props.strokes.length === 0) return;
+    nextTick(() => {
+      localCanvasRef.value?.redraw();
+    });
+  }
+);
+
 // Expose methods for parent component
 defineExpose({
   undo: handleUndo,

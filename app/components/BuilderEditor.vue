@@ -177,6 +177,9 @@ const {
   toggleTextMode,
   setCanvasRef,
   setStrokes,
+  getAllStrokes,
+  desktopCanvasRef,
+  mobileCanvasRef,
   updateDesktopDrawingState,
   updateMobileDrawingState,
 } = useDrawing();
@@ -191,14 +194,25 @@ const desktopTextBoxes = ref<BuilderTextBox[]>([]);
 const mobileTextBoxes = ref<BuilderTextBox[]>([]);
 
 function buildAnnotationsSnapshot(): BuilderAnnotations {
+  const desktopLiveStrokes = desktopCanvasRef.value
+    ? getAllStrokes('desktop')
+    : desktopStrokes.value;
+  const mobileLiveStrokes = mobileCanvasRef.value
+    ? getAllStrokes('mobile')
+    : mobileStrokes.value;
+
+  // Keep local refs in sync with what will be persisted.
+  setStrokes('desktop', desktopLiveStrokes);
+  setStrokes('mobile', mobileLiveStrokes);
+
   return {
     version: 1,
     desktop: {
-      strokes: [...desktopStrokes.value],
+      strokes: [...desktopLiveStrokes],
       textBoxes: desktopTextBoxes.value.map((box) => ({ ...box })),
     },
     mobile: {
-      strokes: [...mobileStrokes.value],
+      strokes: [...mobileLiveStrokes],
       textBoxes: mobileTextBoxes.value.map((box) => ({ ...box })),
     },
   };
