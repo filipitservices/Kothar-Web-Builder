@@ -186,6 +186,19 @@ const handleClear = () => {
   }
 };
 
+/** Live canvas state: parent stroke arrays are not always synced while drawing. */
+function hasDrawingContent(): boolean {
+  const canvas = localCanvasRef.value as { isEmpty?: () => boolean } | null;
+  if (canvas && typeof canvas.isEmpty === 'function') {
+    return !canvas.isEmpty();
+  }
+  return Array.isArray(props.strokes) && props.strokes.length > 0;
+}
+
+function hasTextContent(): boolean {
+  return textBoxes.value.length > 0;
+}
+
 // Setup text box watchers
 setupTextBoxWatchers(
   () => props.drawingState.isTextMode,
@@ -239,7 +252,9 @@ defineExpose({
   updateTextColor: onUpdateTextColor,
   updateTextEmphasis: onUpdateTextEmphasis,
   getTextBoxes: () => textBoxes.value,
-  clearTextBoxes: () => clearAll()
+  clearTextBoxes: () => clearAll(),
+  hasDrawingContent,
+  hasTextContent,
 });
 </script>
 

@@ -135,6 +135,7 @@ import {
   AVAILABLE_BLOCKS,
   CANVAS_DIMENSIONS,
 } from '~/constants/builder';
+import { writeBuilderSessionStash } from '~/utils/builderSessionStash';
 
 defineOptions({ name: 'BuilderEditor' });
 
@@ -313,6 +314,27 @@ function handleReturnToRequest(): void {
     router.back();
   }
 }
+
+function stashSnapshotToSession(orderId: string): void {
+  if (!orderId.trim()) return;
+  flushBuilderAnnotationsToStore();
+  const layout = requestLayoutStore.getLayoutForSubmission();
+  writeBuilderSessionStash({
+    orderId,
+    layout,
+    syncScreens: syncScreens.value,
+  });
+}
+
+function applyRestoredStashSync(syncScreensValue: boolean): void {
+  syncScreens.value = syncScreensValue;
+  hydrateFromStoreAnnotations();
+}
+
+defineExpose({
+  stashSnapshotToSession,
+  applyRestoredStashSync,
+});
 </script>
 
 <style scoped src="~/assets/css/editor.css"></style>

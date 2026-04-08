@@ -10,11 +10,11 @@ The template system provides pre-built website layouts that users can apply with
 
 ### Key Features
 
-- **6 Predefined Templates**: Small Business, Landing Page, Portfolio, SaaS Product, Simple Contact, Full Featured
-- **Category Filtering**: Business, Portfolio, Landing, Ecommerce
-- **Screen Selection**: Apply to desktop, mobile, or both
-- **State Transformation**: Pure state updates, no DOM manipulation
-- **Unique Block IDs**: Each application generates fresh block instances
+- **13 wireframe templates** in [`stores/templates.ts`](../app/stores/templates.ts): each is a block sequence for the builder sidebar (distinct from gallery **showcase** templates in `stores/showcase.ts`).
+- **Layout-intent categories** (not niche trade labels): Service & trust, Gallery & visuals, Information & credibility, Leads & conversion, Portfolio & work, Brochure & story — plus **All**.
+- **Screen selection**: Apply to desktop, mobile, or both (via `TemplateScreenSelector`).
+- **State transformation**: Pure list replacement in the request layout store; no DOM manipulation.
+- **Unique block IDs**: Each application generates fresh block instances (`useTemplateApplication`).
 
 ---
 
@@ -60,7 +60,7 @@ TemplatesList emits 'apply' event
   { templateId: string, screen: 'desktop' | 'mobile' | 'both' }
          │
          ↓
-index.vue calls handleTemplateApply()
+`BuilderEditor` calls `handleTemplateApply()` (or equivalent on the builder page)
          │
          ↓
 useTemplateApplication.applyTemplate()
@@ -99,7 +99,7 @@ Block components mount with blockId props
 **Purpose**: Display available templates with category filtering and screen selection
 
 **Features**:
-- Category filter buttons (Business, Portfolio, Landing, Ecommerce, All)
+- Category filter buttons (layout-intent categories from the template store, plus **All**)
 - Template cards with name, description, block preview
 - Modal for screen selection (Desktop, Mobile, Both)
 - Icon preview of first 3 blocks

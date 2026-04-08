@@ -237,6 +237,20 @@ const undo = () => overlayRef.value?.undo();
 const redo = () => overlayRef.value?.redo();
 const clear = () => overlayRef.value?.clear();
 
+function hasDrawWorkToClear(): boolean {
+  const overlay = overlayRef.value as {
+    hasDrawingContent?: () => boolean;
+  } | null;
+  return overlay?.hasDrawingContent?.() ?? false;
+}
+
+function hasTextWorkToClear(): boolean {
+  const overlay = overlayRef.value as {
+    hasTextContent?: () => boolean;
+  } | null;
+  return overlay?.hasTextContent?.() ?? false;
+}
+
 // Initialize canvas dimension tracking with list watcher
 onMounted(() => {
   setupCanvasDimensions(() => props.list);
@@ -246,7 +260,7 @@ onUnmounted(() => {
   cleanupCanvasDimensions();
 });
 
-defineExpose({ overlayRef, undo, redo, clear });
+defineExpose({ overlayRef, undo, redo, clear, hasDrawWorkToClear, hasTextWorkToClear });
 </script>
 
 <style scoped>

@@ -52,7 +52,7 @@
 
 .req-preview {
   position: sticky;
-  top: calc(72px + 2rem); /* header height + padding */
+  top: calc(83px + 2rem); /* header height + padding */
   display: flex;
   flex-direction: column;
   gap: 1.25rem;

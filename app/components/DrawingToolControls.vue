@@ -19,12 +19,12 @@
       title="Stroke Type"
       class="compact-select"
     >
-      <option value="dash">Dash</option>
-      <option value="line">Line</option>
-      <option value="circle">◯</option>
-      <option value="square">□</option>
-      <option value="triangle">△</option>
-      <option value="half_triangle">◲</option>
+      <option value="dash">Freehand (dash)</option>
+      <option value="line">Straight line</option>
+      <option value="circle">Circle</option>
+      <option value="square">Square</option>
+      <option value="triangle">Triangle</option>
+      <option value="half_triangle">Right triangle</option>
     </select>
 
     <!-- Text controls -->

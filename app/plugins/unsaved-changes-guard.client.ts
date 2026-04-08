@@ -11,7 +11,11 @@
 
 import { useUnsavedChangesStore } from '~/stores/unsavedChanges';
 import { useAuthStore } from '~/stores/auth';
-import { getEditingFlowScope, isLeavingEditingFlow } from '~/utils/editingFlowScope';
+import {
+  getEditingFlowScope,
+  isIntraEntityBuilderSiblingNavigation,
+  isLeavingEditingFlow,
+} from '~/utils/editingFlowScope';
 
 export default defineNuxtPlugin(() => {
   const router = useRouter();
@@ -35,7 +39,8 @@ export default defineNuxtPlugin(() => {
     const fromScope = getEditingFlowScope(from);
     const shouldPrompt =
       fromScope.kind === 'editing'
-        ? isLeavingEditingFlow(from, to) && unsaved.shouldPromptOnLeaveFlow
+        ? unsaved.shouldPromptOnLeaveFlow &&
+          (isLeavingEditingFlow(from, to) || isIntraEntityBuilderSiblingNavigation(from, to))
         : unsaved.hasDirtyEdits;
     if (!shouldPrompt) {
       return true;

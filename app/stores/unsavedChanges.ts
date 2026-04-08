@@ -7,12 +7,22 @@ import { defineStore } from 'pinia';
 import { ref, shallowRef, computed, toValue, type MaybeRefOrGetter } from 'vue';
 import type { RouteLocationNormalized } from 'vue-router';
 
+export interface UnsavedDialogCopy {
+  title?: string;
+  description?: string;
+  stashLabel?: string;
+  stayLabel?: string;
+  discardLabel?: string;
+}
+
 export interface UnsavedRegistration {
   id: string;
   isDirty: MaybeRefOrGetter<boolean>;
   hasUnsavedSession: MaybeRefOrGetter<boolean>;
   onDiscard: () => void | Promise<void>;
   onStashLeave?: () => void | Promise<void>;
+  /** Optional copy for the global dialog; falls back to defaults in the dialog component. */
+  dialogCopy?: UnsavedDialogCopy;
 }
 
 export const useUnsavedChangesStore = defineStore('unsavedChanges', () => {

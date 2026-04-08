@@ -1,17 +1,23 @@
 <template>
-  <BuilderEditor v-if="isReady && isSupported" />
+  <BuilderEditor v-if="isReady && isSupported" ref="builderEditorRef" />
   <BuilderViewportFallback
     v-else-if="isReady"
     :min-width="minWidth"
     :back-to="`/orders/${route.params.id}/edit`"
     back-label="Back to request details"
   />
+  <BuilderStashRestoreDialog
+    :open="stashPromptOpen"
+    @resume="onResumeStash"
+    @keep-saved="onKeepSavedStash"
+  />
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import BuilderEditor from '~/components/BuilderEditor.vue';
+import BuilderStashRestoreDialog from '~/components/BuilderStashRestoreDialog.vue';
 import BuilderViewportFallback from '~/components/BuilderViewportFallback.vue';
 import { useAuthStore } from '~/stores/auth';
 import { useOrdersStore } from '~/stores/orders';
@@ -21,6 +27,12 @@ import { useBuilderEphemeralStore } from '~/stores/builderEphemeral';
 import type { OrderStatus, OrderWithId } from '~/types/order';
 import { useBuilderViewportSupport } from '~/composables/useBuilderViewportSupport';
 import { useUnsavedChanges } from '~/composables/useUnsavedChanges';
+import type { UnsavedDialogCopy } from '~/stores/unsavedChanges';
+import {
+  clearBuilderSessionStash,
+  readBuilderSessionStash,
+  type BuilderSessionStashPayload,
+} from '~/utils/builderSessionStash';
 
 definePageMeta({
   middleware: 'auth',
@@ -38,6 +50,19 @@ const requestLayoutStore = useRequestLayoutStore();
 const builderEphemeral = useBuilderEphemeralStore();
 const { minWidth, isReady, isSupported } = useBuilderViewportSupport();
 const orderStatus = ref<OrderStatus | null>(null);
+const builderEditorRef = ref<InstanceType<typeof BuilderEditor> | null>(null);
+const stashPromptOpen = ref(false);
+let pendingStash: BuilderSessionStashPayload | null = null;
+const stashChecked = ref(false);
+
+const builderUnsavedDialogCopy: UnsavedDialogCopy = {
+  title: 'Leave the builder?',
+  description:
+    'You have unsaved layout or sketch changes. Stash keeps your work in this browser session so you can resume later. Discard reloads the last saved version from your account.',
+  stashLabel: 'Stash for later',
+  stayLabel: 'Stay',
+  discardLabel: 'Discard changes',
+};
 
 function getOrderIdFromRoute(): string | null {
   const id = route.params.id;
@@ -94,6 +119,9 @@ async function initialiseLayoutFromOrder(
 async function discardUnsavedAndRehydrate(): Promise<void> {
   builderEphemeral.reset();
   const orderId = getOrderIdFromRoute();
+  if (orderId) {
+    clearBuilderSessionStash(orderId);
+  }
   const uid = authStore.uid ?? authStore.currentUser?.uid ?? null;
   if (!orderId || !uid) return;
   await initialiseLayoutFromOrder(orderId, uid, true);
@@ -106,11 +134,39 @@ const isDirty = computed(
 );
 const hasUnsavedSession = computed(() => orderStatus.value === 'draft');
 
+function stashUnsavedToSession(): void {
+  const orderId = getOrderIdFromRoute();
+  if (!orderId) return;
+  builderEditorRef.value?.stashSnapshotToSession(orderId);
+}
+
 useUnsavedChanges({
   isDirty,
   hasUnsavedSession,
   onDiscard: discardUnsavedAndRehydrate,
+  onStashLeave: stashUnsavedToSession,
+  dialogCopy: builderUnsavedDialogCopy,
 });
+
+function onResumeStash(): void {
+  if (!pendingStash) return;
+  const syncScreens = pendingStash.syncScreens;
+  requestLayoutStore.applyStashedOrderLayout(pendingStash.layout);
+  clearBuilderSessionStash(pendingStash.orderId);
+  pendingStash = null;
+  stashPromptOpen.value = false;
+  void nextTick(() => {
+    builderEditorRef.value?.applyRestoredStashSync(syncScreens);
+  });
+}
+
+function onKeepSavedStash(): void {
+  if (pendingStash) {
+    clearBuilderSessionStash(pendingStash.orderId);
+  }
+  pendingStash = null;
+  stashPromptOpen.value = false;
+}
 
 async function ensureOrderContext(): Promise<void> {
   const orderId = getOrderIdFromRoute();
@@ -143,6 +199,29 @@ watch(
     if (!orderId) return;
     await ensureOrderContext();
   },
+);
+
+watch(
+  () =>
+    [
+      isReady.value,
+      isSupported.value,
+      requestLayoutStore.active,
+      stashChecked.value,
+    ] as const,
+  async ([ready, supported, active, checked]) => {
+    if (!ready || !supported || !active || checked) return;
+    await nextTick();
+    const orderId = getOrderIdFromRoute();
+    if (!orderId) return;
+    stashChecked.value = true;
+    const stash = readBuilderSessionStash(orderId);
+    if (stash) {
+      pendingStash = stash;
+      stashPromptOpen.value = true;
+    }
+  },
+  { immediate: true },
 );
 </script>
 

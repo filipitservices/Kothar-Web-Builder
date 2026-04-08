@@ -11,7 +11,7 @@
       @update:sync-screens="emit('update:syncScreens', $event)"
       @undo="handleUndo"
       @redo="handleRedo"
-      @clear="handleClear"
+      @clear="onClearToolbar"
     />
 
     <!-- Screens area (screens + overlay) -->
@@ -77,11 +77,55 @@
       <!-- AI Chat Panel (overlay) -->
       <AiChatPanel />
     </div>
+
+    <Teleport to="body">
+      <div
+        v-if="clearConfirmOpen"
+        class="modal-overlay"
+        role="presentation"
+        @click.self="closeClearConfirm"
+      >
+        <div
+          class="modal-container overlay-clear-confirm-dialog"
+          role="dialog"
+          aria-modal="true"
+          :aria-labelledby="clearDialogTitleId"
+          tabindex="-1"
+          ref="clearDialogRef"
+          @keydown.escape.prevent="closeClearConfirm"
+        >
+          <div class="modal-header">
+            <h2 :id="clearDialogTitleId" class="text-title">{{ clearConfirmTitle }}</h2>
+          </div>
+          <div class="modal-body overlay-clear-confirm-dialog__body">
+            <p class="text-muted">{{ clearConfirmDescription }}</p>
+          </div>
+          <div class="modal-footer overlay-clear-confirm-dialog__footer">
+            <button type="button" class="btn btn--secondary" @click="closeClearConfirm">
+              Cancel
+            </button>
+            <button type="button" class="btn btn--danger" @click="confirmClearOverlay">
+              Clear all
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed, onMounted, onUnmounted, nextTick, toRef, type ComputedRef } from 'vue';
+import {
+  ref,
+  watch,
+  computed,
+  onMounted,
+  onUnmounted,
+  nextTick,
+  toRef,
+  useId,
+  type ComputedRef,
+} from 'vue';
 import { useScreenScaling } from '~/composables/useScreenScaling';
 import { useListSyncing } from '~/composables/useListSyncing';
 import ScreenCard from './ScreenCard.vue';
@@ -142,6 +186,23 @@ const {
 const desktopScreenRef = ref<InstanceType<typeof ScreenCard> | null>(null);
 const mobileScreenRef = ref<InstanceType<typeof ScreenCard> | null>(null);
 const screensContainerRef = ref<HTMLElement | null>(null);
+const clearDialogRef = ref<HTMLElement | null>(null);
+const clearDialogTitleId = useId();
+const clearConfirmOpen = ref(false);
+const clearConfirmMode = ref<'draw' | 'text' | null>(null);
+
+const clearConfirmTitle = computed(() =>
+  clearConfirmMode.value === 'text'
+    ? 'Discard all text annotations?'
+    : 'Discard all drawing strokes?',
+);
+
+const clearConfirmDescription = computed(() => {
+  if (clearConfirmMode.value === 'text') {
+    return 'This removes every text box on the desktop and mobile previews. This cannot be undone.';
+  }
+  return 'This removes every drawing stroke on the desktop and mobile previews. This cannot be undone.';
+});
 
 const syncScreensEnabled = toRef(props, 'syncScreens');
 
@@ -243,14 +304,58 @@ const handleRedo = () => {
   }
 };
 
-const handleClear = () => {
+function closeClearConfirm(): void {
+  clearConfirmOpen.value = false;
+  clearConfirmMode.value = null;
+}
+
+function confirmClearOverlay(): void {
+  closeClearConfirm();
+  runClearOverlay();
+}
+
+function onClearToolbar(payload: { isTextMode: boolean }): void {
+  const isText = payload.isTextMode;
+  const desktopCard = desktopScreenRef.value as ScreenCardRefShape | null;
+  const mobileCard = mobileScreenRef.value as ScreenCardRefShape | null;
+
+  if (isText) {
+    const hasText =
+      (props.desktopDrawingState.desktopEnabled && desktopCard?.hasTextWorkToClear?.() === true) ||
+      (props.mobileDrawingState.mobileEnabled && mobileCard?.hasTextWorkToClear?.() === true);
+    if (!hasText) {
+      runClearOverlay();
+      return;
+    }
+    clearConfirmMode.value = 'text';
+    clearConfirmOpen.value = true;
+    void nextTick(() => {
+      clearDialogRef.value?.focus();
+    });
+    return;
+  }
+  const hasDraw =
+    (props.desktopDrawingState.desktopEnabled && desktopCard?.hasDrawWorkToClear?.() === true) ||
+    (props.mobileDrawingState.mobileEnabled && mobileCard?.hasDrawWorkToClear?.() === true);
+  if (!hasDraw) {
+    runClearOverlay();
+    return;
+  }
+  clearConfirmMode.value = 'draw';
+  clearConfirmOpen.value = true;
+  void nextTick(() => {
+    clearDialogRef.value?.focus();
+  });
+}
+
+function runClearOverlay(): void {
   if (props.desktopDrawingState.desktopEnabled) {
     desktopScreenRef.value?.clear();
   }
   if (props.mobileDrawingState.mobileEnabled) {
     mobileScreenRef.value?.clear();
   }
-};
+}
 
 // Lifecycle
 onMounted(async () => {
@@ -360,5 +465,22 @@ defineExpose({
     align-items: center;
     justify-content: flex-start;
   }
+}
+
+.overlay-clear-confirm-dialog {
+  max-width: 26rem;
+}
+
+.overlay-clear-confirm-dialog__body {
+  padding: var(--space-lg);
+}
+
+.overlay-clear-confirm-dialog__footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  justify-content: flex-end;
+  padding: var(--space-md) var(--space-lg);
+  border-top: 1px solid var(--color-border);
 }
 </style>

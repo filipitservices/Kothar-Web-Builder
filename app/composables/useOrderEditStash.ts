@@ -61,7 +61,7 @@ function isValidStashFormData(value: unknown): value is TemplateRequestFormData 
   );
 }
 
-function isValidOrderLayout(value: unknown): value is OrderLayout {
+export function isValidOrderLayout(value: unknown): value is OrderLayout {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const layout = value as Record<string, unknown>;
   if (typeof layout.customized !== 'boolean' || !Array.isArray(layout.blocks)) return false;
