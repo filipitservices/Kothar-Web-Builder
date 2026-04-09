@@ -18,8 +18,24 @@
       
       <Transition name="dropdown">
         <div v-if="isOpen" class="dropdown">
-          <p class="dropdown-name">{{ name }}</p>
-          <p v-if="currentUser?.email" class="dropdown-email">{{ currentUser.email }}</p>
+          <div class="dropdown-header">
+            <div class="dropdown-identity">
+              <p class="dropdown-name">{{ name }}</p>
+              <p v-if="currentUser?.email" class="dropdown-email">{{ currentUser.email }}</p>
+            </div>
+            <button
+              type="button"
+              class="music-btn"
+              :class="{ 'is-on': isPlaying }"
+              :aria-pressed="isPlaying"
+              title="Ambient music"
+              @click="togglePlayback"
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+              </svg>
+            </button>
+          </div>
           <hr />
           <NuxtLink :to="ROUTES.gallery" class="item" @click="isOpen = false">
             <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" /></svg>
@@ -49,10 +65,12 @@
 import { ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuth } from '~/composables/useAuth';
+import { useAmbientMusic } from '~/composables/useAmbientMusic';
 import { ROUTES } from '~/constants/routes';
 import { getAccountDisplayLabel } from '~/utils/accountIdentity';
 
 const { currentUser, isAuthenticated, isLoading, signOut } = useAuth();
+const { isPlaying, togglePlayback } = useAmbientMusic();
 const route = useRoute();
 const isOpen = ref(false);
 
@@ -90,9 +108,51 @@ const guestActionLabel = computed(() => route.path === '/login' ? 'Back Home' : 
 .trigger.open .arrow { transform: rotate(180deg); }
 
 .dropdown { position: absolute; top: calc(100% + 4px); right: 0; min-width: 200px; background: var(--color-white); border: 1px solid var(--color-border); border-radius: var(--radius-md); box-shadow: 0 10px 15px -3px rgba(0,0,0,.1); z-index: 50; padding: .75rem 1rem; }
+
+/* Identity row: name+email on the left, music button on the right */
+.dropdown-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: 0;
+}
+.dropdown-identity { flex: 1; min-width: 0; }
 .dropdown-name { margin: 0; font-size: .875rem; font-weight: 600; color: var(--color-text); }
-.dropdown-email { margin: .25rem 0 0; font-size: .75rem; color: var(--color-text-muted); }
+.dropdown-email { margin: .25rem 0 0; font-size: .75rem; color: var(--color-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dropdown hr { border: none; height: 1px; background: var(--color-border); margin: .75rem 0; }
+
+/* Square note icon button */
+.music-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease, color .15s ease;
+}
+.music-btn:hover {
+  background: var(--color-bg-subtle);
+  border-color: var(--color-border-hover);
+  color: var(--color-text-muted-dark);
+}
+.music-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring-primary);
+  border-color: var(--color-primary);
+}
+.music-btn.is-on {
+  background: #fef9f4;
+  border-color: #d7bd9d;
+  color: #d7bd9d;
+}
+.music-btn svg { width: 14px; height: 14px; }
 
 .item { display: flex; align-items: center; gap: .5rem; width: 100%; padding: .5rem 0; background: transparent; border: none; font-size: .875rem; color: var(--color-text-muted-dark); cursor: pointer; text-decoration: none; }
 .item:hover { color: var(--color-text); }

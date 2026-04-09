@@ -25,6 +25,7 @@
 
     <!-- Main Content -->
     <main v-else class="req__main">
+      <AmbientMusicRequestSwitch />
       <div class="req__content">
         <!-- Inline feedback messages -->
         <Transition name="req-banner">
