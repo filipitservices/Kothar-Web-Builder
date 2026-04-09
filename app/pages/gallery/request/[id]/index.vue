@@ -44,9 +44,6 @@
             <aside v-if="showPreviewColumn" class="req-preview">
             <div class="req-preview-card">
               <div class="req-preview-label">Live Preview</div>
-              <p class="req-welcome">
-                Great choice{{ userName ? `, ${userName}` : '' }}!
-              </p>
               <div
                 class="req-preview-device"
                 ref="previewContainerRef"
@@ -94,12 +91,6 @@
                   </span>
                   <span v-if="layoutCustomized" class="req-layout-badge">Modified</span>
                 </button>
-                <NuxtLink to="/gallery" class="change-template-link" aria-label="Back to Gallery templates">
-                  <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M9.707 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 011.414 1.414L6.414 8H16a1 1 0 110 2H6.414l3.293 3.293a1 1 0 010 1.414z" clip-rule="evenodd" />
-                  </svg>
-                  Back to Gallery templates
-                </NuxtLink>
               </div>
             </div>
 
@@ -109,6 +100,12 @@
               </div>
               <span class="req-progress-label">{{ formProgress.completed }} of {{ formProgress.total }} fields completed</span>
             </div>
+            <NuxtLink to="/gallery" class="change-template-link" aria-label="Back to Gallery templates">
+              <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14" aria-hidden="true">
+                <path fill-rule="evenodd" d="M9.707 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 011.414 1.414L6.414 8H16a1 1 0 110 2H6.414l3.293 3.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+              </svg>
+              Back to Gallery templates
+            </NuxtLink>
             </aside>
           </ClientOnly>
 

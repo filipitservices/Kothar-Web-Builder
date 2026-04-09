@@ -67,7 +67,7 @@
         </div>
         <div class="builder-context-infobar">
           <p class="builder-context-hint">
-            This is your sketchpad—try blocks, reorder sections, and preview desktop and mobile without worry.
+            This is your sketchpad: try blocks, reorder sections, and preview desktop and mobile without worry.
             Nothing is final until you save.
           </p>
         </div>
