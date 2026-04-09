@@ -251,7 +251,11 @@ async function handleGoogleSignIn(): Promise<void> {
   successMessage.value = null;
 
   try {
-    await signInWithGoogle();
+    const user = await signInWithGoogle();
+    if (!user) {
+      // Redirect flow started (popup fallback). Browser navigates away.
+      return;
+    }
     
     // Success - redirect
     await router.push(await getRedirectUrl());

@@ -197,8 +197,6 @@ const accessCheckoutLoading = ref(false);
 const requestId = computed(() => route.params.id as string);
 const userId = computed(() => authStore.uid ?? authStore.currentUser?.uid ?? '');
 
-useOrdersSnapshotWhenFocused(userId);
-
 const userName = computed(() => getAccountFirstName(authStore.currentUser));
 
 const orderDoc = ref<OrderWithId | null>(null);

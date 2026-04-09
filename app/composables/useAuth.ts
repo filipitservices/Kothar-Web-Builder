@@ -28,10 +28,13 @@ import {
   onAuthStateChanged,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   sendPasswordResetEmail,
   updateProfile as firebaseUpdateProfile,
   type User,
-  type Unsubscribe
+  type Unsubscribe,
+  type AuthError as FirebaseAuthError
 } from 'firebase/auth';
 import { getFirebaseAuth } from '~/plugins/firebase.client';
 import { useAuthStore } from '~/stores/auth';
@@ -118,7 +121,7 @@ export interface UseAuthReturn {
   // Methods
   signInWithEmail: (email: string, password: string) => Promise<AuthUser>;
   signUpWithEmail: (email: string, password: string, displayName?: string) => Promise<AuthUser>;
-  signInWithGoogle: () => Promise<AuthUser>;
+  signInWithGoogle: () => Promise<AuthUser | null>;
   signOut: () => Promise<void>;
   sendPasswordReset: (email: string) => Promise<void>;
   updateProfile: (data: { displayName?: string; photoURL?: string }) => Promise<void>;
@@ -130,6 +133,17 @@ export interface UseAuthReturn {
  * Main authentication composable
  */
 export function useAuth(): UseAuthReturn {
+  function shouldFallbackToRedirect(error: unknown): boolean {
+    if (!error || typeof error !== 'object') return false;
+    const firebaseError = error as FirebaseAuthError & { message?: string };
+    const code = firebaseError.code ?? '';
+    const message = (firebaseError.message ?? '').toLowerCase();
+    if (code === 'auth/popup-blocked' || code === 'auth/cancelled-popup-request') {
+      return true;
+    }
+    return message.includes('cross-origin-opener-policy') || message.includes('window.close');
+  }
+
   const authStore = useAuthStore();
   let unsubscribe: Unsubscribe | null = null;
   
@@ -168,6 +182,17 @@ export function useAuth(): UseAuthReturn {
       const auth = getFirebaseAuth();
       
       if (auth) {
+        try {
+          const redirectResult = await getRedirectResult(auth);
+          if (redirectResult?.user) {
+            const idToken = await redirectResult.user.getIdToken();
+            const user = await exchangeTokenForSession(idToken);
+            authStore.setUser(user);
+          }
+        } catch (error) {
+          logger.warn('[Auth] Failed to complete redirect sign-in:', error);
+        }
+
         unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
           if (firebaseUser) {
             // User is signed in on client
@@ -289,7 +314,7 @@ export function useAuth(): UseAuthReturn {
   /**
    * Sign in with Google OAuth
    */
-  async function signInWithGoogle(): Promise<AuthUser> {
+  async function signInWithGoogle(): Promise<AuthUser | null> {
     authStore.setLoading(true);
     authStore.setError(null);
     
@@ -306,8 +331,16 @@ export function useAuth(): UseAuthReturn {
       provider.addScope('email');
       provider.addScope('profile');
       
-      // Sign in with popup
-      const credential = await signInWithPopup(auth, provider);
+      let credential: Awaited<ReturnType<typeof signInWithPopup>> | null = null;
+      try {
+        credential = await signInWithPopup(auth, provider);
+      } catch (error) {
+        if (shouldFallbackToRedirect(error)) {
+          await signInWithRedirect(auth, provider);
+          return null;
+        }
+        throw error;
+      }
       
       // Get ID token
       const idToken = await credential.user.getIdToken();
