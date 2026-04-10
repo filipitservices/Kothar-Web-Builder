@@ -10,17 +10,24 @@
     <!-- 1. Design Customization -->
     <FormSection
       title="Design Customization"
-      hint="Choose colors that represent your brand"
+      hint="Choose colors that represent your brand (required)"
       variant="palette"
     >
       <template #icon><PaletteIcon /></template>
-      <ColorSchemePicker
-        :colors="formData.colorCustomization"
-        :default-colors="defaultColors"
-        :color-ui-reset-key="colorUiResetKey"
-        @update:colors="handleColorsUpdate"
-        @reset="handleColorsReset"
-      />
+      <div
+        class="form-group"
+        data-form-field="colorCustomization"
+        :class="{ 'form-group--error': errors.colorCustomization }"
+      >
+        <ColorSchemePicker
+          :colors="formData.colorCustomization"
+          :default-colors="defaultColors"
+          :color-ui-reset-key="colorUiResetKey"
+          @update:colors="handleColorsUpdate"
+          @reset="handleColorsReset"
+        />
+        <p v-if="errors.colorCustomization" class="form-error">{{ errors.colorCustomization }}</p>
+      </div>
     </FormSection>
 
     <!-- 2. Branding -->
@@ -33,7 +40,11 @@
       <template #icon><BrandingIcon /></template>
 
       <!-- 2a. Logos subsection -->
-      <div class="form-subsection form-subsection--logos">
+      <div
+        class="form-subsection form-subsection--logos"
+        data-form-field="logoBranding"
+        :class="{ 'form-group--error': errors.logoBranding }"
+      >
         <h4 class="form-subsection__title">Logos &amp; Emblems</h4>
         <p class="form-subsection__desc">Upload your logo files — primary logo, icon, or emblem variations.</p>
         <div class="form-group">
@@ -50,10 +61,15 @@
             @update:files="handleLogoFilesUpdate"
           />
         </div>
+        <p v-if="errors.logoBranding" class="form-error">{{ errors.logoBranding }}</p>
       </div>
 
       <!-- 2b. Branding Material subsection -->
-      <div class="form-subsection form-subsection--branding">
+      <div
+        class="form-subsection form-subsection--branding"
+        data-form-field="brandBranding"
+        :class="{ 'form-group--error': errors.brandBranding }"
+      >
         <h4 class="form-subsection__title">Branding Material</h4>
         <p class="form-subsection__desc">Brand guidelines, photos, documents, or any reference material.</p>
 
@@ -91,6 +107,7 @@
             @update:files="handleFilesUpdate"
           />
         </div>
+        <p v-if="errors.brandBranding" class="form-error">{{ errors.brandBranding }}</p>
       </div>
     </FormSection>
 
@@ -112,7 +129,6 @@
           class="form-input"
           :class="{ 'form-input--invalid': errors.businessName }"
           placeholder="e.g., Smith Plumbing Services"
-          required
           @input="onTextInput($event, 'businessName')"
           @blur="handleBlur('businessName')"
         />
@@ -120,7 +136,7 @@
       </div>
 
       <div class="form-group" data-form-field="preferredUrl" :class="{ 'form-group--error': errors.preferredUrl }">
-        <label for="preferredUrl" class="form-label">Preferred URL</label>
+        <label for="preferredUrl" class="form-label">Preferred URL <span class="required">*</span></label>
         <div class="preferred-url-wrap">
           <div class="preferred-url-icon" aria-hidden="true">
             <LinkIcon />
@@ -143,7 +159,7 @@
       </div>
 
       <div class="form-group" data-form-field="location" :class="{ 'form-group--error': errors.location }">
-        <label for="location" class="form-label">Location</label>
+        <label for="location" class="form-label">Location <span class="required">*</span></label>
         <LocationInput
           :model-value="formData.location"
           input-id="location"
@@ -176,86 +192,12 @@
       </div>
     </FormSection>
 
-    <!-- 4. Contact -->
-    <FormSection
-      title="Contact Information"
-      hint="How can we reach you?"
-      variant="contact"
-      :step="3"
-    >
-      <template #icon><ContactIcon /></template>
-
-      <div class="form-row">
-        <div class="form-group" data-form-field="contactName" :class="{ 'form-group--error': errors.contactName }">
-          <label for="contactName" class="form-label">Contact Name <span class="required">*</span></label>
-          <IconInput
-            id="contactName"
-            :model-value="formData.contactName"
-            type="text"
-            placeholder="Your name"
-            required
-            @update:model-value="handleFieldInput('contactName', $event)"
-            @blur="handleBlur('contactName')"
-          >
-            <template #icon><UserIcon /></template>
-          </IconInput>
-          <p v-if="errors.contactName" class="form-error">{{ errors.contactName }}</p>
-        </div>
-        <div class="form-group" data-form-field="email" :class="{ 'form-group--error': errors.email }">
-          <label for="email" class="form-label">Email <span class="required">*</span></label>
-          <IconInput
-            id="email"
-            :model-value="formData.email"
-            type="email"
-            placeholder="you@company.com"
-            required
-            @update:model-value="handleFieldInput('email', $event)"
-            @blur="handleBlur('email')"
-          >
-            <template #icon><EmailIcon /></template>
-          </IconInput>
-          <p v-if="errors.email" class="form-error">{{ errors.email }}</p>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group" data-form-field="phone" :class="{ 'form-group--error': errors.phone }">
-          <label for="phone" class="form-label">Phone Number</label>
-          <IconInput
-            id="phone"
-            :model-value="formData.phone"
-            type="tel"
-            placeholder="(555) 123-4567"
-            @update:model-value="handleFieldInput('phone', $event)"
-            @blur="handleBlur('phone')"
-          >
-            <template #icon><PhoneIcon /></template>
-          </IconInput>
-          <p v-if="errors.phone" class="form-error">{{ errors.phone }}</p>
-        </div>
-        <div class="form-group" data-form-field="website" :class="{ 'form-group--error': errors.website }">
-          <label for="website" class="form-label">Current Website (if any)</label>
-          <IconInput
-            id="website"
-            :model-value="formData.website"
-            type="url"
-            placeholder="https://www.example.com"
-            @update:model-value="handleFieldInput('website', $event)"
-            @blur="handleBlur('website')"
-          >
-            <template #icon><GlobeIcon /></template>
-          </IconInput>
-          <p v-if="errors.website" class="form-error">{{ errors.website }}</p>
-        </div>
-      </div>
-    </FormSection>
-
-    <!-- 5. Website Goals -->
+    <!-- 4. Website Goals -->
     <FormSection
       title="Website Goals"
       hint="What do you want to achieve?"
       variant="target"
-      :step="4"
+      :step="3"
     >
       <template #icon><TargetIcon /></template>
 
@@ -285,12 +227,12 @@
       </div>
     </FormSection>
 
-    <!-- 6. Additional Requests -->
+    <!-- 5. Additional Requests -->
     <FormSection
       title="Additional Requests"
       hint="Anything else we should know?"
       variant="requests"
-      :step="5"
+      :step="4"
     >
       <template #icon><RequestsIcon /></template>
 
@@ -356,7 +298,6 @@ import ColorSchemePicker from '~/components/ColorSchemePicker.vue';
 import FormSection from '~/components/form/FormSection.vue';
 import FormProgress from '~/components/form/FormProgress.vue';
 import FormSubmit from '~/components/form/FormSubmit.vue';
-import IconInput from '~/components/form/IconInput.vue';
 import GoalSelector from '~/components/form/GoalSelector.vue';
 import FileUploadArea from '~/components/form/FileUploadArea.vue';
 import IndustryCardGrid from '~/components/form/IndustryCardGrid.vue';
@@ -368,13 +309,8 @@ import {
   PaletteIcon,
   BrandingIcon,
   BusinessIcon,
-  ContactIcon,
   TargetIcon,
   RequestsIcon,
-  UserIcon,
-  EmailIcon,
-  PhoneIcon,
-  GlobeIcon,
   LinkIcon
 } from '~/components/icons/SectionIcons.vue';
 
@@ -498,20 +434,24 @@ function formatAttachmentSize(bytes: number): string {
 }
 
 function handleFilesUpdate(files: readonly File[]): void {
-  uploadedFiles.value = files;
+  uploadedFiles.value = [...files];
+  clearFieldError('brandBranding');
 }
 
 function handleLogoFilesUpdate(files: readonly File[]): void {
-  uploadedLogoFiles.value = files;
+  uploadedLogoFiles.value = [...files];
+  clearFieldError('logoBranding');
 }
 
 function handleColorsUpdate(colors: ColorCustomization): void {
   updateColors(colors);
+  clearFieldError('colorCustomization');
   emit('colorChange', colors);
 }
 
 function handleColorsReset(): void {
   const colors = resetColors();
+  clearFieldError('colorCustomization');
   emit('colorChange', colors);
 }
 
@@ -523,7 +463,14 @@ function scrollToFirstInvalidField(): void {
     const message = errors.value[field];
     if (!message) continue;
 
-    const groupKey = field === 'customIndustry' ? 'industry' : field;
+    const groupKey =
+      field === 'customIndustry'
+        ? 'industry'
+        : field === 'logoBranding'
+          ? 'logoBranding'
+          : field === 'brandBranding'
+            ? 'brandBranding'
+            : field;
     const group = formRoot.querySelector(`[data-form-field="${groupKey}"]`);
     if (group instanceof HTMLElement) {
       group.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -533,10 +480,6 @@ function scrollToFirstInvalidField(): void {
       businessName: 'businessName',
       preferredUrl: 'preferredUrl',
       location: 'location',
-      contactName: 'contactName',
-      email: 'email',
-      phone: 'phone',
-      website: 'website',
       additionalNotes: 'additionalNotes'
     };
     const stableId = stableIdFields[field];
@@ -559,7 +502,12 @@ function scrollToFirstInvalidField(): void {
 
 function handleSubmit(): void {
   if (props.readOnly) return;
-  if (!validateAll()) {
+  if (
+    !validateAll({
+      newLogoFileCount: uploadedLogoFiles.value.length,
+      newBrandFileCount: uploadedFiles.value.length
+    })
+  ) {
     void nextTick(() => {
       scrollToFirstInvalidField();
     });
@@ -567,9 +515,7 @@ function handleSubmit(): void {
   }
   emit('submit', {
     ...formData.value,
-    brandAssets: uploadedFiles.value.map((f) => f.name),
     files: [...uploadedFiles.value],
-    logoAssets: uploadedLogoFiles.value.map((f) => f.name),
     logoFiles: [...uploadedLogoFiles.value]
   });
 }
@@ -588,9 +534,7 @@ watch(
 function getSnapshotForDirtyCheck(): TemplateRequestFormData {
   return {
     ...formData.value,
-    brandAssets: uploadedFiles.value.map((f) => f.name),
     files: [...uploadedFiles.value],
-    logoAssets: uploadedLogoFiles.value.map((f) => f.name),
     logoFiles: [...uploadedLogoFiles.value]
   };
 }

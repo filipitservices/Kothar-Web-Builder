@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch, type Ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import BuilderEditor from '~/components/BuilderEditor.vue';
 import BuilderViewportFallback from '~/components/BuilderViewportFallback.vue';
@@ -23,6 +23,7 @@ import { useRequestLayoutStore } from '~/stores/requestLayout';
 import type { OrderStatus, OrderWithId } from '~/types/order';
 import { useBuilderViewportSupport } from '~/composables/useBuilderViewportSupport';
 import { useUnsavedChanges } from '~/composables/useUnsavedChanges';
+import { usePersistAssistantChat } from '~/composables/usePersistAssistantChat';
 
 definePageMeta({
   middleware: 'auth',
@@ -39,6 +40,10 @@ const showcaseStore = useShowcaseStore();
 const requestLayoutStore = useRequestLayoutStore();
 const { minWidth, isReady, isSupported } = useBuilderViewportSupport();
 const orderStatus = ref<OrderStatus | null>(null);
+const currentOrder: Ref<OrderWithId | null> = ref(null);
+
+const userIdForChat = computed(() => authStore.uid ?? authStore.currentUser?.uid ?? null);
+usePersistAssistantChat(currentOrder, userIdForChat);
 
 function getOrderIdFromRoute(): string | null {
   const id = route.params.id;
@@ -59,13 +64,16 @@ async function initialiseLayoutFromOrder(
 
   if (!order) {
     orderStatus.value = null;
+    currentOrder.value = null;
     await router.replace('/gallery');
     return;
   }
   orderStatus.value = order.status;
+  currentOrder.value = order;
 
   const template = showcaseStore.getTemplateById(order.templateId);
   if (!template) {
+    currentOrder.value = null;
     await router.replace('/gallery');
     return;
   }

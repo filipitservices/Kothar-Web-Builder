@@ -42,21 +42,6 @@ function isEmptyBusinessInfo(v: unknown): boolean {
 }
 
 /**
- * Handles both old shape (with address) and new shape (without address).
- */
-function isEmptyContactInfo(v: unknown): boolean {
-  if (v === null || typeof v !== 'object') return false;
-  const o = v as Record<string, unknown>;
-  return (
-    trimStr(o.contactName) === '' &&
-    trimStr(o.email) === '' &&
-    trimStr(o.phone) === '' &&
-    trimStr(o.website) === '' &&
-    trimStr(o.address) === ''
-  );
-}
-
-/**
  * Handles both old shape (targetAudience string) and new shape (audienceTags array, requestCategories array).
  */
 function isEmptyProjectDetailsText(v: unknown): boolean {
@@ -109,7 +94,9 @@ export function isPristineAbandonedDraft(data: DocumentData): boolean {
   const logoAtt = data.logoAttachments;
   if (Array.isArray(logoAtt) && logoAtt.length !== 0) return false;
   if (!isEmptyBusinessInfo(data.businessInfo)) return false;
-  if (!isEmptyContactInfo(data.contactInfo)) return false;
+  // contactInfo is populated from Auth on draft create — not used for pristine detection.
+  const chat = data.assistantChatMessages;
+  if (Array.isArray(chat) && chat.length > 0) return false;
   if (!isEmptyProjectDetailsText(data.projectDetails)) return false;
   if (!layoutAllowsCleanup(data.layout)) return false;
   return true;

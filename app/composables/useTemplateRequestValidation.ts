@@ -1,6 +1,7 @@
 /** Centralized validation for the template request form; does not mutate form data. */
 import { ref, type Ref } from 'vue';
 import type {
+  ColorCustomization,
   TemplateRequestFormData,
   TemplateRequestValidatableField,
   TemplateRequestValidationErrors
@@ -19,16 +20,10 @@ const NAME_MIN_LENGTH = 2;
 const NAME_MAX_LENGTH = 200;
 /** Maximum length for long text (notes) */
 const LONG_TEXT_MAX_LENGTH = 2000;
-/** Phone: min/max digit count after normalizing */
-const PHONE_DIGITS_MIN = 10;
-const PHONE_DIGITS_MAX = 15;
-/** Email max length (RFC 5321) */
-const EMAIL_MAX_LENGTH = 254;
 /** Max goals selection */
 const GOALS_MAX = 3;
 /** Preferred URL max length */
 const PREFERRED_URL_MAX_LENGTH = 100;
-const WEBSITE_MAX_LENGTH = 2048;
 const LOCATION_MAX_LENGTH = 200;
 const TAG_MAX_LENGTH = 60;
 const TAGS_MAX_COUNT = 20;
@@ -75,10 +70,47 @@ function validateName(
   return undefined;
 }
 
+function validateColorCustomization(colors: ColorCustomization): string | undefined {
+  const keys: (keyof ColorCustomization)[] = [
+    'primary',
+    'secondary',
+    'accent',
+    'background',
+    'text'
+  ];
+  for (const k of keys) {
+    const v = colors[k]?.trim() ?? '';
+    if (v.length === 0) {
+      return 'Please set all colors in your color scheme';
+    }
+  }
+  return undefined;
+}
+
+function validateLogoBranding(
+  data: TemplateRequestFormData,
+  newLogoFileCount: number
+): string | undefined {
+  if (newLogoFileCount === 0 && data.logoAssets.length === 0) {
+    return 'Upload at least one logo image';
+  }
+  return undefined;
+}
+
+function validateBrandBranding(
+  data: TemplateRequestFormData,
+  newBrandFileCount: number
+): string | undefined {
+  if (newBrandFileCount === 0 && data.brandAssets.length === 0) {
+    return 'Upload at least one branding image or file';
+  }
+  return undefined;
+}
+
 function validatePreferredUrl(value: string): string | undefined {
   const trimmed = normalizeSingleLineInput(value);
   if (trimmed.length === 0) {
-    return undefined;
+    return 'Preferred URL is required';
   }
   if (hasDisallowedControlChars(value)) {
     return 'URL contains unsupported characters';
@@ -98,7 +130,7 @@ function validatePreferredUrl(value: string): string | undefined {
 function validateLocation(data: TemplateRequestFormData): string | undefined {
   const trimmed = normalizeSingleLineInput(data.location.displayName ?? '');
   if (trimmed.length === 0) {
-    return undefined;
+    return 'Location is required';
   }
   if (hasDisallowedControlChars(data.location.displayName ?? '')) {
     return 'Location contains unsupported characters';
@@ -108,63 +140,6 @@ function validateLocation(data: TemplateRequestFormData): string | undefined {
   }
   if (!data.location.verified) {
     return 'Select a location from the suggestions to verify your address';
-  }
-  return undefined;
-}
-
-function validateEmail(value: string): string | undefined {
-  const trimmed = normalizeSingleLineInput(value).toLowerCase();
-  if (trimmed.length === 0) {
-    return 'Email is required';
-  }
-  if (hasDisallowedControlChars(value)) {
-    return 'Email contains unsupported characters';
-  }
-  if (trimmed.length > EMAIL_MAX_LENGTH) {
-    return 'Email is too long';
-  }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-    return 'Please enter a valid email address';
-  }
-  return undefined;
-}
-
-function validatePhone(value: string): string | undefined {
-  const trimmed = normalizeSingleLineInput(value);
-  if (trimmed.length === 0) {
-    return undefined;
-  }
-  if (hasDisallowedControlChars(value)) {
-    return 'Phone number contains unsupported characters';
-  }
-  const digits = trimmed.replace(/\D/g, '');
-  if (digits.length < PHONE_DIGITS_MIN) {
-    return `Phone number must have at least ${PHONE_DIGITS_MIN} digits`;
-  }
-  if (digits.length > PHONE_DIGITS_MAX) {
-    return `Phone number must have at most ${PHONE_DIGITS_MAX} digits`;
-  }
-  if (!/^[\d\s\-+()]+$/.test(trimmed)) {
-    return 'Phone number can only contain digits, spaces, hyphens, plus, and parentheses';
-  }
-  return undefined;
-}
-
-function validateWebsite(value: string): string | undefined {
-  const trimmed = normalizeSingleLineInput(value);
-  if (trimmed.length === 0) {
-    return undefined;
-  }
-  if (hasDisallowedControlChars(value)) {
-    return 'Website URL contains unsupported characters';
-  }
-  const hasProtocol = /^https?:\/\/.+\..+/.test(trimmed);
-  const looksLikeDomain = /^[a-zA-Z0-9][a-zA-Z0-9-.]*\.[a-zA-Z]{2,}/.test(trimmed);
-  if (!hasProtocol && !looksLikeDomain) {
-    return 'Please enter a valid URL (e.g. https://example.com)';
-  }
-  if (trimmed.length > WEBSITE_MAX_LENGTH) {
-    return 'URL is too long';
   }
   return undefined;
 }
@@ -276,17 +251,21 @@ function validateRequestCategories(values: string[]): string | undefined {
   return undefined;
 }
 
+export interface TemplateRequestValidationBrandingContext {
+  newLogoFileCount: number;
+  newBrandFileCount: number;
+}
+
 /** Document order for validating and scrolling to the first invalid field on submit. */
 export const TEMPLATE_REQUEST_VALIDATION_FIELD_ORDER: readonly TemplateRequestValidatableField[] = [
+  'colorCustomization',
+  'logoBranding',
+  'brandBranding',
   'businessName',
   'preferredUrl',
   'location',
   'industry',
   'customIndustry',
-  'contactName',
-  'email',
-  'phone',
-  'website',
   'goals',
   'audienceTags',
   'additionalNotes',
@@ -296,19 +275,24 @@ export const TEMPLATE_REQUEST_VALIDATION_FIELD_ORDER: readonly TemplateRequestVa
 export interface UseTemplateRequestValidationReturn {
   errors: Ref<TemplateRequestValidationErrors>;
   validateField: (field: TemplateRequestValidatableField) => string | undefined;
-  validateAll: () => boolean;
+  validateAll: (branding?: TemplateRequestValidationBrandingContext) => boolean;
   clearFieldError: (field: TemplateRequestValidatableField) => void;
 }
 
 function runValidator(
   field: TemplateRequestValidatableField,
-  data: TemplateRequestFormData
+  data: TemplateRequestFormData,
+  branding: TemplateRequestValidationBrandingContext
 ): string | undefined {
   switch (field) {
+    case 'colorCustomization':
+      return validateColorCustomization(data.colorCustomization);
+    case 'logoBranding':
+      return validateLogoBranding(data, branding.newLogoFileCount);
+    case 'brandBranding':
+      return validateBrandBranding(data, branding.newBrandFileCount);
     case 'businessName':
       return validateName(data.businessName, 'Business name');
-    case 'contactName':
-      return validateName(data.contactName, 'Contact name');
     case 'preferredUrl':
       return validatePreferredUrl(data.preferredUrl);
     case 'location':
@@ -317,12 +301,6 @@ function runValidator(
       return validateIndustry(data.industry);
     case 'customIndustry':
       return validateCustomIndustry(data);
-    case 'email':
-      return validateEmail(data.email);
-    case 'phone':
-      return validatePhone(data.phone);
-    case 'website':
-      return validateWebsite(data.website);
     case 'goals':
       return validateGoals(data.goals);
     case 'audienceTags':
@@ -348,7 +326,10 @@ export function useTemplateRequestValidation(
   const errors = ref<TemplateRequestValidationErrors>({});
 
   function validateField(field: TemplateRequestValidatableField): string | undefined {
-    const message = runValidator(field, formData.value);
+    const message = runValidator(field, formData.value, {
+      newLogoFileCount: 0,
+      newBrandFileCount: 0
+    });
     errors.value = {
       ...errors.value,
       [field]: message ?? undefined
@@ -356,12 +337,16 @@ export function useTemplateRequestValidation(
     return message;
   }
 
-  function validateAll(): boolean {
+  function validateAll(branding?: TemplateRequestValidationBrandingContext): boolean {
     const data = formData.value;
+    const ctx: TemplateRequestValidationBrandingContext = branding ?? {
+      newLogoFileCount: 0,
+      newBrandFileCount: 0
+    };
     const newErrors: TemplateRequestValidationErrors = {};
 
     for (const field of TEMPLATE_REQUEST_VALIDATION_FIELD_ORDER) {
-      const message = runValidator(field, data);
+      const message = runValidator(field, data, ctx);
       if (message) {
         newErrors[field] = message;
       }

@@ -344,25 +344,27 @@ Below **1025px** viewport width (same threshold as the visual layout editor), th
 Validation is centralized in `useTemplateRequestValidation` (see `app/composables/useTemplateRequestValidation.ts`). The form does not submit until all validations pass.
 
 **When validation runs:**
-- **On blur:** Text, email, phone, website, and textarea fields validate when the user leaves the field. The error for that field is updated (or cleared if valid).
-- **On input:** Typing in a field clears that field’s error so the user gets immediate feedback while correcting.
-- **On submit:** All fields are validated. If any fail, errors are shown and submission is blocked. String fields are trimmed before the payload is emitted.
+- **On blur:** Text and textarea fields validate when the user leaves the field (where applicable).
+- **On input:** Typing clears that field’s error where wired.
+- **On submit:** All fields are validated, including color scheme, logo/brand uploads, and branding file counts. If any fail, errors are shown and submission is blocked. String fields are trimmed before the payload is emitted.
 
 **Rules (summary):**
-- **Business name / Contact name:** Required; 2–200 characters after trim; not purely numeric; at least two letters; only letters, numbers, spaces, hyphens, apostrophes, periods.
+- **Color scheme:** All five colors must be non-empty (validated on submit).
+- **Logo images:** At least one logo file required (new upload or existing attachment on edit).
+- **Brand images / files:** At least one branding/material file required (new upload or existing attachment on edit).
+- **Business name:** Required; 2–200 characters after trim; not purely numeric; at least two letters; only letters, numbers, spaces, hyphens, apostrophes, periods.
+- **Preferred URL:** Required; alphanumeric + hyphens; no spaces; max 100 characters.
+- **Location:** Required; **select a suggestion** so the value is Photon-verified (`verified: true`) before the form can submit. Persisted subfields are normalized and omitted when empty so Firestore writes stay valid.
 - **Industry:** Required; must be one of the predefined options.
 - **Custom industry (when "Other"):** Required when industry is "other"; min 3 chars; must contain at least two letters; rejects nonsense values (blocklist in `formOptions.ts`).
-- **Preferred URL:** Optional; if provided, alphanumeric + hyphens, no spaces, max 100 characters.
-- **Location:** Optional when left empty; if the user enters any text, they must **select a suggestion** so the value is Photon-verified (`verified: true`) before the form can submit. Persisted subfields are normalized and omitted when empty so Firestore writes stay valid.
-- **Email:** Required; valid email format; max 254 characters.
-- **Phone:** Optional; if provided, 10–15 digits (spaces, dashes, parentheses allowed).
-- **Website:** Optional; if provided, must be a valid URL (protocol or domain with TLD).
 - **Goals:** At least one and at most three goals required; values must be from the predefined list.
 - **Audience tags:** Optional; individual tags cannot be empty.
 - **Additional notes:** Optional; if provided, max 2000 characters.
 - **Request categories:** Optional; values must be from the predefined list.
 
-**UI:** Error messages use the design token `--color-error`. Invalid inputs use the `.form-input--invalid` / `.form-select--invalid` / `.form-textarea--invalid` classes (and IconInput receives invalid styling via `.form-group--error`). Error text appears below the field; layout uses the shared `.form-error` class from `components.css`.
+**Contact:** Not collected in the form. `contactInfo` on the order document is populated from **Firebase Auth** on create and on every update so Firestore rules remain satisfied.
+
+**UI:** Error messages use the design token `--color-error`. Invalid inputs use the `.form-input--invalid` / `.form-select--invalid` / `.form-textarea--invalid` classes. Error text appears below the field; layout uses the shared `.form-error` class from `components.css`.
 
 ### Order edit (`/orders/[id]/edit`)
 

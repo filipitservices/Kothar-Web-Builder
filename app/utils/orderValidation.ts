@@ -179,6 +179,9 @@ export function validateOrderRequest(data: unknown): data is OrderRequest {
 
   if (d.layout !== undefined && d.layout !== null && !validateOrderLayout(d.layout)) return false;
   if (d.modificationLocked !== undefined && typeof d.modificationLocked !== 'boolean') return false;
+  if (d.assistantChatMessages !== undefined && d.assistantChatMessages !== null) {
+    if (!Array.isArray(d.assistantChatMessages)) return false;
+  }
 
   return true;
 }

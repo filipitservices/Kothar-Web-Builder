@@ -442,16 +442,7 @@ Extend the UI with message-specific actions:
 
 ### Persisting Chat History
 
-To save messages across sessions:
-
-```typescript
-// In aiChat store
-import { useLocalStorage } from '@vueuse/core';
-
-const messages = useLocalStorage<AiMessage[]>('kothar-ai-chat-history', []);
-
-// Messages now persist in localStorage automatically
-```
+Chat messages for the **request builder** are stored on the order document as **`assistantChatMessages`** (see `docs/18-FIREBASE-FIRESTORE-STORAGE.md`). `usePersistAssistantChat` hydrates the Pinia `aiChat` store when the builder loads an order and debounces `updateDoc` when messages change. **Do not** use localStorage for order-scoped chat; the Firestore field is the single source of truth per order.
 
 ---
 

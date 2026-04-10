@@ -40,6 +40,17 @@ export const useAiChatStore = defineStore('aiChat', () => {
     useFirebaseAi().resetChat();
   };
 
+  /** Replace UI history from Firestore (or empty); resets Gemini SDK session so it matches displayed history. */
+  const replaceMessagesFromServer = (next: readonly AiMessage[]): void => {
+    messages.value = next.map((m) => ({
+      id: m.id,
+      role: m.role,
+      content: m.content,
+      timestamp: m.timestamp
+    }));
+    useFirebaseAi().resetChat();
+  };
+
   const setProcessing = (processing: boolean): void => {
     isProcessing.value = processing;
   };
@@ -108,6 +119,7 @@ export const useAiChatStore = defineStore('aiChat', () => {
     addMessage,
     updateAssistantMessage,
     clearMessages,
+    replaceMessagesFromServer,
     setProcessing,
     setInputText,
     cancelSend,

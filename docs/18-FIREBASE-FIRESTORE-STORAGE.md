@@ -58,17 +58,18 @@ Each order document matches the **OrderRequest** type (see `app/types/order.ts`)
 | `templateId` | string | Showcase template ID (e.g. `elite-plumbing`). |
 | `templateName` | string | Human-readable template name. |
 | `businessInfo` | object | `businessName`, `preferredUrl`, `location` (`LocationData` with `displayName`, `city?`, `state?`, `country?`, `postcode?`, `lat?`, `lon?`, `verified`), `industry`, `customIndustry`. |
-| `contactInfo` | object | `contactName`, `email`, `phone`, `website`. |
+| `contactInfo` | object | `contactName`, `email`, `phone`, `website`. Populated from **Firebase Auth** on create and on every client update (not from the template request form). |
 | `projectDetails` | object | `goals` (string[]), `audienceTags` (string[]), `additionalNotes`, `requestCategories` (string[]), `colorCustomization`. |
 | `attachments` | array | Metadata for brand material files (see below). |
 | `logoAttachments` | array | Metadata for logo files (same shape as attachments). |
+| `assistantChatMessages` | array? | Optional. Builder AI chat history (`id`, `role`, `content`, `timestamp`). Omitted when unused. Rules cap list length. |
 | `layout` | object? | Page layout configuration: `{ blocks: OrderLayoutBlock[], customized: boolean, builderAnnotations?: { version: 1, desktop: { strokes, textBoxes }, mobile: { strokes, textBoxes } } }`. `builderAnnotations` stores drawing strokes and text overlays for both screens. Set on draft creation from the template sections; updated when user saves from the builder. |
 | `status` | string | Lifecycle stage: `draft` (initial creation, form not yet submitted), `submitted`, `under_review`, `in_production`, `awaiting_feedback`, `finalizing`, `completed`, `cancelled`. `draft` → `submitted` transition happens on form submission; other transitions are admin-only. Legacy values `in_review`, `in_progress`, `delivered` are supported for display. |
 | `modificationLocked` | boolean | Optional. When `true`, order is locked (e.g. being processed). Admin-assignable only; client must not write. Edit UI is disabled when true. |
 | `createdAt` | server timestamp | Set via `serverTimestamp()` on create. |
 | `updatedAt` | server timestamp | Set via `serverTimestamp()` on create and on later updates. |
 
-No redundant or client-only fields. No `File` objects or base64 blobs in Firestore.
+No `File` objects or base64 blobs in Firestore. `assistantChatMessages` is the canonical persisted copy of builder chat for that order.
 
 **`businessInfo.location`:** Optional subfields (`city`, `state`, `country`, `postcode`, `lat`, `lon`) are stored only when they have valid values (non-empty normalized strings or finite coordinates). The Firestore **modular Web SDK** rejects `undefined` anywhere in the write payload, so the app never sends explicit `undefined` for nested keys. **`normalizeLocationData()`** (via **`normalizeTemplateRequestFormData()`** in `app/utils/requestInputNormalization.ts`) runs on form data before **`useOrderUpdate`** / **`useOrderSubmission`** call **`updateDoc`** or **`setDoc`**.
 

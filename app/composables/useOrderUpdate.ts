@@ -13,6 +13,7 @@ import {
   serverTimestamp,
   type Firestore
 } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, type FirebaseStorage } from 'firebase/storage';
 import { getFirebaseApp } from '~/plugins/firebase.client';
 import type { OrderWithId } from '~/types/order';
@@ -26,6 +27,7 @@ import type {
 import type { TemplateRequestFormData, LocationData } from '~/types/templateRequest';
 import { sanitizeStorageFileName } from '~/utils/storage';
 import { normalizeLocationData, normalizeTemplateRequestFormData } from '~/utils/requestInputNormalization';
+import { buildContactInfoFromAuth } from '~/utils/contactInfoFromAuth';
 
 /**
  * Map an order document to form data for prefilling the edit form.
@@ -73,10 +75,6 @@ export function orderToFormData(order: OrderWithId): TemplateRequestFormData {
     location,
     industry: businessInfo.industry ?? '',
     customIndustry: businessInfo.customIndustry ?? '',
-    contactName: contactInfo.contactName ?? '',
-    email: contactInfo.email ?? '',
-    phone: contactInfo.phone ?? '',
-    website: contactInfo.website ?? '',
     goals: [...(projectDetails.goals ?? [])],
     audienceTags,
     additionalNotes: projectDetails.additionalNotes ?? '',
@@ -86,11 +84,10 @@ export function orderToFormData(order: OrderWithId): TemplateRequestFormData {
 
 /**
  * Build the updatable subset of an order from form data.
- * Does not include status, modificationLocked, createdAt, or id.
+ * `contactInfo` always comes from Firebase Auth (not the form). Does not include status, modificationLocked, createdAt, or id.
  */
 function formDataToOrderUpdate(data: TemplateRequestFormData): {
   businessInfo: OrderBusinessInfo;
-  contactInfo: OrderContactInfo;
   projectDetails: OrderProjectDetails;
 } {
   const normalizedData = normalizeTemplateRequestFormData(data);
@@ -101,12 +98,6 @@ function formDataToOrderUpdate(data: TemplateRequestFormData): {
       location: normalizedData.location,
       industry: normalizedData.industry,
       customIndustry: normalizedData.industry === 'other' ? normalizedData.customIndustry : ''
-    },
-    contactInfo: {
-      contactName: normalizedData.contactName,
-      email: normalizedData.email,
-      phone: normalizedData.phone,
-      website: normalizedData.website
     },
     projectDetails: {
       goals: [...normalizedData.goals],
@@ -201,6 +192,12 @@ export function useOrderUpdate(): UseOrderUpdateReturn {
     const orderRef = doc(db, 'users', userId, 'orders', orderId);
 
     return (async () => {
+      const authUser = getAuth(app).currentUser;
+      if (!authUser || authUser.uid !== userId) {
+        throw new OrderUpdateError('You must be signed in to save changes.');
+      }
+      const contactInfo: OrderContactInfo = buildContactInfoFromAuth(authUser);
+
       const storage = getStorage(app);
 
       let attachments: OrderAttachment[] = [...existingAttachments];
@@ -223,7 +220,7 @@ export function useOrderUpdate(): UseOrderUpdateReturn {
         logoAttachments = [...existingLogoAttachments, ...uploaded];
       }
 
-      const { businessInfo, contactInfo, projectDetails } = formDataToOrderUpdate(formData);
+      const { businessInfo, projectDetails } = formDataToOrderUpdate(formData);
 
       const updatePayload: Record<string, unknown> = {
         businessInfo,

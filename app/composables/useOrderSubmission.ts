@@ -21,6 +21,7 @@ import {
   getDownloadURL,
   type FirebaseStorage
 } from 'firebase/storage';
+import { getAuth } from 'firebase/auth';
 import { getFirebaseApp } from '~/plugins/firebase.client';
 import type { TemplateRequestFormData } from '~/types/templateRequest';
 import type {
@@ -34,6 +35,7 @@ import type {
 import { ORDER_STATUS_DEFAULT } from '~/types/order';
 import { sanitizeStorageFileName } from '~/utils/storage';
 import { normalizeTemplateRequestFormData } from '~/utils/requestInputNormalization';
+import { buildContactInfoFromAuth } from '~/utils/contactInfoFromAuth';
 
 /** Result of a successful order submission. */
 export interface OrderSubmissionResult {
@@ -59,10 +61,11 @@ export class OrderSubmissionError extends Error {
  * Does not include attachments (built from upload results).
  */
 function formDataToOrderPayload(
-  templateId: string,
-  templateName: string,
   data: TemplateRequestFormData,
-  layout?: OrderLayout
+  layout: OrderLayout | undefined,
+  contactInfo: OrderContactInfo,
+  templateId: string,
+  templateName: string
 ): Omit<OrderRequest, 'createdAt' | 'updatedAt'> {
   const normalizedData = normalizeTemplateRequestFormData(data);
   const businessInfo: OrderBusinessInfo = {
@@ -71,13 +74,6 @@ function formDataToOrderPayload(
     location: normalizedData.location,
     industry: normalizedData.industry,
     customIndustry: normalizedData.industry === 'other' ? normalizedData.customIndustry : ''
-  };
-
-  const contactInfo: OrderContactInfo = {
-    contactName: normalizedData.contactName,
-    email: normalizedData.email,
-    phone: normalizedData.phone,
-    website: normalizedData.website
   };
 
   const projectDetails: OrderProjectDetails = {
@@ -186,13 +182,19 @@ export function useOrderSubmission(): UseOrderSubmissionReturn {
       return Promise.reject(new OrderSubmissionError('User ID is required.'));
     }
 
+    const authUser = getAuth(app).currentUser;
+    if (!authUser || authUser.uid !== userId) {
+      return Promise.reject(new OrderSubmissionError('You must be signed in to submit your request.'));
+    }
+    const contactInfo = buildContactInfoFromAuth(authUser);
+
     const db = getFirestore(app) as Firestore;
     const storage = getStorage(app);
     const ordersColl = collection(db, 'users', userId, 'orders');
     const orderRef = doc(ordersColl);
     const orderId = orderRef.id;
 
-    const basePayload = formDataToOrderPayload(templateId, templateName, formData, layout);
+    const basePayload = formDataToOrderPayload(formData, layout, contactInfo, templateId, templateName);
 
     return (async () => {
       let attachments: OrderAttachment[] = [];

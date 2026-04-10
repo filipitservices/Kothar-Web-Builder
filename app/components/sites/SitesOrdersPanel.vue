@@ -16,7 +16,7 @@
       <table class="sites-table sites-table--orders" role="table">
         <thead>
           <tr>
-            <th scope="col" class="sites-th">Template</th>
+            <th scope="col" class="sites-th">Request</th>
             <th scope="col" class="sites-th">Submitted</th>
             <th scope="col" class="sites-th">Status</th>
             <th scope="col" class="sites-th">Editing</th>
@@ -30,8 +30,8 @@
             class="sites-row"
           >
             <td class="sites-td">
-              <span class="sites-cell-primary">{{ order.templateName }}</span>
-              <span class="sites-cell-meta">{{ order.businessInfo.businessName }}</span>
+              <span class="sites-cell-primary">{{ orderTitlePrimary(order) }}</span>
+              <span class="sites-cell-meta">{{ order.templateName }}</span>
             </td>
             <td class="sites-td">
               <span class="sites-cell-muted">{{ formatOrderDate(order.createdAt) }}</span>
@@ -62,7 +62,7 @@
                 <NuxtLink
                   :to="`/orders/${order.id}/edit`"
                   class="sites-action-link"
-                  :aria-label="`Modify order: ${order.templateName}`"
+                  :aria-label="`Modify order: ${orderTitlePrimary(order)}`"
                 >
                   Modify
                   <svg class="sites-action-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -74,8 +74,8 @@
                     v-if="order.status === ORDER_STATUS_DRAFT && !order.modificationLocked"
                     type="button"
                     class="sites-icon-btn sites-icon-btn--danger"
-                    :title="`Remove draft: ${order.templateName}`"
-                    :aria-label="`Delete draft request: ${order.templateName}`"
+                    :title="`Remove draft: ${orderTitlePrimary(order)}`"
+                    :aria-label="`Delete draft request: ${orderTitlePrimary(order)}`"
                     @click="emit('delete-draft', order)"
                   >
                     <svg
@@ -127,4 +127,9 @@ defineProps<{
 const emit = defineEmits<{
   'delete-draft': [order: OrderWithId];
 }>();
+
+function orderTitlePrimary(order: OrderWithId): string {
+  const name = order.businessInfo?.businessName?.trim() ?? '';
+  return name.length > 0 ? name : order.templateName;
+}
 </script>

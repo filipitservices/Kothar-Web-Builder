@@ -46,10 +46,6 @@ function isValidStashFormData(value: unknown): value is TemplateRequestFormData 
     typeof data.preferredUrl === 'string' &&
     typeof data.industry === 'string' &&
     typeof data.customIndustry === 'string' &&
-    typeof data.contactName === 'string' &&
-    typeof data.email === 'string' &&
-    typeof data.phone === 'string' &&
-    typeof data.website === 'string' &&
     typeof data.additionalNotes === 'string' &&
     typeof locationRecord.displayName === 'string' &&
     typeof locationRecord.verified === 'boolean' &&
@@ -128,10 +124,6 @@ function normalizeStashFormData(data: TemplateRequestFormData): TemplateRequestF
     }),
     industry: data.industry,
     customIndustry: data.customIndustry,
-    contactName: data.contactName,
-    email: data.email,
-    phone: data.phone,
-    website: data.website,
     goals: [...data.goals],
     audienceTags: [...data.audienceTags],
     additionalNotes: data.additionalNotes,

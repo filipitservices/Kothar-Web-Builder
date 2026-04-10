@@ -56,7 +56,7 @@ export interface LocationData {
 /**
  * Form data for template requests.
  * Organized by section: Design Customization, Branding, Business Info,
- * Contact, Website Goals, Additional Requests.
+ * Website Goals, Additional Requests. (Contact is stored on the order from Auth, not the form.)
  */
 export interface TemplateRequestFormData {
   /* ── Design Customization ── */
@@ -81,12 +81,6 @@ export interface TemplateRequestFormData {
   industry: string;
   /** Required when industry is "other"; must be a meaningful description. */
   customIndustry: string;
-
-  /* ── Contact ── */
-  contactName: string;
-  email: string;
-  phone: string;
-  website: string;
 
   /* ── Website Goals ── */
   goals: string[];
@@ -114,18 +108,16 @@ export type ColorMode = 'presets' | 'custom';
 
 /**
  * Form field keys that are validated by the template request validation layer.
- * Excludes colorCustomization, file arrays, and brandAssets/logoAssets (derived from files).
  */
 export type TemplateRequestValidatableField =
+  | 'colorCustomization'
+  | 'logoBranding'
+  | 'brandBranding'
   | 'businessName'
   | 'preferredUrl'
   | 'location'
   | 'industry'
   | 'customIndustry'
-  | 'contactName'
-  | 'email'
-  | 'phone'
-  | 'website'
   | 'goals'
   | 'audienceTags'
   | 'additionalNotes'

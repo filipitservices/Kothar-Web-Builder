@@ -46,6 +46,9 @@
   --radius-xl: 16px;
   /* Layout */
   --container-max: 1200px;
+  /* Stacking (modals); base overlay uses 1000 in components.css */
+  --z-modal-overlay: 1000;
+  --z-modal-overlay-elevated: 1200;
 }
 
 /* Reset and Base Styles */

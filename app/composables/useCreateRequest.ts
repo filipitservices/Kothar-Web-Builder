@@ -18,9 +18,11 @@ import {
   serverTimestamp,
   type Firestore
 } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 import { getFirebaseApp } from '~/plugins/firebase.client';
 import type { ShowcaseTemplate } from '~/stores/showcase';
-import type { OrderLayout, OrderLayoutBlock, OrderWithId } from '~/types/order';
+import type { OrderContactInfo, OrderLayout, OrderLayoutBlock, OrderWithId } from '~/types/order';
+import { buildContactInfoFromAuth } from '~/utils/contactInfoFromAuth';
 import { ORDER_STATUS_DRAFT } from '~/types/order';
 import { showcaseSectionsToBlocks } from '~/stores/requestLayout';
 import { todayLocalDateKey } from '~/utils/requestLimitDate';
@@ -63,7 +65,8 @@ export interface UseCreateRequestReturn {
 function buildOrderForHydration(
   orderId: string,
   template: ShowcaseTemplate,
-  layout: OrderLayout
+  layout: OrderLayout,
+  contactInfo: OrderContactInfo
 ): OrderWithId {
   const defaultColorCustomization = {
     primary: template.colorScheme.primary,
@@ -85,12 +88,7 @@ function buildOrderForHydration(
       industry: '',
       customIndustry: '',
     },
-    contactInfo: {
-      contactName: '',
-      email: '',
-      phone: '',
-      website: '',
-    },
+    contactInfo,
     projectDetails: {
       goals: [],
       audienceTags: [],
@@ -124,6 +122,13 @@ export function useCreateRequest(): UseCreateRequestReturn {
       throw new CreateRequestError('User ID is required.');
     }
 
+    const auth = getAuth(app);
+    const user = auth.currentUser;
+    if (!user || user.uid !== userId) {
+      throw new CreateRequestError('You must be signed in to create a request.');
+    }
+    const contactInfo = buildContactInfoFromAuth(user);
+
     const db = getFirestore(app) as Firestore;
     const today = todayLocalDateKey();
 
@@ -152,12 +157,7 @@ export function useCreateRequest(): UseCreateRequestReturn {
         industry: '',
         customIndustry: '',
       },
-      contactInfo: {
-        contactName: '',
-        email: '',
-        phone: '',
-        website: '',
-      },
+      contactInfo,
       projectDetails: {
         goals: [] as string[],
         audienceTags: [] as string[],
@@ -208,7 +208,7 @@ export function useCreateRequest(): UseCreateRequestReturn {
       );
     }
 
-    const orderForHydration = buildOrderForHydration(orderId, template, layout);
+    const orderForHydration = buildOrderForHydration(orderId, template, layout, contactInfo);
     return { orderId, orderForHydration };
   }
 

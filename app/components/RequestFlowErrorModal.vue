@@ -2,7 +2,7 @@
   <Teleport to="body">
     <div
       v-if="store.open && store.content"
-      class="modal-overlay"
+      class="modal-overlay modal-overlay--elevated"
       role="presentation"
       @click.self="onDismiss"
     >

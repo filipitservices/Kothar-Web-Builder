@@ -26,7 +26,8 @@ export interface UseTemplateRequestFormReturn {
   hydrateFormData: (data: TemplateRequestFormData) => void;
 }
 
-const TOTAL_FIELDS = 14;
+/** Progress steps: color + logo + brand + business (4) + goals + audience + notes + categories — see progress computed. */
+const TOTAL_FIELDS = 10;
 
 function createEmptyLocation(): LocationData {
   return { displayName: '', verified: false };
@@ -44,10 +45,6 @@ function createInitialFormData(colors: ColorCustomization): TemplateRequestFormD
     location: createEmptyLocation(),
     industry: '',
     customIndustry: '',
-    contactName: '',
-    email: '',
-    phone: '',
-    website: '',
     goals: [],
     audienceTags: [],
     additionalNotes: '',
@@ -92,21 +89,15 @@ export function useTemplateRequestForm(
     // Design customization — always counts as 1 (pre-filled from template)
     completed++;
 
-    // Branding
-    if (uploadedLogoFiles.value.length > 0) completed++;
-    if (uploadedFiles.value.length > 0) completed++;
+    // Branding (new uploads or already attached names)
+    if (uploadedLogoFiles.value.length > 0 || data.logoAssets.length > 0) completed++;
+    if (uploadedFiles.value.length > 0 || data.brandAssets.length > 0) completed++;
 
     // Business info
     if (data.businessName.trim()) completed++;
     if (data.preferredUrl.trim()) completed++;
     if (data.location.displayName.trim()) completed++;
     if (data.industry) completed++;
-
-    // Contact
-    if (data.contactName.trim()) completed++;
-    if (data.email.trim()) completed++;
-    if (data.phone.trim()) completed++;
-    if (data.website.trim()) completed++;
 
     // Website goals
     if (data.goals.length > 0) completed++;

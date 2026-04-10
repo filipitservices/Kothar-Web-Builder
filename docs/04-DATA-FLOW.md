@@ -681,7 +681,7 @@ function setField(name, value) {
 `stores/unsavedChanges.ts` is the single source of truth for route-leave prompting. Active editors register via `useUnsavedChanges()` with:
 
 - `isDirty`: diff-based form/layout/builder edits
-- `hasUnsavedSession`: draft-session state (`order.status === 'draft'`)
+- `hasUnsavedSession`: optional extra flag (e.g. draft session); **gallery request and order edit pages register `false`** so the prompt only reflects **real edits** (`isDirty`), not merely “draft status”
 - `onDiscard`: page-specific rehydrate/reset action
 - `onStashLeave` (optional): page-scoped stash hook used only where supported
 
@@ -690,7 +690,7 @@ The guard (`app/plugins/unsaved-changes-guard.client.ts`) classifies navigation 
 - same editing scope (`/gallery/request/:id` ↔ `/gallery/request/:id/builder`, `/orders/:id/edit` ↔ `/orders/:id/builder`) -> allow without prompt
 - leaving editing scope -> prompt when `hasDirtyEdits || hasUnsavedSession`
 
-This keeps untouched drafts protected on external exits while preventing false prompts on internal edit/builder transitions.
+This prevents false prompts on internal edit/builder transitions. **Builder** pages may still use `hasUnsavedSession` for draft layout sessions where appropriate.
 
 **Builder layout dirty state:** `requestLayoutStore.isLayoutDirtyVsBaseline()` compares a JSON fingerprint of the full order layout payload from `getLayoutForSubmission()`, including **`builderAnnotations`** (desktop/mobile strokes and text boxes). `BuilderEditor` debounces flushing live canvas/text state into `requestLayoutStore` so drawing and text overlays participate in that diff. The **Back to request / Back to order** control uses a dedicated **`BuilderLeaveDialog`**: Save runs the same `useBuilderSave` path as the toolbar; Discard runs the page’s rehydrate-from-order handler passed as `onLeaveDiscard`; Cancel closes the dialog.
 

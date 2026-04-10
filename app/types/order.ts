@@ -104,6 +104,14 @@ export interface OrderContactInfo {
   website: string;
 }
 
+/** Persisted AI assistant chat messages (builder); mirrors UI message shape. */
+export interface AssistantChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: number;
+}
+
 /** Project details: goals, audience, notes, categories, and color customization. */
 export interface OrderProjectDetails {
   goals: string[];
@@ -132,6 +140,8 @@ export interface OrderRequest {
   attachments: OrderAttachment[];
   /** Metadata for logo files uploaded to Storage (separate from brand material). */
   logoAttachments: OrderAttachment[];
+  /** Optional builder AI chat history; omitted when never used. */
+  assistantChatMessages?: AssistantChatMessage[];
   status: OrderStatus;
   /**
    * When true, order is locked (e.g. being processed). Admin-assignable only.

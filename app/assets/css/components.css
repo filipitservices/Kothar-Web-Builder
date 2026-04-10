@@ -102,8 +102,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: var(--z-modal-overlay);
   padding: var(--space-lg);
+}
+
+/** Flow / access errors must stack above other modals (e.g. gallery template preview). */
+.modal-overlay--elevated {
+  z-index: var(--z-modal-overlay-elevated);
 }
 
 .modal-container {

@@ -90,6 +90,15 @@ service cloud.firestore {
         && attachments.size() <= 50;
     }
 
+    // Optional assistant chat history; app validates message shape. Bounded list size only (no per-item iteration in rules).
+    function isValidAssistantChatMessagesField(data) {
+      return !data.keys().hasAny(['assistantChatMessages'])
+        || (
+          data.assistantChatMessages is list
+          && data.assistantChatMessages.size() <= 200
+        );
+    }
+
     function isValidLayout(layout) {
       return layout == null || (
         layout is map
@@ -144,7 +153,8 @@ service cloud.firestore {
         && isValidProjectDetails(data)
         && isValidAttachmentList(data.attachments)
         && isValidAttachmentList(data.logoAttachments)
-        && isValidLayout(data.layout);
+        && isValidLayout(data.layout)
+        && isValidAssistantChatMessagesField(data);
     }
 
     // Template request orders: owner-only.

@@ -21,8 +21,8 @@
           <button
             type="button"
             class="modal-close"
-            title="Stay on page"
-            aria-label="Stay on page"
+            title="Close"
+            aria-label="Close dialog"
             @click="onStay"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -37,9 +37,6 @@
           </p>
         </div>
         <div class="modal-footer unsaved-changes-dialog__footer">
-          <button type="button" class="btn btn--secondary" @click="onStay">
-            Stay on page
-          </button>
           <button
             v-if="unsaved.hasStashAction"
             type="button"

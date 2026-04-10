@@ -209,7 +209,7 @@ const isSubmitting = ref(false);
 /** Inline hint only (e.g. viewport too narrow for builder); errors use RequestFlowErrorModal. */
 const infoBannerMessage = ref<string | null>(null);
 
-const formProgress = ref({ completed: 1, total: 14 });
+const formProgress = ref({ completed: 1, total: 10 });
 const progressPercentage = computed(() => {
   if (formProgress.value.total === 0) return 0;
   return Math.round((formProgress.value.completed / formProgress.value.total) * 100);
@@ -252,7 +252,7 @@ const isEditsDirty = computed(() => {
   return formDirty || layoutDirty;
 });
 
-const hasUnsavedSession = computed(() => orderDoc.value?.status === 'draft');
+const hasUnsavedSession = computed(() => false);
 
 async function discardUnsaved(): Promise<void> {
   const uid = userId.value;

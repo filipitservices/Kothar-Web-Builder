@@ -56,12 +56,6 @@ export function areTemplateRequestSnapshotsEqual(
   if (a.industry.trim() !== b.industry.trim()) return false;
   if (a.customIndustry.trim() !== b.customIndustry.trim()) return false;
 
-  // Contact
-  if (a.contactName.trim() !== b.contactName.trim()) return false;
-  if (a.email.trim() !== b.email.trim()) return false;
-  if (a.phone.trim() !== b.phone.trim()) return false;
-  if (a.website.trim() !== b.website.trim()) return false;
-
   // Goals
   if (!sortedArraysEqual(a.goals, b.goals)) return false;
 
