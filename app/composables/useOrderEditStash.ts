@@ -1,6 +1,7 @@
 import type { OrderLayout } from '~/types/order';
 import type { TemplateRequestFormData } from '~/types/templateRequest';
-import { normalizeLocationData } from '~/utils/requestInputNormalization';
+import { normalizeLocationData, normalizeRequestCategories } from '~/utils/requestInputNormalization';
+import { useWhopAccessStore } from '~/stores/whopAccess';
 
 interface OrderEditStashPayload {
   version: 1;
@@ -127,7 +128,7 @@ function normalizeStashFormData(data: TemplateRequestFormData): TemplateRequestF
     goals: [...data.goals],
     audienceTags: [...data.audienceTags],
     additionalNotes: data.additionalNotes,
-    requestCategories: [...data.requestCategories],
+    requestCategories: normalizeRequestCategories(data.requestCategories),
   };
 }
 
@@ -140,6 +141,11 @@ export interface UseOrderEditStashReturn {
 export function useOrderEditStash(): UseOrderEditStashReturn {
   function saveStash(orderId: string, formData: TemplateRequestFormData, layout?: OrderLayout): void {
     if (!canUseSessionStorage() || !orderId.trim()) return;
+
+    const access = useWhopAccessStore();
+    if (access.paidMembershipActive !== true) {
+      return;
+    }
 
     const payload: OrderEditStashPayload = {
       version: 1,

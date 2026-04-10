@@ -26,7 +26,11 @@ import type {
 } from '~/types/order';
 import type { TemplateRequestFormData, LocationData } from '~/types/templateRequest';
 import { sanitizeStorageFileName } from '~/utils/storage';
-import { normalizeLocationData, normalizeTemplateRequestFormData } from '~/utils/requestInputNormalization';
+import {
+  normalizeLocationData,
+  normalizeTemplateRequestFormData,
+  normalizeRequestCategories
+} from '~/utils/requestInputNormalization';
 import { buildContactInfoFromAuth } from '~/utils/contactInfoFromAuth';
 
 /**
@@ -78,7 +82,7 @@ export function orderToFormData(order: OrderWithId): TemplateRequestFormData {
     goals: [...(projectDetails.goals ?? [])],
     audienceTags,
     additionalNotes: projectDetails.additionalNotes ?? '',
-    requestCategories: [...(projectDetails.requestCategories ?? [])]
+    requestCategories: normalizeRequestCategories(projectDetails.requestCategories ?? [])
   };
 }
 

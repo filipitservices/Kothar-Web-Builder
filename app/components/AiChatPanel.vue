@@ -4,6 +4,7 @@
     :class="{ 'minimized': isMinimized }"
     role="complementary"
     aria-label="Website Builder AI Assistant"
+    @transitionend="onPanelTransitionEnd"
   >
     <div class="chat-header" @click="toggleMinimized">
       <span class="chat-icon">🤖</span>
@@ -130,6 +131,28 @@ const scrollToBottom = () => {
     messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
   }
 };
+
+async function scrollToBottomAfterExpand(): Promise<void> {
+  await nextTick();
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      scrollToBottom();
+    });
+  });
+}
+
+function onPanelTransitionEnd(event: TransitionEvent): void {
+  if (event.propertyName !== 'height') return;
+  if (!isMinimized.value) {
+    scrollToBottom();
+  }
+}
+
+watch(isMinimized, (minimized) => {
+  if (!minimized) {
+    void scrollToBottomAfterExpand();
+  }
+});
 
 // Auto-scroll when new messages arrive
 watch(messages, async () => {

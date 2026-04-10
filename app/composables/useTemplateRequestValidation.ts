@@ -6,7 +6,14 @@ import type {
   TemplateRequestValidatableField,
   TemplateRequestValidationErrors
 } from '~/types/templateRequest';
-import { INDUSTRY_OPTIONS, WEBSITE_GOALS, REQUEST_CATEGORIES, NONSENSE_INDUSTRY_VALUES } from '~/constants/formOptions';
+import {
+  INDUSTRY_OPTIONS,
+  WEBSITE_GOALS,
+  REQUEST_CATEGORIES,
+  NONSENSE_INDUSTRY_VALUES,
+  WEBSITE_GOALS_MAX,
+  REQUEST_CATEGORIES_MAX
+} from '~/constants/formOptions';
 import {
   hasDisallowedControlChars,
   normalizeMultilineInput,
@@ -20,8 +27,8 @@ const NAME_MIN_LENGTH = 2;
 const NAME_MAX_LENGTH = 200;
 /** Maximum length for long text (notes) */
 const LONG_TEXT_MAX_LENGTH = 2000;
-/** Max goals selection */
-const GOALS_MAX = 3;
+/** Max goals selection (re-exported constant name for local validators) */
+const GOALS_MAX = WEBSITE_GOALS_MAX;
 /** Preferred URL max length */
 const PREFERRED_URL_MAX_LENGTH = 100;
 const LOCATION_MAX_LENGTH = 200;
@@ -244,6 +251,9 @@ function validateRequestCategories(values: string[]): string | undefined {
   if (!values || values.length === 0) {
     return undefined;
   }
+  if (values.length > REQUEST_CATEGORIES_MAX) {
+    return `Please select at most ${REQUEST_CATEGORIES_MAX} priorities`;
+  }
   const invalid = values.some((v) => !CATEGORY_VALUES.has(v));
   if (invalid) {
     return 'Please select only from the listed categories';
@@ -279,7 +289,7 @@ export interface UseTemplateRequestValidationReturn {
   clearFieldError: (field: TemplateRequestValidatableField) => void;
 }
 
-function runValidator(
+export function runTemplateRequestValidator(
   field: TemplateRequestValidatableField,
   data: TemplateRequestFormData,
   branding: TemplateRequestValidationBrandingContext
@@ -320,13 +330,37 @@ function runValidator(
   }
 }
 
+/**
+ * Pure validation snapshot: same rules as validateAll on the composable, without mutating reactive state.
+ */
+export function getTemplateRequestValidationErrors(
+  data: TemplateRequestFormData,
+  branding: TemplateRequestValidationBrandingContext
+): TemplateRequestValidationErrors {
+  const newErrors: TemplateRequestValidationErrors = {};
+  for (const field of TEMPLATE_REQUEST_VALIDATION_FIELD_ORDER) {
+    const message = runTemplateRequestValidator(field, data, branding);
+    if (message) {
+      newErrors[field] = message;
+    }
+  }
+  return newErrors;
+}
+
+export function isTemplateRequestFormValid(
+  data: TemplateRequestFormData,
+  branding: TemplateRequestValidationBrandingContext
+): boolean {
+  return Object.keys(getTemplateRequestValidationErrors(data, branding)).length === 0;
+}
+
 export function useTemplateRequestValidation(
   formData: Ref<TemplateRequestFormData>
 ): UseTemplateRequestValidationReturn {
   const errors = ref<TemplateRequestValidationErrors>({});
 
   function validateField(field: TemplateRequestValidatableField): string | undefined {
-    const message = runValidator(field, formData.value, {
+    const message = runTemplateRequestValidator(field, formData.value, {
       newLogoFileCount: 0,
       newBrandFileCount: 0
     });
@@ -343,14 +377,7 @@ export function useTemplateRequestValidation(
       newLogoFileCount: 0,
       newBrandFileCount: 0
     };
-    const newErrors: TemplateRequestValidationErrors = {};
-
-    for (const field of TEMPLATE_REQUEST_VALIDATION_FIELD_ORDER) {
-      const message = runValidator(field, data, ctx);
-      if (message) {
-        newErrors[field] = message;
-      }
-    }
+    const newErrors = getTemplateRequestValidationErrors(data, ctx);
 
     errors.value = newErrors;
     return Object.keys(newErrors).length === 0;

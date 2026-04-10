@@ -31,7 +31,7 @@
         </span>
       </label>
     </div>
-    <p v-if="maxSelection !== undefined" class="goal-selector__limit-hint">
+    <p v-if="maxSelection !== undefined" class="goal-selector__limit-hint form-selection-limit-hint">
       {{ modelValue.length }} / {{ maxSelection }} selected
     </p>
   </div>

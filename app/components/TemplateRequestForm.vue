@@ -10,7 +10,7 @@
     <!-- 1. Design Customization -->
     <FormSection
       title="Design Customization"
-      hint="Choose colors that represent your brand (required)"
+      hint="Choose colors that represent your brand"
       variant="palette"
     >
       <template #icon><PaletteIcon /></template>
@@ -47,6 +47,12 @@
       >
         <h4 class="form-subsection__title">Logos &amp; Emblems</h4>
         <p class="form-subsection__desc">Upload your logo files — primary logo, icon, or emblem variations.</p>
+        <ExistingOrderAttachmentsList
+          :attachments="existingLogoAttachments"
+          label="Current logo files"
+          list-aria-label="Logo files already attached to this request"
+          variant="logo"
+        />
         <div class="form-group">
           <FileUploadArea
             tone="logo"
@@ -73,28 +79,12 @@
         <h4 class="form-subsection__title">Branding Material</h4>
         <p class="form-subsection__desc">Brand guidelines, photos, documents, or any reference material.</p>
 
-        <div v-if="existingAttachments?.length" class="form-group existing-attachments">
-          <label class="form-label">Current attachments</label>
-          <ul class="existing-attachments-list" aria-label="Files already attached to this request">
-            <li
-              v-for="(att, index) in existingAttachments"
-              :key="`${att.originalName}-${att.storagePath}-${index}`"
-              class="existing-attachments-item"
-            >
-              <span class="existing-attachments-name">{{ att.originalName }}</span>
-              <span class="existing-attachments-size">{{ formatAttachmentSize(att.size) }}</span>
-              <a
-                v-if="att.downloadURL"
-                :href="att.downloadURL"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="existing-attachments-link"
-              >
-                Download
-              </a>
-            </li>
-          </ul>
-        </div>
+        <ExistingOrderAttachmentsList
+          :attachments="existingAttachments"
+          label="Current attachments"
+          list-aria-label="Files already attached to this request"
+          variant="brand"
+        />
 
         <div class="form-group">
           <FileUploadArea
@@ -206,7 +196,7 @@
         <GoalSelector
           :model-value="formData.goals"
           :goals="WEBSITE_GOALS"
-          :max-selection="3"
+          :max-selection="WEBSITE_GOALS_MAX"
           :read-only="readOnly"
           @update:model-value="handleFieldInput('goals', $event)"
         />
@@ -260,6 +250,7 @@
         <p class="form-hint">Select any that apply — these help us prioritize your build.</p>
         <RequestCategorySelector
           :model-value="formData.requestCategories"
+          :max-selection="REQUEST_CATEGORIES_MAX"
           :read-only="readOnly"
           @update:model-value="handleFieldInput('requestCategories', $event)"
         />
@@ -291,7 +282,8 @@ import type { OrderAttachment } from '~/types/order';
 import { useTemplateRequestForm } from '~/composables/useTemplateRequestForm';
 import {
   useTemplateRequestValidation,
-  TEMPLATE_REQUEST_VALIDATION_FIELD_ORDER
+  TEMPLATE_REQUEST_VALIDATION_FIELD_ORDER,
+  isTemplateRequestFormValid
 } from '~/composables/useTemplateRequestValidation';
 
 import ColorSchemePicker from '~/components/ColorSchemePicker.vue';
@@ -304,6 +296,7 @@ import IndustryCardGrid from '~/components/form/IndustryCardGrid.vue';
 import LocationInput from '~/components/form/LocationInput.vue';
 import TagInput from '~/components/form/TagInput.vue';
 import RequestCategorySelector from '~/components/form/RequestCategorySelector.vue';
+import ExistingOrderAttachmentsList from '~/components/form/ExistingOrderAttachmentsList.vue';
 
 import {
   PaletteIcon,
@@ -314,7 +307,12 @@ import {
   LinkIcon
 } from '~/components/icons/SectionIcons.vue';
 
-import { WEBSITE_GOALS, AUDIENCE_TAG_SUGGESTIONS } from '~/constants/formOptions';
+import {
+  WEBSITE_GOALS,
+  WEBSITE_GOALS_MAX,
+  REQUEST_CATEGORIES_MAX,
+  AUDIENCE_TAG_SUGGESTIONS
+} from '~/constants/formOptions';
 export type { ColorCustomization, TemplateRequestFormData } from '~/types/templateRequest';
 
 interface Props {
@@ -325,6 +323,7 @@ interface Props {
   initialFormData?: TemplateRequestFormData | null;
   readOnly?: boolean;
   existingAttachments?: OrderAttachment[];
+  existingLogoAttachments?: OrderAttachment[];
   submitTitle?: string;
   submitDescription?: string;
   submitButtonText?: string;
@@ -335,6 +334,7 @@ interface Emits {
   (e: 'submit', data: TemplateRequestFormData): void;
   (e: 'colorChange', colors: ColorCustomization): void;
   (e: 'progressUpdate', progress: { completed: number; total: number }): void;
+  (e: 'validityUpdate', payload: { isValid: boolean }): void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -343,6 +343,7 @@ const props = withDefaults(defineProps<Props>(), {
   initialFormData: undefined,
   readOnly: false,
   existingAttachments: () => [],
+  existingLogoAttachments: () => [],
   submitTitle: undefined,
   submitDescription: undefined,
   submitButtonText: undefined,
@@ -422,15 +423,6 @@ function onTextInput(
   if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
     handleFieldInput(field, target.value);
   }
-}
-
-function formatAttachmentSize(bytes: number): string {
-  if (bytes === 0) return '0 B';
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
-  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(k)), sizes.length - 1);
-  const size = parseFloat((bytes / Math.pow(k, i)).toFixed(1));
-  return `${size} ${sizes[i]}`;
 }
 
 function handleFilesUpdate(files: readonly File[]): void {
@@ -530,6 +522,18 @@ watch(
   },
   { immediate: true }
 );
+
+function emitValiditySnapshot(): void {
+  emit('validityUpdate', {
+    isValid: isTemplateRequestFormValid(formData.value, {
+      newLogoFileCount: uploadedLogoFiles.value.length,
+      newBrandFileCount: uploadedFiles.value.length
+    })
+  });
+}
+
+watch(formData, () => emitValiditySnapshot(), { deep: true, immediate: true });
+watch([uploadedFiles, uploadedLogoFiles], () => emitValiditySnapshot(), { deep: true });
 
 function getSnapshotForDirtyCheck(): TemplateRequestFormData {
   return {
@@ -693,64 +697,4 @@ defineExpose({
   line-height: 1.5;
 }
 
-/* Existing attachments (order edit): read-only list */
-.existing-attachments {
-  margin-bottom: var(--space-md);
-}
-
-.existing-attachments-list {
-  list-style: none;
-  margin: 0;
-  padding: var(--space-sm) 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-}
-
-.existing-attachments-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-  padding: var(--space-sm) var(--space-md);
-  background: var(--color-bg-subtle);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border);
-  font-size: 0.875rem;
-}
-
-.form-subsection--branding .existing-attachments-item {
-  background: color-mix(in srgb, var(--color-accent-warm-tint) 45%, var(--color-bg));
-  border-color: color-mix(in srgb, var(--color-accent-warm-deep) 14%, var(--color-border));
-}
-
-.existing-attachments-name {
-  flex: 1;
-  min-width: 0;
-  color: var(--color-text);
-  font-weight: 500;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.existing-attachments-size {
-  flex-shrink: 0;
-  color: var(--color-text-muted);
-  font-size: 0.8125rem;
-}
-
-.existing-attachments-link {
-  flex-shrink: 0;
-  color: var(--color-primary);
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.existing-attachments-link:hover {
-  text-decoration: underline;
-}
-
-.form-subsection--branding .existing-attachments-link {
-  color: color-mix(in srgb, var(--color-accent-warm-deep) 45%, var(--color-primary));
-}
 </style>

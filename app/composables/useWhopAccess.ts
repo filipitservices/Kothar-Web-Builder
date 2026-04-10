@@ -34,7 +34,11 @@ export function useWhopAccess() {
       return res;
     } catch {
       store.loadError = 'Could not verify access.';
-      const fallback: AccessMeResponse = { hasAccess: false, pending: true };
+      const fallback: AccessMeResponse = {
+        hasAccess: false,
+        pending: true,
+        paidMembershipActive: false,
+      };
       store.setFromResponse(fallback);
       return fallback;
     } finally {
@@ -74,6 +78,7 @@ export function useWhopAccess() {
   return {
     hasAccess: computed(() => store.hasAccess),
     pending: computed(() => store.pending),
+    paidMembershipActive: computed(() => store.paidMembershipActive),
     isLoading: computed(() => store.isLoading),
     loadError: computed(() => store.loadError),
     isReady,

@@ -1,4 +1,5 @@
 import type { LocationData, TemplateRequestFormData } from '~/types/templateRequest';
+import { REQUEST_CATEGORIES_MAX } from '~/constants/formOptions';
 
 const ASCII_CONTROL_CHAR_PATTERN = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
 
@@ -69,6 +70,20 @@ export function normalizeLocationData(input: LocationData): LocationData {
   return out;
 }
 
+/** Dedupe, trim, cap at REQUEST_CATEGORIES_MAX (persisted / stash-safe). */
+export function normalizeRequestCategories(values: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const v of values) {
+    const t = normalizeSingleLineInput(v);
+    if (t.length === 0 || seen.has(t)) continue;
+    seen.add(t);
+    out.push(t);
+    if (out.length >= REQUEST_CATEGORIES_MAX) break;
+  }
+  return out;
+}
+
 export function normalizeTemplateRequestFormData(
   data: TemplateRequestFormData
 ): TemplateRequestFormData {
@@ -82,6 +97,6 @@ export function normalizeTemplateRequestFormData(
     goals: [...data.goals],
     audienceTags: normalizeTags(data.audienceTags),
     additionalNotes: normalizeMultilineInput(data.additionalNotes),
-    requestCategories: [...data.requestCategories],
+    requestCategories: normalizeRequestCategories(data.requestCategories),
   };
 }

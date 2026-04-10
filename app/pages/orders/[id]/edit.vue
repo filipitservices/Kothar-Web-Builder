@@ -66,11 +66,27 @@
               </div>
             </div>
 
-            <div class="req-progress">
+            <div
+              v-if="!formValidityComplete"
+              class="req-progress"
+              aria-label="Form completion"
+            >
               <div class="req-progress-track">
                 <div class="req-progress-fill" :style="{ width: progressPercentage + '%' }"></div>
               </div>
               <span class="req-progress-label">{{ formProgress.completed }} of {{ formProgress.total }} fields completed</span>
+            </div>
+            <div
+              v-else
+              class="req-progress req-progress--complete"
+              role="status"
+            >
+              <span class="req-progress-complete-icon" aria-hidden="true">
+                <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+              </span>
+              <span class="req-progress-complete-text">You’re all set — required fields are complete.</span>
             </div>
             <NuxtLink
               :to="{ path: ROUTES.sites, query: { tab: 'orders' } }"
@@ -100,6 +116,7 @@
               :color-ui-reset-scope-id="orderId"
               :initial-form-data="initialFormData"
               :existing-attachments="orderRef?.attachments ?? []"
+              :existing-logo-attachments="orderRef?.logoAttachments ?? []"
               submit-title="Save your changes"
               submit-description="Your updates will be saved to this request. We'll notify you if anything else is needed."
               submit-button-text="Update request"
@@ -109,6 +126,7 @@
               @color-change="handleColorChange"
               @submit="handleSubmit"
               @progress-update="handleProgressUpdate"
+              @validity-update="handleValidityUpdate"
             />
           </section>
         </div>
@@ -162,7 +180,12 @@ const ordersStore = useOrdersStore();
 const requestLayoutStore = useRequestLayoutStore();
 const { orderToFormData, updateOrder } = useOrderUpdate();
 const { saveStash, loadStash, clearStash } = useOrderEditStash();
-const { ensureLoaded, fetchAccessFromServer, openCheckout } = useWhopAccess();
+const {
+  ensureLoaded,
+  fetchAccessFromServer,
+  openCheckout,
+  paidMembershipActive,
+} = useWhopAccess();
 const { submitDraftOrder } = useDraftRequestSubmitFlow();
 const flowErrorDialog = useRequestFlowErrorDialogStore();
 const {
@@ -185,10 +208,14 @@ const orderRef = ref<OrderWithId | null>(null);
 const isSubmitting = ref(false);
 const infoBannerMessage = ref<string | null>(null);
 const formProgress = ref({ completed: 1, total: 10 });
+const formValidityComplete = ref(false);
 const progressPercentage = computed(() => {
   if (formProgress.value.total === 0) return 0;
   return Math.round((formProgress.value.completed / formProgress.value.total) * 100);
 });
+
+/** Stash requires an active, in-good-standing Whop membership (see GET /api/access/me paidMembershipActive). */
+const stashAllowed = computed(() => paidMembershipActive.value === true);
 
 const previewContainerRef = ref<HTMLElement | null>(null);
 const VIEWPORT_WIDTH = 1280;
@@ -260,6 +287,7 @@ useUnsavedChanges({
   isDirty: isEditsDirty,
   hasUnsavedSession,
   onDiscard: discardUnsaved,
+  stashAllowed,
   onStashLeave: () => {
     const form = templateFormRef.value?.getSnapshotForDirtyCheck();
     if (!form) return;
@@ -293,6 +321,10 @@ function handleColorChange(colors: ColorCustomization): void {
 
 function handleProgressUpdate(progress: { completed: number; total: number }): void {
   formProgress.value = { ...progress };
+}
+
+function handleValidityUpdate(payload: { isValid: boolean }): void {
+  formValidityComplete.value = payload.isValid;
 }
 
 async function loadOrderAndTemplate(): Promise<void> {

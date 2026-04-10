@@ -293,6 +293,39 @@
   color: var(--color-text-muted);
 }
 
+.req-progress--complete {
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-success-tint) 88%, var(--color-bg)) 0%,
+    var(--color-bg) 100%
+  );
+  border-color: color-mix(in srgb, var(--color-success) 22%, var(--color-border));
+  transition: opacity 0.25s ease, border-color 0.25s ease;
+}
+
+.req-progress-complete-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-success) 14%, var(--color-bg));
+  color: var(--color-success);
+}
+
+.req-progress-complete-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: color-mix(in srgb, var(--color-success) 22%, var(--color-text-muted));
+}
+
 
 /* ==========================================================================
    RIGHT COLUMN: REQUEST FORM

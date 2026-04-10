@@ -27,6 +27,12 @@ export const INDUSTRY_OPTIONS = [
   { value: 'other', label: 'Other' }
 ] as const;
 
+/** Max selectable primary goals (must match validation in useTemplateRequestValidation). */
+export const WEBSITE_GOALS_MAX = 3;
+
+/** Max selectable request categories (“What would help your site the most?”). */
+export const REQUEST_CATEGORIES_MAX = 5;
+
 /**
  * Website goal options for the checkbox selection
  */

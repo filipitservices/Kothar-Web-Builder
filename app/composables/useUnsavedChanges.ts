@@ -16,6 +16,7 @@ export interface UseUnsavedChangesOptions {
   hasUnsavedSession: MaybeRefOrGetter<boolean>;
   onDiscard: () => void | Promise<void>;
   onStashLeave?: () => void | Promise<void>;
+  stashAllowed?: MaybeRefOrGetter<boolean>;
 }
 
 /**
@@ -33,6 +34,7 @@ export function useUnsavedChanges(options: UseUnsavedChangesOptions): void {
       hasUnsavedSession: options.hasUnsavedSession,
       onDiscard: options.onDiscard,
       onStashLeave: options.onStashLeave,
+      stashAllowed: options.stashAllowed,
     });
   });
 

@@ -7,14 +7,15 @@
         class="request-category-card form-option"
         :class="{
           'form-option--selected': modelValue.includes(category.value),
-          'form-option--read-only': readOnly
+          'form-option--read-only': readOnly,
+          'form-option--disabled': isAtLimit && !modelValue.includes(category.value)
         }"
       >
         <input
           type="checkbox"
           :value="category.value"
           :checked="modelValue.includes(category.value)"
-          :disabled="readOnly"
+          :disabled="readOnly || (isAtLimit && !modelValue.includes(category.value))"
           class="form-option__input"
           :aria-label="`Select: ${category.label}`"
           @change="handleChange(category.value, $event)"
@@ -30,11 +31,14 @@
         </span>
       </label>
     </div>
+    <p v-if="maxSelection !== undefined" class="request-category-selector__limit-hint form-selection-limit-hint">
+      {{ modelValue.length }} / {{ maxSelection }} selected
+    </p>
   </div>
 </template>
 
 <script setup lang="ts">
-import { h, type FunctionalComponent } from 'vue';
+import { h, computed, type FunctionalComponent } from 'vue';
 import { REQUEST_CATEGORIES } from '~/constants/formOptions';
 
 interface CategoryOption {
@@ -47,10 +51,13 @@ const props = withDefaults(
     modelValue: string[];
     categories?: readonly CategoryOption[];
     readOnly?: boolean;
+    /** Maximum categories that can be selected. Undefined = no limit. */
+    maxSelection?: number;
   }>(),
   {
     categories: () => REQUEST_CATEGORIES,
-    readOnly: false
+    readOnly: false,
+    maxSelection: undefined
   }
 );
 
@@ -58,11 +65,20 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: string[]): void;
 }>();
 
+const isAtLimit = computed(() =>
+  props.maxSelection !== undefined && props.modelValue.length >= props.maxSelection
+);
+
 function handleChange(value: string, event: Event): void {
   if (props.readOnly) return;
   const target = event.target;
   if (!(target instanceof HTMLInputElement)) return;
-  if (target.checked) {
+  const checked = target.checked;
+  if (checked) {
+    if (isAtLimit.value) {
+      target.checked = false;
+      return;
+    }
     emit('update:modelValue', [...props.modelValue, value]);
   } else {
     emit('update:modelValue', props.modelValue.filter((v) => v !== value));
@@ -257,5 +273,26 @@ function getIconComponent(value: string): FunctionalComponent {
   opacity: 1;
   transform: scale(1);
   background: var(--color-primary);
+}
+
+.form-option--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.form-option--disabled:hover:not(.form-option--read-only) {
+  border-color: var(--color-border);
+  background-color: var(--color-bg);
+}
+
+.request-category-selector__limit-hint {
+  margin: var(--space-sm) 0 0;
+}
+
+.form-selection-limit-hint {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin: var(--space-sm) 0 0;
 }
 </style>

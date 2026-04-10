@@ -13,6 +13,8 @@ export interface UnsavedRegistration {
   hasUnsavedSession: MaybeRefOrGetter<boolean>;
   onDiscard: () => void | Promise<void>;
   onStashLeave?: () => void | Promise<void>;
+  /** When false, stash action is unavailable (e.g. no subscription entitlement). */
+  stashAllowed?: MaybeRefOrGetter<boolean>;
 }
 
 export const useUnsavedChangesStore = defineStore('unsavedChanges', () => {
@@ -34,7 +36,12 @@ export const useUnsavedChangesStore = defineStore('unsavedChanges', () => {
   });
 
   const shouldPromptOnLeaveFlow = computed(() => hasDirtyEdits.value || hasUnsavedSession.value);
-  const hasStashAction = computed(() => Boolean(active.value?.onStashLeave));
+  const hasStashAction = computed(() => {
+    const reg = active.value;
+    if (!reg?.onStashLeave) return false;
+    if (reg.stashAllowed === undefined) return true;
+    return toValue(reg.stashAllowed);
+  });
 
   function register(reg: UnsavedRegistration): void {
     active.value = reg;

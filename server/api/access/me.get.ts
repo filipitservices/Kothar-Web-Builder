@@ -15,6 +15,7 @@ import { syncBillingAccessFromWhop } from '../../utils/whop-access-reconcile';
 import { logger } from '../../utils/logger';
 import { ACCESS_COLLECTION, ACCESS_BILLING_DOC_ID } from '~/constants/access';
 import type { AccessMeResponse } from '~/types/access';
+import { appendPaidMembershipActive } from '../../utils/access-me-paid-membership';
 
 type BillingExisting = {
   whopUserId?: string | null;
@@ -32,6 +33,14 @@ async function persistBillingRevocation(
     whopUserId: typeof existing?.whopUserId === 'string' ? existing.whopUserId : undefined,
     source: 'reconcile',
   });
+}
+
+async function respondAccessMe(
+  uid: string,
+  existing: BillingExisting | null,
+  base: Omit<AccessMeResponse, 'paidMembershipActive'>
+): Promise<AccessMeResponse> {
+  return appendPaidMembershipActive(uid, existing, base);
 }
 
 export default defineEventHandler(async (event): Promise<AccessMeResponse> => {
@@ -80,10 +89,10 @@ export default defineEventHandler(async (event): Promise<AccessMeResponse> => {
   if (isWhopAccessSyncRuntimeConfigured()) {
     const outcome = await syncBillingAccessFromWhop(uid, existing);
     if (outcome === 'granted') {
-      return { hasAccess: true, pending: false };
+      return respondAccessMe(uid, existing, { hasAccess: true, pending: false });
     }
     if (outcome === 'denied') {
-      return { hasAccess: false, pending: false };
+      return respondAccessMe(uid, existing, { hasAccess: false, pending: false });
     }
 
     // Cannot map Firebase user → any Whop user id: revoke stale positives so rules match API (fail closed).
@@ -93,7 +102,7 @@ export default defineEventHandler(async (event): Promise<AccessMeResponse> => {
       snap.data()?.hasAccess === true
     ) {
       await persistBillingRevocation(uid, existing);
-      return { hasAccess: false, pending: false };
+      return respondAccessMe(uid, existing, { hasAccess: false, pending: false });
     }
 
     // Live check could not produce grant/deny (errors, unknown payloads, unresolvable product id): do not
@@ -104,31 +113,31 @@ export default defineEventHandler(async (event): Promise<AccessMeResponse> => {
       snap.data()?.hasAccess === true
     ) {
       await persistBillingRevocation(uid, existing);
-      return { hasAccess: false, pending: false };
+      return respondAccessMe(uid, existing, { hasAccess: false, pending: false });
     }
 
     // API errors / unrecognized payloads: do not trust a cached positive without a live check
     if (!snap.exists) {
-      return { hasAccess: false, pending: true };
+      return respondAccessMe(uid, existing, { hasAccess: false, pending: true });
     }
     const data = snap.data();
     if (data?.hasAccess === true) {
-      return { hasAccess: false, pending: true };
+      return respondAccessMe(uid, existing, { hasAccess: false, pending: true });
     }
-    return { hasAccess: false, pending: false };
+    return respondAccessMe(uid, existing, { hasAccess: false, pending: false });
   }
 
   // Webhook-only: no Whop API — Firestore snapshot is the only server-side source
   if (snap.exists) {
     const data = snap.data();
     if (data?.hasAccess === true) {
-      return { hasAccess: true, pending: false };
+      return respondAccessMe(uid, existing, { hasAccess: true, pending: false });
     }
   }
 
   if (!snap.exists) {
-    return { hasAccess: false, pending: true };
+    return respondAccessMe(uid, existing, { hasAccess: false, pending: true });
   }
 
-  return { hasAccess: false, pending: false };
+  return respondAccessMe(uid, existing, { hasAccess: false, pending: false });
 });

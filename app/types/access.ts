@@ -20,6 +20,12 @@ export interface AccessMeResponse {
   hasAccess: boolean;
   /** True when no billing doc exists yet. */
   pending: boolean;
+  /**
+   * True when Whop membership is active and in good standing (not canceled, expired, inactive, etc.).
+   * Used for client features that require a paying subscription (e.g. order-edit stash). When live
+   * membership checks are unavailable, true whenever `hasAccess` is true and not `pending`.
+   */
+  paidMembershipActive: boolean;
 }
 
 export interface CheckoutSessionResponse {

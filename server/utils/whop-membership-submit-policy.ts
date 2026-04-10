@@ -12,12 +12,16 @@ import { logger } from './logger';
 function membershipPayloadBlocksSubmitAfterUserCancellation(m: unknown): boolean {
   if (!m || typeof m !== 'object') return false;
   const r = m as Record<string, unknown>;
-  const status = r.status;
+  const rawStatus = r.status;
+  const status =
+    typeof rawStatus === 'string' ? rawStatus.trim().toLowerCase() : '';
   if (
     status === 'canceled' ||
     status === 'canceling' ||
     status === 'expired' ||
-    status === 'completed'
+    status === 'completed' ||
+    status === 'inactive' ||
+    status === 'closed'
   ) {
     return true;
   }
