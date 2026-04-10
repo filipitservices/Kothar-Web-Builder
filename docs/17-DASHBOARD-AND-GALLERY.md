@@ -1,7 +1,7 @@
 # Gallery & Template System
 
-> **Document Version:** 3.0
-> **Last Updated:** March 2026
+> **Document Version:** 3.1
+> **Last Updated:** April 2026
 > **Status:** Production
 
 ## Overview
@@ -145,12 +145,24 @@ interface ShowcaseSection {
   data: Record<string, unknown>;
 }
 
+type ShowcaseFontPreset =
+  | 'trade'
+  | 'law'
+  | 'corporate'
+  | 'editorial'
+  | 'agency'
+  | 'healthcare'
+  | 'hospitality'
+  | 'retail';
+
 interface ShowcaseTemplate {
   id: string;
   name: string;
   industry: string;
   category: ShowcaseCategory;
   description: string;
+  /** Required: drives self-hosted heading/body stacks (see Showcase typography below). */
+  fontPreset: ShowcaseFontPreset;
   colorScheme: {
     primary: string;
     secondary: string;
@@ -162,6 +174,32 @@ interface ShowcaseTemplate {
   thumbnail?: string;
 }
 ```
+
+### Showcase typography and visual guidelines
+
+Showcase previews (modal, request form, order edit preview) use **per-template typography presets** backed by **self-hosted, SIL Open Font License (OFL) fonts**. This is intentionally separate from the global app UI font stack: the gallery **page chrome** still follows `style.css` tokens; the **ShowcaseRenderer** subtree uses preset-driven `--sf-heading` and `--sf-body`.
+
+| Asset / file | Role |
+|--------------|------|
+| `public/fonts/showcase/*.woff2` | Served as static assets; each weight used in CSS must have a matching `@font-face` |
+| `app/assets/css/showcase-fonts.css` | `@font-face` rules and `.font-preset--*` classes that set `--sf-heading` / `--sf-body` on `.show-renderer` |
+| `app/assets/css/showcase.css` | Section layout, tokens, nav, buttons; imports `showcase-fonts.css`; sets `font-family` on `button` / form controls so previews do not fall back to the UA system font |
+
+**Renderer wiring:** `ShowcaseRenderer.vue` applies `font-preset--${template.fontPreset}` on the root `.show-renderer` alongside inline `colorScheme` CSS variables.
+
+**Font weight rule:** Use only weights that are actually declared in `showcase-fonts.css` for that family. If a template uses **800** but only **400–700** faces are loaded, the browser may synthesize or substitute another font (e.g. system serif), which looks like “fonts not loading.” Default section titles and most UI emphasis should stay at **700** unless the preset includes an **800** face (e.g. **agency** with Syne).
+
+**Color and section structure:** Keep using showcase CSS variables and `color-mix` patterns from `showcase.css`; hero **background** variants are selected via section data (e.g. `backgroundStyle`) where the hero component supports it. The **CTA section** accepts both `headline` / `subheadline` and `title` / `subtitle` in data; the section component normalizes them so previews stay stable.
+
+**Preview clones:** `createPreviewTemplate` on the request (and order edit) page spreads the base template and replaces only `colorScheme`. **`fontPreset` and `sections` are preserved**—do not strip `fontPreset` when merging user colors.
+
+### Adding or editing a gallery showcase template
+
+1. **Data:** Add or change the template object in `app/stores/showcase.ts` only. Do **not** put showcase content in `stores/templates.ts` (builder wireframes are a different system; see **[07-TEMPLATE-SYSTEM.md](07-TEMPLATE-SYSTEM.md)**).
+2. **`fontPreset`:** Set to an existing `ShowcaseFontPreset`. If a new industry pairing needs a **new** preset, extend the `ShowcaseFontPreset` union, add `@font-face` entries (and optional new files under `public/fonts/showcase/`), and add a matching `.show-renderer.font-preset--…` block in `showcase-fonts.css`.
+3. **Sections:** Follow existing section `type` / `data` shapes (`NavSection` uses `variant` from `ShowcaseNavVariant`, and so on) so `showcaseSectionsToBlocks()` and the renderer stay aligned.
+4. **Gallery cards:** Compact cards on `/gallery` live in `app/pages/gallery/index.vue` with styles in `app/assets/css/gallery.css`. When a template’s preview metaphor changes, update the card mockup markup/CSS for parity with the modal preview—not separate “demo” styling.
+5. **Documentation:** Keep this file and section-level contracts in sync when you introduce new section fields or presets.
 
 ### Available Templates
 
@@ -385,16 +423,13 @@ Locked orders (`modificationLocked === true`) redirect to `/sites`; the edit pag
 
 | File | Purpose |
 |------|---------|
-| `gallery.css` | Gallery page: control strip, showcase block (contrast zone), compact template cards; uses design tokens only; page-scoped vars on `.dash` for section backgrounds |
+| `gallery.css` | Gallery page: control strip, showcase block (contrast zone), compact template cards (browser mockup bands); uses design tokens; page-scoped vars on `.dash` for section backgrounds |
 | `request-form.css` | Request form page styles |
 | `components.css` | Shared UI components (buttons, forms, modals, device frames) |
-| `showcase.css` | ShowcaseRenderer section styles |
+| `showcase-fonts.css` | `@font-face` for showcase presets; `.font-preset--*` maps to `--sf-heading` / `--sf-body` |
+| `showcase.css` | ShowcaseRenderer section styles; imports `showcase-fonts.css`; interactive controls use `--sf-body` |
 
-All CSS files follow the existing design system:
-- Primary color: `#1e3a8a`
-- Border radius: `12px` (cards), `8px` (inputs)
-- Shadow: `0 1px 3px rgba(0, 0, 0, 0.04)` (subtle)
-- System fonts (Inter stack)
+**Gallery page chrome** (navbar, hero, cards, footer) follows the global design system in `style.css` (tokens, radii, shadows, app font stack). **Inside ShowcaseRenderer**, typography is preset-driven (see **Showcase typography and visual guidelines** above), not the app default stack.
 
 ---
 

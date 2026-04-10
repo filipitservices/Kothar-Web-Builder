@@ -16,6 +16,10 @@ The template system provides pre-built website layouts that users can apply with
 - **State Transformation**: Pure state updates, no DOM manipulation
 - **Unique Block IDs**: Each application generates fresh block instances
 
+### Builder templates vs Gallery showcase
+
+The **builder** catalog in `stores/templates.ts` (this document) defines **block layouts** for the DIY builder. **Gallery showcase templates** are a separate product path: full-page previews, optional managed-service requests, and **per-template typography** in `stores/showcase.ts`. Do not duplicate showcase site copy or font presets in the builder store. For showcase fonts, `fontPreset`, adding templates, and gallery card parity, see **[17-DASHBOARD-AND-GALLERY.md](17-DASHBOARD-AND-GALLERY.md)** (Showcase Store, typography, and CSS tables).
+
 ---
 
 ## Architecture
