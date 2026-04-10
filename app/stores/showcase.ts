@@ -455,7 +455,8 @@ export const useShowcaseStore = defineStore('showcase', () => {
             headline: 'Clear Financial Guidance for Your Business',
             subheadline: 'Certified Public Accountants • Tax Planning • Business Advisory',
             primaryCta: 'Schedule Consultation',
-            secondaryCta: 'Our Services'
+            secondaryCta: 'Our Services',
+            backgroundStyle: 'professional'
           }
         },
         {
@@ -545,7 +546,8 @@ export const useShowcaseStore = defineStore('showcase', () => {
             headline: 'Transform Your Business. Accelerate Growth.',
             subheadline: 'Strategic consulting for mid-market companies ready to scale.',
             primaryCta: 'Start Your Transformation',
-            secondaryCta: 'View Case Studies'
+            secondaryCta: 'View Case Studies',
+            backgroundStyle: 'professional'
           }
         },
         {
@@ -628,7 +630,8 @@ export const useShowcaseStore = defineStore('showcase', () => {
             headline: 'Capturing Moments That Last Forever',
             subheadline: 'Wedding • Portrait • Commercial Photography',
             primaryCta: 'View Portfolio',
-            secondaryCta: 'Book a Session'
+            secondaryCta: 'Book a Session',
+            backgroundStyle: 'image'
           }
         },
         {
@@ -720,7 +723,8 @@ export const useShowcaseStore = defineStore('showcase', () => {
             headline: 'We Create Brands That Stand Out',
             subheadline: 'Design • Development • Digital Marketing',
             primaryCta: 'Start a Project',
-            secondaryCta: 'Our Work'
+            secondaryCta: 'Our Work',
+            backgroundStyle: 'image'
           }
         },
         {
@@ -806,7 +810,8 @@ export const useShowcaseStore = defineStore('showcase', () => {
             subheadline: 'Gentle, comprehensive dental care in a comfortable environment.',
             primaryCta: 'Book Appointment',
             secondaryCta: 'Our Services',
-            phone: '(555) 678-9012'
+            phone: '(555) 678-9012',
+            backgroundStyle: 'gradient'
           }
         },
         {
@@ -896,7 +901,8 @@ export const useShowcaseStore = defineStore('showcase', () => {
             headline: 'Farm Fresh. Locally Sourced. Deliciously Crafted.',
             subheadline: 'Experience seasonal cuisine made with ingredients from local farms.',
             primaryCta: 'Reserve a Table',
-            secondaryCta: 'View Menu'
+            secondaryCta: 'View Menu',
+            backgroundStyle: 'image'
           }
         },
         {
@@ -984,7 +990,8 @@ export const useShowcaseStore = defineStore('showcase', () => {
             headline: 'Curated Goods for Inspired Living',
             subheadline: 'Handcrafted home décor, artisan gifts, and timeless pieces.',
             primaryCta: 'Shop Now',
-            secondaryCta: 'Visit Store'
+            secondaryCta: 'Visit Store',
+            backgroundStyle: 'image'
           }
         },
         {

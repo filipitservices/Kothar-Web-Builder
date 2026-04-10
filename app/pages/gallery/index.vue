@@ -62,12 +62,15 @@
                   <span></span><span></span><span></span>
                 </div>
                 <div class="dash-card-mock">
+                  <div class="dash-card-mock-nav"></div>
                   <div class="dash-card-mock-hero"></div>
                   <div class="dash-card-mock-body">
                     <div class="dash-card-mock-line"></div>
                     <div class="dash-card-mock-line dash-card-mock-line--short"></div>
                     <div class="dash-card-mock-line dash-card-mock-line--shorter"></div>
                   </div>
+                  <div class="dash-card-mock-section"></div>
+                  <div class="dash-card-mock-footer"></div>
                 </div>
               </div>
             </div>

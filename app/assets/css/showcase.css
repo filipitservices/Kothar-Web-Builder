@@ -1,26 +1,20 @@
 /**
  * Showcase Template Styles
- * 
+ *
  * Shared styles for showcase template rendering.
  * Used by ShowcaseRenderer and all section components.
+ *
+ * CSS custom properties set by ShowcaseRenderer per template:
+ *   --showcase-primary   Primary brand color
+ *   --showcase-secondary Secondary brand color
+ *   --showcase-accent    Accent / CTA color
+ *   --showcase-bg        Background color
+ *   --showcase-text      Text color
  */
 
-/* ==========================================================================
-   DESIGN TOKENS (via CSS custom properties)
-   These are set by ShowcaseRenderer based on template.colorScheme
-   ========================================================================== */
-
-/*
-  --showcase-primary: Primary brand color
-  --showcase-secondary: Secondary brand color
-  --showcase-accent: Accent/CTA color
-  --showcase-bg: Background color
-  --showcase-text: Text color
-*/
-
 
 /* ==========================================================================
-   BASE STYLES
+   BASE
    ========================================================================== */
 
 .show-renderer {
@@ -41,7 +35,7 @@
    ========================================================================== */
 
 .show-sect {
-  padding: 32px 16px;
+  padding: var(--space-xl) var(--space-md);
 }
 
 .show-sect__inner {
@@ -50,98 +44,103 @@
 }
 
 .show-sect__title {
-  font-size: 1.5em;
-  font-weight: 700;
+  font-size: 1.375em;
+  font-weight: 800;
   color: var(--showcase-primary);
-  margin: 0 0 8px 0;
+  margin: 0 0 var(--space-xs) 0;
   text-align: center;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
 .show-sect__subtitle {
-  font-size: 0.9em;
-  color: var(--color-text-muted);
+  font-size: 0.875em;
+  color: color-mix(in srgb, var(--showcase-text) 60%, var(--showcase-bg));
   text-align: center;
-  margin: 0 0 20px 0;
+  margin: 0 0 var(--space-lg) 0;
+  line-height: 1.5;
 }
 
 
 /* ==========================================================================
-   BUTTONS (showcase-specific, uses template colors)
+   BUTTONS
    ========================================================================== */
 
 .show-btn {
   display: inline-flex;
   align-items: center;
+  gap: var(--space-xs);
   justify-content: center;
-  padding: 8px 16px;
-  border-radius: 6px;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
   font-weight: 600;
   font-size: 0.85em;
   cursor: pointer;
   border: none;
-  transition: all 0.15s ease;
+  transition: filter 0.15s ease, opacity 0.15s ease;
 }
 
+/* Accent fill: high-contrast CTA */
 .show-btn--primary {
-  background: var(--showcase-accent, var(--color-bg));
+  background: var(--showcase-accent);
   color: var(--showcase-primary);
 }
 
+/* Ghost on dark backgrounds */
 .show-btn--secondary {
   background: transparent;
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  color: #fff;
+  border: 1.5px solid rgba(255, 255, 255, 0.42);
+  color: var(--color-white);
 }
 
+/* Outline using primary */
 .show-btn--outline {
   background: transparent;
-  border: 2px solid var(--showcase-primary);
+  border: 1.5px solid var(--showcase-primary);
   color: var(--showcase-primary);
+}
+
+/* Solid primary fill */
+.show-btn--solid {
+  background: var(--showcase-primary);
+  color: var(--color-white);
 }
 
 .show-btn--large {
-  padding: 12px 24px;
-  font-size: 1em;
+  padding: var(--space-md) var(--space-xl);
+  font-size: 0.9em;
 }
 
 
 /* ==========================================================================
-   CARD PATTERNS
+   SHARED CARD PATTERN
    ========================================================================== */
 
 .show-card {
-  padding: 16px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  padding: var(--space-md);
+  background: var(--showcase-bg);
+  border: 1px solid color-mix(in srgb, var(--showcase-primary) 14%, transparent);
+  border-radius: var(--radius-md);
 }
 
 .show-card--featured {
   border-color: var(--showcase-primary);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--showcase-primary) 20%, transparent);
 }
 
 
 /* ==========================================================================
-   GRID PATTERNS
+   GRID UTILITIES
    ========================================================================== */
 
 .show-grid {
   display: grid;
-  gap: 16px;
+  gap: var(--space-md);
 }
 
-.show-grid--2 {
-  grid-template-columns: repeat(2, 1fr);
-}
-
-.show-grid--3 {
-  grid-template-columns: repeat(3, 1fr);
-}
-
-.show-grid--auto {
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-}
+.show-grid--2 { grid-template-columns: repeat(2, 1fr); }
+.show-grid--3 { grid-template-columns: repeat(3, 1fr); }
+.show-grid--auto { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
 
 .view-mobile .show-grid--3 {
   grid-template-columns: repeat(2, 1fr);
@@ -149,7 +148,7 @@
 
 
 /* ==========================================================================
-   ICON STYLES
+   ICON UTILITIES
    ========================================================================== */
 
 .show-icon {
@@ -158,47 +157,30 @@
   flex-shrink: 0;
 }
 
-.show-icon--sm {
-  width: 14px;
-  height: 14px;
-}
+.show-icon--sm  { width: 14px; height: 14px; }
+.show-icon--md  { width: 24px; height: 24px; }
+.show-icon--lg  { width: 36px; height: 36px; }
 
-.show-icon--md {
-  width: 24px;
-  height: 24px;
-}
-
-.show-icon--lg {
-  width: 36px;
-  height: 36px;
-}
-
-.show-icon--primary {
-  color: var(--showcase-primary);
-}
-
-.show-icon--star {
-  color: #fbbf24;
-}
+.show-icon--primary { color: var(--showcase-primary); }
+.show-icon--accent  { color: var(--showcase-accent); }
+.show-icon--star    { color: #f59e0b; }
 
 
 /* ==========================================================================
-   PLACEHOLDER PATTERNS (for demo content)
+   PLACEHOLDER SHAPES (for demo content)
    ========================================================================== */
 
 .show-ph {
-  background: var(--color-border);
+  background: color-mix(in srgb, var(--showcase-primary) 10%, var(--showcase-bg));
   border-radius: var(--radius-md);
 }
 
-.show-ph--circle {
-  border-radius: 50%;
-}
+.show-ph--circle { border-radius: 50%; }
 
 
 /* ==========================================================================
-   NAV (showcase preview — decorative controls, no routing)
-   Prefix: sn (short flat names, not BEM)
+   NAV (showcase preview — decorative, no routing)
+   Prefix: sn
    ========================================================================== */
 
 .sn {
@@ -207,7 +189,7 @@
   box-sizing: border-box;
   background: var(--showcase-bg, var(--color-bg));
   color: var(--showcase-text, var(--color-text));
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid color-mix(in srgb, var(--showcase-primary) 15%, transparent);
 }
 
 .sn-in {
@@ -241,7 +223,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--color-text-muted);
+  color: color-mix(in srgb, var(--showcase-text) 55%, transparent);
 }
 
 .sn-links {
@@ -262,7 +244,7 @@
   font: inherit;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--color-text-muted-dark);
+  color: color-mix(in srgb, var(--showcase-text) 72%, transparent);
   background: transparent;
   border: none;
   cursor: default;
@@ -273,7 +255,6 @@
 .sn-item:focus-visible {
   color: var(--showcase-primary);
   outline: none;
-  box-shadow: var(--focus-ring-primary);
 }
 
 .sn-menu {
@@ -285,7 +266,7 @@
   font-weight: 600;
   color: var(--showcase-primary);
   background: transparent;
-  border: 1px solid var(--color-border);
+  border: 1px solid color-mix(in srgb, var(--showcase-primary) 28%, transparent);
   border-radius: var(--radius-sm);
   cursor: default;
   flex-shrink: 0;
@@ -314,9 +295,8 @@
 
 .sn-go:hover,
 .sn-go:focus-visible {
-  filter: brightness(1.05);
+  filter: brightness(1.06);
   outline: none;
-  box-shadow: var(--focus-ring-primary);
 }
 
 .sn-tel {
@@ -331,14 +311,16 @@
   color: inherit;
 }
 
-/* --- Variants: local trade --- */
+/* --- Variant: local trade (phone chip) --- */
 
 .sn-tradePhone .sn-tel {
-  padding: var(--space-sm) var(--space-md);
+  padding: var(--space-xs) var(--space-md);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--showcase-accent) 22%, transparent);
+  background: color-mix(in srgb, var(--showcase-accent) 18%, transparent);
   color: var(--showcase-primary);
 }
+
+/* --- Variant: trade quote (outline CTA) --- */
 
 .sn-tradeQuote .sn-go {
   background: transparent;
@@ -346,11 +328,10 @@
   border: 2px solid var(--showcase-primary);
 }
 
-/* --- Law --- */
+/* --- Variant: law heritage --- */
 
 .sn-lawHeritage {
-  border-bottom-width: 3px;
-  border-bottom-color: var(--showcase-secondary);
+  border-bottom: 2px solid var(--showcase-secondary, var(--showcase-accent));
 }
 
 .sn-lawHeritage .sn-mark {
@@ -364,7 +345,7 @@
   text-transform: none;
   font-style: italic;
   letter-spacing: 0.04em;
-  color: var(--showcase-secondary);
+  color: var(--showcase-secondary, var(--showcase-accent));
   font-weight: 500;
   font-size: 0.75rem;
 }
@@ -380,7 +361,7 @@
   border: none;
 }
 
-/* --- Accounting --- */
+/* --- Variant: accounting clean --- */
 
 .sn-accountingClean .sn-item {
   color: var(--showcase-primary);
@@ -393,7 +374,7 @@
   border: none;
 }
 
-/* --- Consulting --- */
+/* --- Variant: consulting bold --- */
 
 .sn-consultingBold .sn-mark {
   font-size: 1.15rem;
@@ -403,7 +384,6 @@
 
 .sn-consultingBold .sn-item {
   font-weight: 700;
-  color: var(--color-text-muted-dark);
 }
 
 .sn-consultingBold .sn-go {
@@ -412,7 +392,7 @@
   border: none;
 }
 
-/* --- Photography (editorial) --- */
+/* --- Variant: photography editorial --- */
 
 .sn-photoEditorial {
   border-bottom: 1px solid color-mix(in srgb, var(--showcase-text) 10%, transparent);
@@ -425,9 +405,7 @@
   gap: var(--space-md);
 }
 
-.sn-photoEditorial .sn-brand {
-  align-items: center;
-}
+.sn-photoEditorial .sn-brand { align-items: center; }
 
 .sn-photoEditorial .sn-mark {
   font-size: 1.125rem;
@@ -437,16 +415,14 @@
   color: var(--showcase-text);
 }
 
-.sn-photoEditorial .sn-links {
-  justify-content: center;
-}
+.sn-photoEditorial .sn-links { justify-content: center; }
 
 .sn-photoEditorial .sn-item {
   font-weight: 500;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   font-size: 0.7rem;
-  color: color-mix(in srgb, var(--showcase-text) 65%, transparent);
+  color: color-mix(in srgb, var(--showcase-text) 60%, transparent);
 }
 
 .sn-photoEditorial .sn-item:hover,
@@ -454,7 +430,7 @@
   color: var(--showcase-text);
 }
 
-/* --- Agency (dark) --- */
+/* --- Variant: agency dark --- */
 
 .sn-agencyDark {
   background: var(--showcase-bg);
@@ -469,7 +445,7 @@
 }
 
 .sn-agencyDark .sn-item {
-  color: color-mix(in srgb, var(--showcase-text) 72%, transparent);
+  color: color-mix(in srgb, var(--showcase-text) 68%, transparent);
   font-weight: 600;
 }
 
@@ -489,7 +465,7 @@
   border-color: color-mix(in srgb, var(--showcase-text) 22%, transparent);
 }
 
-/* --- Healthcare --- */
+/* --- Variant: healthcare warm --- */
 
 .sn-healthcareWarm .sn-go {
   border-radius: var(--radius-lg);
@@ -499,20 +475,18 @@
 }
 
 .sn-healthcareWarm .sn-tel {
-  padding: var(--space-sm) var(--space-md);
+  padding: var(--space-xs) var(--space-md);
   border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--showcase-secondary) 12%, transparent);
   color: var(--showcase-primary);
 }
 
-.sn-healthcareWarm .sn-item {
-  font-weight: 600;
-}
+.sn-healthcareWarm .sn-item { font-weight: 600; }
 
-/* --- Restaurant --- */
+/* --- Variant: restaurant --- */
 
 .sn-restaurant {
-  border-bottom: 1px solid color-mix(in srgb, var(--showcase-primary) 28%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--showcase-primary) 24%, transparent);
 }
 
 .sn-restaurant .sn-mark {
@@ -532,7 +506,7 @@
   border: none;
 }
 
-/* --- Retail boutique --- */
+/* --- Variant: retail boutique --- */
 
 .sn-retailBoutique .sn-mark {
   font-weight: 600;
@@ -547,45 +521,35 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   font-weight: 600;
-  color: color-mix(in srgb, var(--showcase-text) 75%, transparent);
+  color: color-mix(in srgb, var(--showcase-text) 70%, transparent);
 }
 
 .sn-retailBoutique .sn-go {
   background: transparent;
   color: var(--showcase-primary);
-  border: 1px solid color-mix(in srgb, var(--showcase-primary) 45%, transparent);
+  border: 1px solid color-mix(in srgb, var(--showcase-primary) 42%, transparent);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-size: 0.72rem;
 }
 
-/* --- Compact preview (mobile device frame) --- */
+/* --- Compact (mobile device frame) --- */
 
 .sn-tight .sn-in {
   padding: var(--space-sm) var(--space-md);
   row-gap: var(--space-sm);
 }
 
-.sn-tight .sn-mark {
-  font-size: 0.95rem;
-}
+.sn-tight .sn-mark { font-size: 0.95rem; }
 
-.sn-tight .sn-links li:nth-child(n + 4) {
-  display: none;
-}
+.sn-tight .sn-links li:nth-child(n + 4) { display: none; }
 
-.sn-tight.sn-photoEditorial .sn-links li:nth-child(n + 3) {
-  display: none;
-}
+.sn-tight.sn-photoEditorial .sn-links li:nth-child(n + 3) { display: none; }
 
-.sn-tight .sn-menu {
-  display: inline-flex;
-}
+.sn-tight .sn-menu { display: inline-flex; }
 
-.sn-tight .sn-act {
-  margin-left: auto;
-}
+.sn-tight .sn-act { margin-left: auto; }
 
 @media (max-width: 480px) {
   .sn:not(.sn-tight) .sn-in {
@@ -599,13 +563,12 @@
    ========================================================================== */
 
 .show-footer {
-  background: #1f2937;
-  color: var(--color-placeholder);
+  background: color-mix(in srgb, var(--showcase-primary) 88%, black);
+  color: rgba(255, 255, 255, 0.55);
   text-align: center;
-  padding: 20px 16px;
-  font-size: 0.75em;
+  padding: var(--space-lg) var(--space-md);
+  font-size: 0.72em;
+  letter-spacing: 0.03em;
 }
 
-.show-footer p {
-  margin: 0;
-}
+.show-footer p { margin: 0; }
