@@ -156,7 +156,8 @@ function applySitePatch(current: SiteDetails, patch: SitePatch): SiteDetails {
 }
 
 export const useSitesStore = defineStore('sites', () => {
-  const sites = ref<SiteDetails[]>([cloneSite(INITIAL_SITE)]);
+  // const sites = ref<SiteDetails[]>([cloneSite(INITIAL_SITE)]);
+  const sites = ref<SiteDetails[]>([]);
   const parseTime = (isoDate: string): number => {
     const timestamp = Date.parse(isoDate);
     return Number.isFinite(timestamp) ? timestamp : 0;
