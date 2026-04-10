@@ -1,0 +1,242 @@
+/**
+ * Showcase self-hosted webfonts (SIL Open Font License 1.1)
+ *
+ * Files live in /public/fonts/showcase/ (served at /fonts/showcase/*.woff2).
+ * Families: DM Sans, EB Garamond, Source Sans 3, Source Serif 4, Cormorant Garamond,
+ * Outfit, Syne, Nunito Sans, Fraunces — all from the Google Fonts catalog via Fontsource builds.
+ *
+ * @see https://scripts.sil.org/OFL
+ */
+
+/* --- DM Sans --- */
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/showcase/dm-sans-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/showcase/dm-sans-500.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/showcase/dm-sans-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/showcase/dm-sans-700.woff2') format('woff2');
+}
+
+/* --- EB Garamond --- */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/showcase/eb-garamond-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/showcase/eb-garamond-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/showcase/eb-garamond-700.woff2') format('woff2');
+}
+
+/* --- Source Sans 3 --- */
+@font-face {
+  font-family: 'Source Sans 3';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/showcase/source-sans-3-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Source Sans 3';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/showcase/source-sans-3-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Source Sans 3';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/showcase/source-sans-3-700.woff2') format('woff2');
+}
+
+/* --- Source Serif 4 --- */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/showcase/source-serif-4-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/showcase/source-serif-4-700.woff2') format('woff2');
+}
+
+/* --- Cormorant Garamond --- */
+@font-face {
+  font-family: 'Cormorant Garamond';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/showcase/cormorant-garamond-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Cormorant Garamond';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/showcase/cormorant-garamond-700.woff2') format('woff2');
+}
+
+/* --- Outfit --- */
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/showcase/outfit-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/showcase/outfit-600.woff2') format('woff2');
+}
+
+/* --- Syne --- */
+@font-face {
+  font-family: 'Syne';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/showcase/syne-700.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Syne';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('/fonts/showcase/syne-800.woff2') format('woff2');
+}
+
+/* --- Nunito Sans --- */
+@font-face {
+  font-family: 'Nunito Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/showcase/nunito-sans-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Nunito Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/showcase/nunito-sans-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Nunito Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/showcase/nunito-sans-700.woff2') format('woff2');
+}
+
+/* --- Fraunces --- */
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/showcase/fraunces-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/showcase/fraunces-700.woff2') format('woff2');
+}
+
+/* System stack fallbacks (never replace loaded fonts; only if files fail) */
+.sf-stack-sans {
+  font-family: 'DM Sans', 'Source Sans 3', 'Outfit', 'Nunito Sans', ui-sans-serif, system-ui, sans-serif;
+}
+.sf-stack-serif {
+  font-family: 'EB Garamond', 'Cormorant Garamond', 'Source Serif 4', 'Fraunces', Georgia, 'Times New Roman', serif;
+}
+
+/* --------------------------------------------------------------------------
+   Presets: applied on .show-renderer via ShowcaseRenderer (template.fontPreset)
+   --sf-body: paragraphs, lists, cards
+   --sf-heading: section titles, nav brand, hero headlines
+   -------------------------------------------------------------------------- */
+
+.show-renderer.font-preset--trade {
+  --sf-body: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  --sf-heading: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+}
+
+.show-renderer.font-preset--law {
+  --sf-body: 'Source Sans 3', ui-sans-serif, system-ui, sans-serif;
+  --sf-heading: 'EB Garamond', Georgia, 'Times New Roman', serif;
+}
+
+.show-renderer.font-preset--corporate {
+  --sf-body: 'Source Sans 3', ui-sans-serif, system-ui, sans-serif;
+  --sf-heading: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+}
+
+.show-renderer.font-preset--editorial {
+  --sf-body: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+  --sf-heading: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+}
+
+.show-renderer.font-preset--agency {
+  --sf-body: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  --sf-heading: 'Syne', ui-sans-serif, system-ui, sans-serif;
+}
+
+.show-renderer.font-preset--healthcare {
+  --sf-body: 'Nunito Sans', ui-sans-serif, system-ui, sans-serif;
+  --sf-heading: 'Nunito Sans', ui-sans-serif, system-ui, sans-serif;
+}
+
+.show-renderer.font-preset--hospitality {
+  --sf-body: 'Source Sans 3', ui-sans-serif, system-ui, sans-serif;
+  --sf-heading: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+}
+
+.show-renderer.font-preset--retail {
+  --sf-body: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  --sf-heading: 'Fraunces', Georgia, 'Times New Roman', serif;
+}

@@ -69,7 +69,7 @@ defineProps<{
 
 .stats__value {
   font-size: 2.1em;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1;
   letter-spacing: -0.03em;
   color: var(--showcase-accent);

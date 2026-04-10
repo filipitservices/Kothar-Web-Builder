@@ -93,7 +93,7 @@ function getInitials(name: string): string {
 
 .team__initials {
   font-size: 1.1em;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--color-white);
   letter-spacing: -0.02em;
 }

@@ -28,6 +28,20 @@ export type ShowcaseCategory =
   | 'hospitality'
   | 'retail';
 
+/**
+ * Self-hosted OFL font pairings for showcase previews.
+ * Files and CSS variables: `app/assets/css/showcase-fonts.css`, `public/fonts/showcase/`.
+ */
+export type ShowcaseFontPreset =
+  | 'trade'
+  | 'law'
+  | 'corporate'
+  | 'editorial'
+  | 'agency'
+  | 'healthcare'
+  | 'hospitality'
+  | 'retail';
+
 /** Visual / structural preset for showcase preview navbars (`NavSection.vue`). */
 export type ShowcaseNavVariant =
   | 'tradePhone'
@@ -109,6 +123,8 @@ export interface ShowcaseTemplate {
   industry: string;
   description: string;
   category: ShowcaseCategory;
+  /** Typography pairing (self-hosted OFL fonts; see showcase-fonts.css). */
+  fontPreset: ShowcaseFontPreset;
   thumbnail?: string;
   colorScheme: {
     primary: string;
@@ -133,6 +149,7 @@ export const useShowcaseStore = defineStore('showcase', () => {
       industry: 'Plumbing Services',
       description: 'Professional plumbing business template with emergency services focus, trust badges, and easy contact.',
       category: 'local-services',
+      fontPreset: 'trade',
       colorScheme: {
         primary: '#1e40af',
         secondary: '#0d9488',
@@ -239,6 +256,7 @@ export const useShowcaseStore = defineStore('showcase', () => {
       industry: 'Electrical Contractor',
       description: 'Modern electrical contractor template emphasizing safety, expertise, and residential/commercial services.',
       category: 'local-services',
+      fontPreset: 'trade',
       colorScheme: {
         primary: '#0f766e',
         secondary: '#1e40af',
@@ -333,6 +351,7 @@ export const useShowcaseStore = defineStore('showcase', () => {
       industry: 'Legal Services',
       description: 'Prestigious law firm template with professional imagery, practice areas, and attorney profiles.',
       category: 'professional',
+      fontPreset: 'law',
       colorScheme: {
         primary: '#1e3a5f',
         secondary: '#b8860b',
@@ -427,6 +446,7 @@ export const useShowcaseStore = defineStore('showcase', () => {
       industry: 'Accounting & Tax Services',
       description: 'Clean, trustworthy accounting firm template with service breakdowns and credentials.',
       category: 'professional',
+      fontPreset: 'corporate',
       colorScheme: {
         primary: '#166534',
         secondary: '#1e40af',
@@ -518,6 +538,7 @@ export const useShowcaseStore = defineStore('showcase', () => {
       industry: 'Business Consulting',
       description: 'Strategic consulting firm template with case studies, methodology, and expertise areas.',
       category: 'professional',
+      fontPreset: 'corporate',
       colorScheme: {
         primary: '#1e3a8a',
         secondary: '#6366f1',
@@ -602,6 +623,7 @@ export const useShowcaseStore = defineStore('showcase', () => {
       industry: 'Photography Studio',
       description: 'Elegant photography portfolio template with galleries, packages, and booking.',
       category: 'creative',
+      fontPreset: 'editorial',
       colorScheme: {
         primary: '#171717',
         secondary: '#a3a3a3',
@@ -695,6 +717,7 @@ export const useShowcaseStore = defineStore('showcase', () => {
       industry: 'Design & Marketing Agency',
       description: 'Bold creative agency template with portfolio, services, and team showcase.',
       category: 'creative',
+      fontPreset: 'agency',
       colorScheme: {
         primary: '#7c3aed',
         secondary: '#ec4899',
@@ -780,6 +803,7 @@ export const useShowcaseStore = defineStore('showcase', () => {
       industry: 'Dental Practice',
       description: 'Warm, welcoming dental practice template with services, team, and patient forms.',
       category: 'healthcare',
+      fontPreset: 'healthcare',
       colorScheme: {
         primary: '#0891b2',
         secondary: '#4f46e5',
@@ -873,6 +897,7 @@ export const useShowcaseStore = defineStore('showcase', () => {
       industry: 'Restaurant',
       description: 'Appetizing restaurant template with menu, reservations, and ambiance showcase.',
       category: 'hospitality',
+      fontPreset: 'hospitality',
       colorScheme: {
         primary: '#92400e',
         secondary: '#166534',
@@ -962,6 +987,7 @@ export const useShowcaseStore = defineStore('showcase', () => {
       industry: 'Home Goods Retail',
       description: 'Charming boutique template showcasing curated products and store experience.',
       category: 'retail',
+      fontPreset: 'retail',
       colorScheme: {
         primary: '#78716c',
         secondary: '#a8a29e',

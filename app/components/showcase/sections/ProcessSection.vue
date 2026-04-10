@@ -74,7 +74,7 @@ defineProps<{
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 800;
+  font-weight: 700;
   font-size: 0.875em;
   flex-shrink: 0;
   position: relative;

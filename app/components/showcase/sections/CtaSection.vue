@@ -173,6 +173,7 @@ const primaryCta = computed(() => props.data.primaryCta ?? '');
 /* --- Common text --- */
 
 .cta-title {
+  font-family: var(--sf-heading);
   font-size: 1.4em;
   font-weight: 700;
   color: var(--showcase-primary);
@@ -185,6 +186,7 @@ const primaryCta = computed(() => props.data.primaryCta ?? '');
 .cta-title--urgent { font-size: 1.6em; }
 
 .cta-subtitle {
+  font-family: var(--sf-body);
   font-size: 0.875em;
   color: color-mix(in srgb, var(--showcase-text) 65%, var(--showcase-bg));
   margin: 0 0 var(--space-lg) 0;

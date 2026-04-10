@@ -27,7 +27,7 @@
       </div>
     </template>
 
-    <!-- Professional style: left-aligned with Georgia headline -->
+    <!-- Professional style: left-aligned serif / corporate heading stack -->
     <template v-else-if="backgroundStyle === 'professional'">
       <div class="hero__pro">
         <div class="hero__pro-rule"></div>
@@ -156,7 +156,7 @@ const backgroundStyle = computed(() => props.data.backgroundStyle ?? 'image');
 
 .hero__phone-number {
   font-size: 1.05em;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.01em;
   color: var(--color-white);
 }
@@ -194,7 +194,7 @@ const backgroundStyle = computed(() => props.data.backgroundStyle ?? 'image');
 }
 
 .hero__headline--pro {
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: var(--sf-heading), Georgia, 'Times New Roman', serif;
   font-size: 1.9em;
   font-weight: 600;
   line-height: 1.15;
@@ -277,7 +277,7 @@ const backgroundStyle = computed(() => props.data.backgroundStyle ?? 'image');
 /* ===== SHARED TEXT ===== */
 .hero__headline {
   font-size: 1.65em;
-  font-weight: 800;
+  font-weight: 700;
   margin: 0 0 var(--space-sm) 0;
   line-height: 1.15;
   letter-spacing: -0.02em;

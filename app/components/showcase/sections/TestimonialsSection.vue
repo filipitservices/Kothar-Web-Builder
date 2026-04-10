@@ -138,7 +138,7 @@ const secondaryItems = computed(() =>
   top: -8px;
   left: var(--space-md);
   font-size: 5em;
-  font-family: Georgia, serif;
+  font-family: var(--sf-heading), Georgia, serif;
   font-weight: 700;
   color: color-mix(in srgb, var(--showcase-primary) 10%, transparent);
   line-height: 1;

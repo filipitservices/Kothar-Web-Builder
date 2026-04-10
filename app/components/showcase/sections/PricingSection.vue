@@ -92,7 +92,7 @@ function isFeatured(index: number, total: number): boolean {
   background: var(--showcase-accent);
   color: var(--showcase-primary);
   font-size: 0.62em;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   padding: 3px var(--space-sm);
@@ -113,7 +113,7 @@ function isFeatured(index: number, total: number): boolean {
 
 .pricing__price {
   font-size: 1.75em;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--showcase-primary);
   line-height: 1;
   letter-spacing: -0.03em;

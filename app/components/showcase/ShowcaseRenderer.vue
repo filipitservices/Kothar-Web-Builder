@@ -1,5 +1,9 @@
 <template>
-  <div class="show-renderer" :class="[`view-${viewMode}`]" :style="colorVars">
+  <div
+    class="show-renderer"
+    :class="[`view-${viewMode}`, `font-preset--${template.fontPreset}`]"
+    :style="colorVars"
+  >
     <component
       v-for="(section, index) in template.sections"
       :key="index"
