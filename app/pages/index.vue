@@ -3,7 +3,7 @@
     <!-- Hero Section -->
     <section class="hero-section">
       <div class="hero-content">
-        <h1 class="hero-title">From Template to Tailored Website</h1>
+        <h1 class="hero-title">Request Websites Visually</h1>
         <div class="hero-hl" role="status">
           <span class="hero-hl-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -11,10 +11,10 @@
               <path d="M9 12l2 2 4-4" />
             </svg>
           </span>
-          <p class="hero-hl-text">Built for small businesses that need speed without losing control.</p>
+          <p class="hero-hl-text">For small businesses that need quality without losing control.</p>
         </div>
         <p class="hero-subtitle">
-          Start from a professional template, customize the direction with our guided workflow, and get a polished site delivered faster than generic builders.
+          Customize the direction with our guided workflow, work minimally and visually, and get a polished site delivered faster than generic builders with more care and quality than pure AI.
         </p>
         <NuxtLink :to="isAuthenticated ? '/gallery' : '/login'" class="hero-cta">
           {{ isAuthenticated ? 'Open Gallery' : 'Get Started Free' }}
