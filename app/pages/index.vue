@@ -11,7 +11,7 @@
               <path d="M9 12l2 2 4-4" />
             </svg>
           </span>
-          <p class="hero-hl-text">For small businesses that need quality without losing control.</p>
+          <p class="hero-hl-text">For businesses that need quality without losing control.</p>
         </div>
         <p class="hero-subtitle">
           Customize the direction with our guided workflow, work minimally and visually, and get a polished site delivered faster than generic builders with more care and quality than pure AI.
@@ -28,17 +28,6 @@
       <LandingSectionDesigners />
       <LandingSectionDelivery />
     </div>
-
-    <!-- CTA Section -->
-    <section class="cta-section">
-      <div class="cta-content">
-        <h2 class="cta-title">Ready to Launch With More Control?</h2>
-        <p class="cta-subtitle">Pick a strong starting point, refine what matters, and move to delivery faster.</p>
-        <NuxtLink :to="isAuthenticated ? '/gallery' : '/login'" class="cta-button">
-          {{ isAuthenticated ? 'Open Gallery' : 'Launch Builder' }}
-        </NuxtLink>
-      </div>
-    </section>
 
     <!-- Footer -->
     <footer class="landing-footer">
