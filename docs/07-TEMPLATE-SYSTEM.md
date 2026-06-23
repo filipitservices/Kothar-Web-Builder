@@ -64,7 +64,7 @@ TemplatesList emits 'apply' event
   { templateId: string, screen: 'desktop' | 'mobile' | 'both' }
          │
          ↓
-index.vue calls handleTemplateApply()
+BuilderEditor calls handleTemplateApply()
          │
          ↓
 useTemplateApplication.applyTemplate()
@@ -317,34 +317,9 @@ Templates are named for **what the site is meant to do**. IDs and block lists li
 
 ## Integration
 
-### In index.vue
+### In BuilderEditor
 
-```vue
-<template>
-  <!-- Right Sidebar -->
-  <div class="sidebar right-sidebar">
-    <TemplatesList @apply="handleTemplateApply" />
-  </div>
-</template>
-
-<script setup>
-import { ref } from 'vue';
-import TemplatesList from '~/components/TemplatesList.vue';
-import { useTemplateApplication } from '~/composables/useTemplateApplication';
-
-const desktopList = ref([]);
-const mobileList = ref([]);
-
-const { applyTemplate } = useTemplateApplication({
-  desktopList,
-  mobileList
-});
-
-const handleTemplateApply = (templateId, screen) => {
-  applyTemplate(templateId, screen);
-};
-</script>
-```
+`app/components/BuilderEditor.vue` hosts the right sidebar and wires template apply to the active desktop/mobile lists:
 
 ---
 

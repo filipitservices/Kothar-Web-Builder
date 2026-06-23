@@ -50,7 +50,7 @@ Kothar is a visual website builder that allows users to:
 - **Storage**: Per-screen organization (desktop/mobile) allowing different layouts
 
 **2. Block System**
-- 13 pre-built block types (Hero, Nav, Footer, Form, Features, etc.)
+- 18 pre-built block types in the builder palette (Hero, Nav, Services, Footer, Form, etc.; see [15-COMPONENT-CATALOG-UPDATED.md](15-COMPONENT-CATALOG-UPDATED.md))
 - Each block instance has unique `blockId` (e.g., `el-navbar-1234567890`)
 - Blocks can be dragged between screens and edited inline
 - Desktop and mobile screens maintain independent block lists and customizations
@@ -85,7 +85,7 @@ Kothar is a visual website builder that allows users to:
 ```
 app/
 ├── components/
-│   ├── BlockElements/          # 13 block types
+│   ├── BlockElements/          # 18 builder block types (+ HeaderBlock in codebase)
 │   │   ├── HeroBlock.vue
 │   │   ├── NavBlock.vue
 │   │   ├── FooterBlock.vue
@@ -107,7 +107,10 @@ app/
 │   ├── blocks.ts               # Per-block customizations
 │   └── business.ts             # Global company info
 ├── pages/
-│   └── index.vue               # Main editor page
+│   ├── index.vue               # Landing page (public)
+│   ├── gallery/                # Gallery hub + request flow
+│   ├── sites/                  # My Sites (live sites + orders)
+│   └── orders/                 # Order edit + builder routes
 └── plugins/
     ├── vue-drawing-canvas.ts
     └── vuedraggable.ts
@@ -158,7 +161,8 @@ pnpm dev
 |------|---------|
 | `app/pages/index.vue` | Landing page (public) |
 | `app/pages/gallery/index.vue` | Central hub with builder + templates (protected) |
-| `app/pages/builder.vue` | Main editor page (protected, requires auth) |
+| `app/pages/builder.vue` | Legacy redirect to ID-scoped builder routes (protected) |
+| `app/components/BuilderEditor.vue` | Main builder UI (used by request/order builder pages) |
 | `app/pages/sites/index.vue` | My Sites: Live Sites + Orders tabs (protected) |
 | `app/pages/sites/[id].vue` | Site control panel (protected) |
 | `app/pages/gallery/request/[id]/index.vue` | Template request form (protected) |
@@ -182,7 +186,7 @@ pnpm dev
 | `app/components/ItemsList.vue` | Renders draggable blocks |
 | `app/components/ScreenCard.vue` | Single screen container |
 | `app/components/ShowcaseModal.vue` | Template preview modal |
-| `app/components/sites/SitesWelcomeHeader.vue` | My Sites page header + Gallery CTA |
+| `app/components/PrimaryPageHero.vue` | Shared page hero (My Sites, Gallery) with Gallery CTA |
 | `app/components/sites/SitesTabList.vue` | Live Sites / Orders tab list |
 | `app/components/sites/SitesLiveSitesPanel.vue` | Live sites table panel |
 | `app/components/sites/SitesOrdersPanel.vue` | Orders table panel |
@@ -197,10 +201,11 @@ pnpm dev
 3. [Block System](03-BLOCK-SYSTEM.md) - How blocks work
 4. [Data Flow](04-DATA-FLOW.md) - State management
 5. [API Reference](05-API-REFERENCE.md) - Functions & interfaces
-6. [Component Catalog](06-COMPONENT-CATALOG.md) - All components
+6. [Component Catalog](06-COMPONENT-CATALOG.md) - Legacy component reference; see [15-COMPONENT-CATALOG-UPDATED.md](15-COMPONENT-CATALOG-UPDATED.md) for current blocks
 7. [Routing & Landing](11-ROUTING-AND-LANDING.md) - Page structure & auth
-8. [Firebase Auth](16-FIREBASE-AUTH.md) - Authentication system
-9. [Firebase Firestore & Storage](18-FIREBASE-FIRESTORE-STORAGE.md) - Orders and file attachments
+8. [Gallery & Templates](17-DASHBOARD-AND-GALLERY.md) - Gallery hub and showcase flow
+9. [Firebase Auth](16-FIREBASE-AUTH.md) - Authentication system
+10. [Firebase Firestore & Storage](18-FIREBASE-FIRESTORE-STORAGE.md) - Orders and file attachments
 
 ---
 

@@ -314,7 +314,7 @@ No page implements its own navbar; all use the default layout and shared AppNavb
 
 ```
 sites/index.vue  [uses default layout → AppNavbar + slot]
-├── SitesWelcomeHeader
+├── PrimaryPageHero
 │   ├── Title + subtitle
 │   └── Gallery CTA (Open Gallery → /gallery)
 ├── SitesTabList (role="tablist", Live Sites | Orders)
@@ -624,7 +624,7 @@ ScreenCard
 1. Create `app/components/BlockElements/MyBlock.vue`
 2. Import in `app/components/ItemsList.vue`
 3. Add to `componentMap` object
-4. Add to `availableList` in `index.vue`
+4. Add to `AVAILABLE_BLOCKS` in `app/constants/builder.ts`
 
 ### Adding New Business Fields
 

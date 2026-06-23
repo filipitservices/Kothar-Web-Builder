@@ -6,7 +6,7 @@
 
 ## Overview
 
-The block system is the core of Kothar, providing 13 pre-built, reusable UI components that users can drag, customize, and arrange to build websites.
+The block system is the core of Kothar, providing 18 pre-built, reusable UI components (builder palette) that users can drag, customize, and arrange to build websites. See [15-COMPONENT-CATALOG-UPDATED.md](15-COMPONENT-CATALOG-UPDATED.md) for the full list.
 
 ### Key Concepts
 
@@ -478,13 +478,9 @@ const componentMap = {
 
 **3. Add to Available List**
 
-`app/pages/index.vue`:
+`app/constants/builder.ts` (`AVAILABLE_BLOCKS`):
 ```javascript
-const availableList = ref([
-  { id: 'el-nav', type: 'navbar', label: 'Navigation' },
-  { id: 'el-myblock', type: 'myblock', label: 'My Custom Block' }, // ✅ Add here
-  // ... other blocks
-]);
+const availableList = ref(AVAILABLE_BLOCKS); // from constants/builder.ts
 ```
 
 **4. Test**
@@ -593,10 +589,7 @@ const updateSubtitle = (e) => setField('subtitle', e.target.textContent?.trim())
 ## Known Limitations
 
 ### 1. Screen Detection
-- **Issue**: `useBlockData` always defaults to 'desktop'
-- **Impact**: Mobile blocks may not save correctly
-- **Workaround**: Components receive `screenType` prop but composable doesn't use it yet
-- **TODO**: Implement provide/inject or route-based detection
+- **Resolved:** `useBlockData(blockId, screenType)` accepts the `screenType` prop from ItemsList; desktop and mobile data stay separate when callers pass it.
 
 ### 2. No Data Cleanup on Delete
 - **Issue**: Block data persists in store after deletion

@@ -1,10 +1,12 @@
 # Component Catalog
 
+> **Note:** This catalog covers the original 13 blocks. For the current 18-block builder palette (SMB refinement), see **[15-COMPONENT-CATALOG-UPDATED.md](15-COMPONENT-CATALOG-UPDATED.md)**.
+
 **Complete reference for all components with props, usage examples, and styling patterns.**
 
 ---
 
-## Block Components (13 Total)
+## Block Components (13 Total — legacy list)
 
 ### HeroBlock
 
@@ -733,20 +735,26 @@
 
 ## Sites Page Components
 
-### SitesWelcomeHeader
+### PrimaryPageHero
 
-**File**: [components/sites/SitesWelcomeHeader.vue](../app/components/sites/SitesWelcomeHeader.vue)
+**File**: [components/PrimaryPageHero.vue](../app/components/PrimaryPageHero.vue)
 
-**Purpose**: My Sites page header with title, subtitle, and Gallery CTA
+**Purpose**: Shared primary hero for My Sites, Gallery, and similar pages (title, subtitle, optional CTA)
 
 **Features**:
-- Page title "My Sites" and descriptive subtitle
-- "Discover layout templates" CTA linking to `/gallery`
-- Uses design tokens only
+- Page title and descriptive subtitle
+- Optional CTA (e.g. "Discover layout templates" → `/gallery` on My Sites)
+- Uses design tokens only (`sites-hero.css`)
 
-**Usage**:
+**Usage on My Sites**:
 ```vue
-<SitesWelcomeHeader />
+<PrimaryPageHero
+  title="My Sites"
+  subtitle="Manage your live websites and track requests."
+  cta-headline="Discover layout templates"
+  cta-label="Open Gallery"
+  :cta-to="ROUTES.gallery"
+/>
 ```
 
 ---

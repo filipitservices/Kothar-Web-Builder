@@ -261,9 +261,11 @@ definePageMeta({
 
 ### Component Composition
 
-**Builder Page** (`pages/builder.vue`), under **builder** layout (no global navbar):
+**Builder UI** (`app/components/BuilderEditor.vue`), on request/order builder routes under **builder** layout (no global navbar):
 - Left sidebar (blocks), center screens panel, right sidebar (templates)
 - Full editor interface; no top navbar so layout and overflow behave as designed
+
+`/builder` (`pages/builder.vue`) is a legacy redirect only — it does not render the editor.
 
 ### Layout Constraints
 
@@ -273,7 +275,7 @@ Builder-specific CSS preserved exactly:
 - `.screens-inner` - Scaled screen rendering
 - `.screens-panel` - Drawing, AI chat, controls
 
-**Critical**: No layout changes to builder. Simply relocated from `/` to `/builder`.
+**Critical**: Builder UI lives on `/gallery/request/[id]/builder` and `/orders/[id]/builder` (`BuilderEditor.vue`). `/builder` is a legacy redirect only.
 
 ### Builder screens display (layout recovery)
 
@@ -336,7 +338,7 @@ Builder-specific CSS preserved exactly:
 ### Layouts
 
 - **default** (`layouts/default.vue`): Renders the global **AppNavbar** and `<slot />` for the page. Used by `/`, `/gallery`, `/gallery/request/[id]`, `/login`, `/reset-password`.
-- **builder** (`layouts/builder.vue`): Renders only `<slot />` (no navbar). Used by `/builder` so the editor has the full viewport and no top bar.
+- **builder** (`layouts/builder.vue`): Renders only `<slot />` (no navbar). Used by `/gallery/request/[id]/builder` and `/orders/[id]/builder` so the editor has the full viewport and no top bar.
 
 **Page assignment**:
 - Pages that need the shared navbar use the default layout (Nuxt’s default when no `layout` is set in `definePageMeta`).
@@ -624,4 +626,3 @@ Kothar has a proper multi-page architecture with authentication:
 
 **Last Updated**: March 2026
 
-````

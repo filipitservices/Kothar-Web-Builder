@@ -1,5 +1,6 @@
-```mdc
 # Builder Page Refactoring - Code Organization
+
+> **Current UI:** The builder editor is `app/components/BuilderEditor.vue`, mounted from request/order builder pages. `app/pages/builder.vue` is a legacy redirect only.
 
 **Lean component architecture with separated concerns.**
 
@@ -356,5 +357,3 @@ If adding new features:
 The refactoring reduces cognitive load, improves maintainability, and keeps the component focused on its core responsibility: **composition and integration**.
 
 **Result**: Production-grade, clean, and maintainable architecture.
-
-````

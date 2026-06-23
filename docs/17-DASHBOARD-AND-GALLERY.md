@@ -474,7 +474,7 @@ The My Sites page is the authenticated hub for managing delivered websites and t
 
 ### CTA on /sites
 
-The My Sites page includes a "Discover layout templates" CTA that links to `/gallery`, placed in the header area (SitesWelcomeHeader). The Orders empty state also includes a "Browse templates" CTA.
+The My Sites page includes a "Discover layout templates" CTA that links to `/gallery`, placed in **PrimaryPageHero**. The Orders empty state also includes a "Browse templates" CTA.
 
 ---
 

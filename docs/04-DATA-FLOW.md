@@ -276,86 +276,17 @@ function useBlockData(blockId: string, screenIdOrRef?: 'desktop' | 'mobile' | st
 
 **Screen context**: Block components receive `screenType` from parent (ItemsList). Pass it as the second argument: `useBlockData(blockId, screenType)` so desktop and mobile data stay separate. Defaults to `'desktop'` if omitted.
 
-**Implementation**:
-```javascript
-import { computed } from 'vue';
-import { useBlocksStore } from '~/stores/blocks';
-import { useBusinessData } from '~/composables/useBusinessData';
+**Implementation** (see `app/composables/useBlockData.ts`):
 
-export function useBlockData(blockId) {
-  const blocksStore = useBlocksStore();
-  const businessData = useBusinessData();
-  
-  // Currently hardcoded to 'desktop' - TODO: implement proper screen detection
-  // In future, could use: useRoute() or provide/inject pattern
-  const screenId = computed<'desktop' | 'mobile'>(() => {
-    return 'desktop'; // Default fallback
-  });
-
-  const getField = (fieldName: string): any => {
-    const blockData = blocksStore.getBlockData(screenId.value, blockId);
-    return blockData?.customData?.[fieldName];
-  };
-
-  const setField = (fieldName: string, value: any): void => {
-    let blockData = blocksStore.getBlockData(screenId.value, blockId);
-    if (!blockData) {
-      const blockType = blockId.split('-')[1] || 'unknown';
-      blocksStore.setBlockData(screenId.value, blockId, blockType, {
-        title: '',
-        subtitle: '',
-        customData: {}
-      });
-    }
-    
-    blocksStore.updateBlockCustomField(screenId.value, blockId, fieldName, value);
-  };
-
-  const isLocalValue = (fieldName: string): boolean => {
-    const value = getField(fieldName);
-    return value !== undefined && value !== null && value !== '';
-  };
-
-  const mergedData = computed(() => {
-    return {
-      // Business data from global store
-      ...{
-        companyName: businessData.companyName.value,
-        email: businessData.email.value,
-        telephone: businessData.telephone.value,
-        address: businessData.address.value,
-        city: businessData.city.value,
-        postalCode: businessData.postalCode.value,
-        website: businessData.website.value,
-        businessHours: businessData.businessHours.value,
-        taxId: businessData.taxId.value,
-        fullAddress: businessData.fullAddress.value,
-        hasContact: businessData.hasContact.value,
-        isComplete: businessData.isComplete.value
-      },
-      
-      // Block-specific customizations override above
-      ...blocksStore.getBlockData(screenId.value, blockId)?.customData
-    };
-  });
-
-  const blockData = computed(() => blocksStore.getBlockData(screenId.value, blockId));
-
-  const deleteBlock = () => {
-    blocksStore.removeBlock(screenId.value, blockId);
-  };
-
-  return {
-    getField,
-    setField,
-    isLocalValue,
-    mergedData,
-    blockData,
-    deleteBlock,
-    screenId
-  };
-}
+```typescript
+const screenId = computed<BlockDataScreenId>(() => {
+  if (screenIdOrRef === undefined) return 'desktop';
+  if (typeof screenIdOrRef === 'string') return toScreenId(screenIdOrRef);
+  return toScreenId(screenIdOrRef.value);
+});
 ```
+
+Block components should call `useBlockData(blockId, screenType)` so desktop and mobile customizations stay separate.
 
 ---
 
