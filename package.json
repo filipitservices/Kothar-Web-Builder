@@ -3,13 +3,13 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "nuxt build",
-    "dev": "nuxt dev",
-    "generate": "nuxt generate",
-    "preview": "nuxt preview",
+    "build": "node --use-system-ca node_modules/nuxt/bin/nuxt.mjs build",
+    "dev": "node --use-system-ca node_modules/nuxt/bin/nuxt.mjs dev",
+    "generate": "node --use-system-ca node_modules/nuxt/bin/nuxt.mjs generate",
+    "preview": "node --use-system-ca node_modules/nuxt/bin/nuxt.mjs preview",
     "postinstall": "nuxt prepare",
-    "typecheck": "nuxt typecheck",
-    "start": "node .output/server/index.mjs"
+    "typecheck": "node --use-system-ca node_modules/nuxt/bin/nuxt.mjs typecheck",
+    "start": "node --use-system-ca .output/server/index.mjs"
   },
   "dependencies": {
     "@pinia/nuxt": "^0.11.3",

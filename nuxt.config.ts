@@ -54,6 +54,10 @@ export default defineNuxtConfig({
   // Nitro configuration for server-side
   nitro: {
     preset: 'firebase_app_hosting',
+    // Node 22+ on Windows: Nitro workers must trust system CAs for Firebase Admin HTTPS calls.
+    env: {
+      NODE_OPTIONS: '--use-system-ca',
+    },
     // Ensure firebase-admin is not bundled for client
     externals: {
       external: ['firebase-admin', '@whop/sdk']
